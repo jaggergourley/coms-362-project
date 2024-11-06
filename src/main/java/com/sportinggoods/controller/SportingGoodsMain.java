@@ -1,6 +1,6 @@
-package src;
+package com.sportinggoods.controller;
 
-public class sportingGoodsMain {
+public class SportingGoodsMain {
 
 
     public static void main(String[] args) {
