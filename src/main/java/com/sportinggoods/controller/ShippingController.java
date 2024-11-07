@@ -1,9 +1,9 @@
-package com.sportinggoods.controller;
+package src.main.java.com.sportinggoods.controller;
 
-import com.sportinggoods.model.Inventory;
-import com.sportinggoods.model.Item;
+import src.main.java.com.sportinggoods.model.Inventory;
+import src.main.java.com.sportinggoods.model.Item;
 import com.sportinggoods.model.ShippingOrder;
-import com.sportinggoods.repository.ShippingOrderRepository;
+import src.main.java.com.sportinggoods.repository.ShippingOrderRepository;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -91,8 +91,6 @@ public class ShippingController {
                 }
             }
         }
-
-
 
 
         return true;
