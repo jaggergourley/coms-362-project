@@ -1,7 +1,7 @@
-package com.sportinggoods.repository;
+package src.main.java.com.sportinggoods.repository;
 
 import com.sportinggoods.model.ShippingOrder;
-import com.sportinggoods.util.FileUtils;
+import src.main.java.com.sportinggoods.util.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;
