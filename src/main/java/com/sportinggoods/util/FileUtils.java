@@ -1,4 +1,4 @@
-package com.sportinggoods.util;
+package src.main.java.com.sportinggoods.util;
 
 import java.io.*;
 import java.util.ArrayList;

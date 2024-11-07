@@ -26,6 +26,7 @@
 .idea/
 *.iml
 *.iws
+out/
 
 # Eclipse
 .classpath

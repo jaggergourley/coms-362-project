@@ -1,9 +1,9 @@
-package com.sportinggoods.controller;
+package src.main.java.com.sportinggoods.controller;
 
-import com.sportinggoods.model.Supplier;
-import com.sportinggoods.model.SupplierOrder;
-import com.sportinggoods.repository.SupplierOrderRepository;
-import com.sportinggoods.repository.SupplierRepository;
+import src.main.java.com.sportinggoods.model.Supplier;
+import src.main.java.com.sportinggoods.model.SupplierOrder;
+import src.main.java.com.sportinggoods.repository.SupplierOrderRepository;
+import src.main.java.com.sportinggoods.repository.SupplierRepository;
 
 import java.time.LocalDate;
 import java.util.List;
