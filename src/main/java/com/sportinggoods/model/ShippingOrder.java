@@ -165,7 +165,7 @@ public class ShippingOrder {
                 String department = itemData[2];
                 int quantity = Integer.parseInt(itemData[3]);
 
-                Item item = new Item(name, price, department, quantity);
+                Item item = new Item(name, price, department, quantity, 0);
                 items.put(item, quantity); // Add the item and its quantity to the map
             }
         }
