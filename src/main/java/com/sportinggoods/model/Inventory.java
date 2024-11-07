@@ -1,6 +1,7 @@
 package src.main.java.com.sportinggoods.model;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,10 @@ public class Inventory {
     //Constructor
     public Inventory() {
         items = loadItemsFromFile();
+    }
+
+    public Map<String, Item> getItems(){
+        return items;
     }
 
     //Getter
@@ -32,6 +37,84 @@ public class Inventory {
             saveItemsToFile(); // Save the updated inventory
         }
     }
+
+    /**
+     * adds a item to the inventory by either updating
+     * quantity or creating a new entry.
+     * @param item
+     */
+    public void addItem(Item item){
+        Item temp = items.get(item.getName());
+        if(temp != null){ //item is in the inventory
+            int newQuantity = temp.getQuantity() + item.getQuantity();
+            temp.setQuantity(newQuantity);
+            saveItemsToFile();
+        }
+        else{ // item is not in the inventory
+            items.put(item.getName(), item);
+            saveItemsToFile();
+        }
+    }
+
+    public void addItems(ArrayList<Item> itemList){
+        for(int i = 0; i < itemList.size(); i++){
+            Item temp1 = itemList.get(i);
+            Item temp2 = items.get(temp1.getName());
+            if(temp2 != null){ //item exists in inventory
+                int newQuantity = temp2.getQuantity() + temp1.getQuantity();
+                temp2.setQuantity(newQuantity);
+                saveItemsToFile();
+            }
+            else{
+                items.put(temp1.getName(), temp1);
+                saveItemsToFile();
+            }
+        }
+    }
+
+    /**
+     * remove the item from the list by decrementing
+     * by given items qunatity
+     * @param item
+     */
+    public void deleteItem(Item item){
+        Item temp = items.get(item.getName());
+        if(temp != null){ // item is in the inventory
+            temp.setQuantity(temp.getQuantity() - item.getQuantity());
+            saveItemsToFile();
+        }
+        else{
+            System.out.println("Item to remove not found");
+        }
+    }
+
+    public void deleteItems(ArrayList<Item> itemList){
+        for(int i = 0; i < itemList.size(); i++){
+            Item temp1 = itemList.get(i);
+            Item temp2 = items.get(temp1.getName());
+            if(temp2 != null){ //item exists in inventory
+                int newQuantity = temp2.getQuantity() - temp1.getQuantity();
+                temp2.setQuantity(newQuantity);
+                saveItemsToFile();
+            }
+            else{
+                System.out.println("Item: " + temp1.getName() + " is not in the inventory");
+            }
+        }
+    }
+
+
+    public void swapStore(String itemName, int newStoreID){
+        Item temp = items.get(itemName);
+        if(temp != null){
+            temp.setStoreID(newStoreID);
+            saveItemsToFile();
+        }
+        else{
+            System.out.println("Item is not in the inventory");
+        }
+    }
+
 
     // Checks if an item is available in the required quantity
     public boolean checkAvailability(String itemName, int quantity) {
@@ -69,5 +152,13 @@ public class Inventory {
         } catch (IOException e) {
             System.out.println("Error saving inventory to file: " + e.getMessage());
         }
+    }
+
+    public void printInventory(){
+        System.out.println("Inventory:");
+        for(Item item : items.values()){
+            System.out.println(item);
+        }
+        System.out.println();
     }
 }
