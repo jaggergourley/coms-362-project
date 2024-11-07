@@ -1,6 +1,6 @@
 package src.main.java.com.sportinggoods.repository;
 
-import com.sportinggoods.model.ShippingOrder;
+import src.main.java.com.sportinggoods.model.ShippingOrder;
 import src.main.java.com.sportinggoods.util.FileUtils;
 
 import java.util.ArrayList;
