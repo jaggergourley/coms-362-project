@@ -1,6 +1,6 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.Register;
+import com.sportinggoods.model.Register;
 
 public class RegisterController {
     private Register register;

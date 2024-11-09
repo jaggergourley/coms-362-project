@@ -1,7 +1,7 @@
-package src.main.java.com.sportinggoods.repository;
+package com.sportinggoods.repository;
 
-import src.main.java.com.sportinggoods.model.Receipt;
-import src.main.java.com.sportinggoods.util.FileUtils;
+import com.sportinggoods.model.Receipt;
+import com.sportinggoods.util.FileUtils;
 
 public class ReceiptRepository {
     private final String filePath = "data/receipts.csv";

@@ -1,6 +1,6 @@
-package src.main.java.com.sportinggoods.model;
+package com.sportinggoods.model;
 
-import src.main.java.com.sportinggoods.model.Item;
+import com.sportinggoods.model.Item;
 
 import java.time.LocalDate;
 import java.util.Map;

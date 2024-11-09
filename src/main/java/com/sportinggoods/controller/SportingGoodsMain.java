@@ -1,9 +1,9 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.Cashier;
-import src.main.java.com.sportinggoods.model.Customer;
-import src.main.java.com.sportinggoods.model.Inventory;
-import src.main.java.com.sportinggoods.model.Register;
+import com.sportinggoods.model.Cashier;
+import com.sportinggoods.model.Customer;
+import com.sportinggoods.model.Inventory;
+import com.sportinggoods.model.Register;
 
 public class SportingGoodsMain {
 

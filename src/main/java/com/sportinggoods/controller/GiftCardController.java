@@ -1,7 +1,7 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.GiftCard;
-import src.main.java.com.sportinggoods.repository.GiftCardRepository;
+import com.sportinggoods.model.GiftCard;
+import com.sportinggoods.repository.GiftCardRepository;
 
 import java.util.Optional;
 import java.util.UUID;

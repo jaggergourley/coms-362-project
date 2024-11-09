@@ -1,4 +1,4 @@
-package src.main.java.com.sportinggoods.model;
+package com.sportinggoods.model;
 
 import java.util.ArrayList;
 import java.util.List;

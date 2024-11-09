@@ -1,6 +1,6 @@
-package src.main.java.com.sportinggoods.repository;
+package com.sportinggoods.repository;
 
-import src.main.java.com.sportinggoods.model.GiftCard;
+import com.sportinggoods.model.GiftCard;
 
 import java.util.List;
 import java.util.Optional;

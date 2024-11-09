@@ -1,7 +1,7 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.*;
-import src.main.java.com.sportinggoods.repository.ReceiptRepository;
+import com.sportinggoods.model.*;
+import com.sportinggoods.repository.ReceiptRepository;
 
 import java.time.LocalDate;
 

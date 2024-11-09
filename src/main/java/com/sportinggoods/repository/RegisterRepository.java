@@ -1,7 +1,7 @@
-package src.main.java.com.sportinggoods.repository;
+package com.sportinggoods.repository;
 
-import src.main.java.com.sportinggoods.model.Register;
-import src.main.java.com.sportinggoods.util.FileUtils;
+import com.sportinggoods.model.Register;
+import com.sportinggoods.util.FileUtils;
 
 public class RegisterRepository {
     private final String filePath = "data/register.csv";
