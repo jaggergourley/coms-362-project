@@ -59,6 +59,15 @@ public class Supplier {
         this.followUpAction = followUpAction;
     }
 
+    @Override
+    public String toString() {
+        return "Supplier ID: " + supplierId +
+                ", Name: " + name +
+                ", Contact Info: " + contactInfo +
+                ", Relationship Status: " + relationshipStatus +
+                ", Follow-Up Action: " + followUpAction;
+    }
+
     // toCSV method for CSV representation
     public String toCSV() {
         return supplierId + "," + name + "," + contactInfo + "," + relationshipStatus + "," + followUpAction;

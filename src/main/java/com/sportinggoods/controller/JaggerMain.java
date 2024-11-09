@@ -299,8 +299,8 @@ public class JaggerMain {
             }
         }
 
-        // Optional: Handle funds and stock checks here
-        // For now, we'll assume funds are sufficient and items are in stock
+        // Handle funds and stock checks here
+        // For now assume funds are sufficient and items are in stock
 
         // Place the order
         boolean success = supplierController.placeSupplierOrder(supplierId, productDetails, quantity, totalPrice);
