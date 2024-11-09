@@ -1,6 +1,6 @@
-package src.main.java.com.sportinggoods.repository;
+package com.sportinggoods.repository;
 
-import src.main.java.com.sportinggoods.model.Item;
+import com.sportinggoods.model.Item;
 import java.util.List;
 import java.util.Optional;
 

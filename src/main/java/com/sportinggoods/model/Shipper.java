@@ -1,4 +1,4 @@
-package src.main.java.com.sportinggoods.model;
+package com.sportinggoods.model;
 
 public class Shipper extends Employee {
     private boolean canShipOrders;
