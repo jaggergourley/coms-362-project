@@ -81,6 +81,17 @@ public class SupplierOrder {
         this.status = status;
     }
 
+    @Override
+    public String toString() {
+        return "Order ID: " + orderId +
+                ", Supplier ID: " + supplierId +
+                ", Product Details: " + productDetails +
+                ", Quantity: " + quantity +
+                ", Total Price: $" + totalPrice +
+                ", Order Date: " + orderDate +
+                ", Status: " + status;
+    }
+
     // toCSV method for CSV representation
     public String toCSV() {
         return orderId + "," + supplierId + "," + productDetails + "," + quantity + "," + totalPrice + "," + orderDate + "," + status;

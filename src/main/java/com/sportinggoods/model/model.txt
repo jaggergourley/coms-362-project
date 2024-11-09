@@ -1,1 +1,0 @@
-Defines the core domain models/entities.

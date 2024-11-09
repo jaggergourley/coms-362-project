@@ -8,10 +8,11 @@ import java.util.List;
 
 public class SupplierRepository {
     private final String filePath = "data/suppliers.csv";
+    private final String header = "supplierId,name,contactInfo,relationshipStatus,followUpAction";
 
     public SupplierRepository() {
         // Initialize the suppliers.csv file with headers if it doesn't exist
-        FileUtils.initializeFile(filePath, "supplierId,name,contactInfo,relationshipStatus,followUpAction");
+        FileUtils.initializeFile(filePath, header);
     }
 
     /**
@@ -37,6 +38,9 @@ public class SupplierRepository {
         List<String> lines = FileUtils.readAllLines(filePath);
         List<String> updatedLines = new ArrayList<>();
         boolean found = false;
+
+        // Add header back
+        updatedLines.add(header);
 
         for (String line : lines) {
             Supplier supplier = Supplier.fromCSV(line);
