@@ -81,6 +81,9 @@ public class Inventory {
         Item temp = items.get(item.getName());
         if(temp != null){ // item is in the inventory
             temp.setQuantity(temp.getQuantity() - item.getQuantity());
+            if(temp.getQuantity() < 0){
+                temp.setQuantity(0);
+            }
             saveItemsToFile();
         }
         else{

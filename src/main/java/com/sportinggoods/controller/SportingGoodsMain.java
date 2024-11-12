@@ -104,7 +104,8 @@ public class SportingGoodsMain {
             System.out.println("3. View All Suppliers");
             System.out.println("4. View All Supplier Orders");
             System.out.println("5. UpdateInvetory");
-            System.out.println("6. Back to Main Menu");
+            System.out.println("6. Manage work schedule");
+            System.out.println("7. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine();
@@ -814,7 +815,6 @@ public class SportingGoodsMain {
         // Simulate a simple shift list (this can be an actual data structure like an ArrayList)
         // For now, we're just printing messages to indicate the shift operations.
         while (true) {
-            System.out.println("\n===== Shift Management =====");
             System.out.println("1. Add a Work Shift");
             System.out.println("2. Remove a Work Shift");
             System.out.println("0. Exit");
