@@ -2,13 +2,13 @@ package src.main.java.com.sportinggoods.model;
 
 public class shift {
 
-    private String day;
-    private double startTime;
-    private double endTime;
+    private int date;
+    private String startTime;
+    private String endTime;
 
     // Constructor
-    public shift(String day, double startTime, double endTime){
-        this.day = day;
+    public shift(int date, String startTime, String endTime){
+        this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -17,28 +17,43 @@ public class shift {
         // read from csv
     }
 
-    public void setDay(String day){
-        this.day = day;
+    public void setdate(int date){
+        this.date = date;
     }
 
-    public String getDay(){
-        return day;
+    public int getDate(){
+        return date;
     }
 
-    public void setStartTime(double startTime){
+    public void setStartTime(String startTime){
         this.startTime = startTime;
     }
 
-    public double getStartTime(){
+    public String getStartTime(){
         return startTime;
     }
 
-    public void setEndTime(double endTime){
+    public void setEndTime(String endTime){
         this.endTime = endTime;
     }
 
-    public double getEndTime(){
+    public String getEndTime(){
         return endTime;
+    }
+
+    public String toCSV() {
+        return date + "," + startTime + "," + endTime;
+    }
+
+    public static shift fromCSV(String csvLine) {
+        String[] tokens = csvLine.split(",");
+        if (tokens.length != 3) {
+            return null;  // Invalid format
+        }
+        int date = Integer.parseInt(tokens[0]);
+        String startTime = tokens[1];
+        String startEnd = tokens[2];
+        return new shift(date, startTime, startEnd);
     }
     
 }

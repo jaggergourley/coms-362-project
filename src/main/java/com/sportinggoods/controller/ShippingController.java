@@ -2,7 +2,7 @@ package src.main.java.com.sportinggoods.controller;
 
 import src.main.java.com.sportinggoods.model.Inventory;
 import src.main.java.com.sportinggoods.model.Item;
-import com.sportinggoods.model.ShippingOrder;
+import src.main.java.com.sportinggoods.model.ShippingOrder;
 import src.main.java.com.sportinggoods.repository.ShippingOrderRepository;
 
 import java.time.LocalDate;
