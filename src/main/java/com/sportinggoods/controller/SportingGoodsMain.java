@@ -14,10 +14,6 @@ public class SportingGoodsMain {
     private static SupplierOrderRepository orderRepo;
     private static SupplierController supplierController;
 
-    // Item-related controllers and repositories
-    private static PricingController pricingController;
-    private static ItemRepository itemRepository;
-
     // Gift card-related controllers and repositories
     private static GiftCardRepository giftCardRepository;
     private static GiftCardController giftCardController;
@@ -27,6 +23,9 @@ public class SportingGoodsMain {
     private static Inventory inventory;
     private static ReceiptRepository receiptRepo;
     private static RegisterController registerController;
+
+    // Pricing-related controllers
+    private static PricingController pricingController;
 
     public static void main(String[] args) {
         initializeRepositories();
@@ -41,8 +40,6 @@ public class SportingGoodsMain {
         supplierRepo = new SupplierRepository();
         orderRepo = new SupplierOrderRepository();
         supplierController = new SupplierController(supplierRepo, orderRepo);
-        itemRepository = new ItemRepository();
-        pricingController = new PricingController(itemRepository);
         giftCardRepository = new GiftCardRepository(new ArrayList<>());
         giftCardController = new GiftCardController(giftCardRepository);
     }
@@ -57,6 +54,8 @@ public class SportingGoodsMain {
         receiptRepo = new ReceiptRepository();
         registerController = new RegisterController(register);
         cashierController = new CashierController(cashier, inventory, registerController, receiptRepo);
+
+        pricingController = new PricingController(inventory); //Used by manager to adjust prices
     }
 
     /**
@@ -358,56 +357,43 @@ public class SportingGoodsMain {
             System.out.println("3. Search by Store ID");
             System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
-
+            
             String searchChoice = scanner.nextLine().trim();
-            List<Item> foundItems = new ArrayList<>();
-
-            switch (searchChoice) {
-                case "1":
-                    System.out.print("Enter the name of the item: ");
-                    String itemName = scanner.nextLine().trim();
-                    itemRepository.findByName(itemName).ifPresent(foundItems::add);
-                    break;
-                case "2":
-                    System.out.print("Enter the department: ");
-                    String department = scanner.nextLine().trim();
-                    foundItems = itemRepository.findByDepartment(department);
-                    break;
-                case "3":
-                    System.out.print("Enter the store ID: ");
-                    try {
-                        int storeID = Integer.parseInt(scanner.nextLine().trim());
-                        foundItems = itemRepository.findByStoreID(storeID);
-                    } catch (NumberFormatException e) {
-                        System.out.println("Error: Invalid store ID. Please enter a numeric value.");
-                        continue;
-                    }
-                    break;
-                case "4":
+            String criteria = switch (searchChoice) {
+                case "1" -> "name";
+                case "2" -> "department";
+                case "3" -> "storeid";
+                case "4" -> {
                     System.out.println("Returning to Manager Menu.");
-                    return;
-                default:
+                    yield null;
+                }
+                default -> {
                     System.out.println("Invalid choice. Please try again.");
-                    continue;
-            }
-
+                    yield null;
+                }
+            };
+            if (criteria == null) continue;
+    
+            System.out.print("Enter the search value: ");
+            String value = scanner.nextLine().trim();
+    
+            List<Item> foundItems = pricingController.searchItems(criteria, value);
+    
             if (foundItems.isEmpty()) {
                 System.out.println("No items found with the specified criteria. Please try another search.");
                 continue;
             }
-
+    
             System.out.println("\nFound Items:");
             for (int i = 0; i < foundItems.size(); i++) {
                 System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
             }
-
+    
             System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
             int itemIndex;
             try {
                 itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
-                if (itemIndex == -1) {
-                    continue; // Return to search menu
-                }
+                if (itemIndex == -1) continue;
                 if (itemIndex < 0 || itemIndex >= foundItems.size()) {
                     System.out.println("Invalid selection. Returning to search menu.");
                     continue;
@@ -416,7 +402,7 @@ public class SportingGoodsMain {
                 System.out.println("Error: Please enter a valid number.");
                 continue;
             }
-
+    
             Item selectedItem = foundItems.get(itemIndex);
             double newPrice = -1;
             while (newPrice <= 0) {
@@ -430,8 +416,8 @@ public class SportingGoodsMain {
                     System.out.println("Error: Invalid price format. Please enter a valid number.");
                 }
             }
-
-            String result = pricingController.adjustPrice(selectedItem.getName(), newPrice);
+    
+            String result = pricingController.adjustPrice(selectedItem, newPrice);
             System.out.println(result);
             break;
         }
