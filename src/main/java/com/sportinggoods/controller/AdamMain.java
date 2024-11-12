@@ -216,7 +216,7 @@ public class AdamMain {
                         ShippingOrder selectedOrder = confirmedOrders.get(orderNumber);
                         System.out.println("You selected Order ID: " + selectedOrder.getOrderId());
 
-                        Shipper shipper = new Shipper("Ben Jackson", 1, true, shippingController);
+                        Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController);
                         shipper.shipOrder(selectedOrder, inventory);
                     }
                 } catch (NumberFormatException e) {
