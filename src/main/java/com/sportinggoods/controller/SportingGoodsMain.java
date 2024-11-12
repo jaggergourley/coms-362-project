@@ -2,8 +2,6 @@ package com.sportinggoods.controller;
 
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
-import com.sportinggoods.util.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -122,9 +120,9 @@ public class SportingGoodsMain {
             System.out.println("8. Manage Work Schedule");
             System.out.println("9. Back to Main Menu");
             System.out.print("Enter your choice: ");
-
+    
             String choice = scanner.nextLine();
-
+    
             switch (choice) {
                 case "1":
                     coordinateSuppliers();
@@ -404,9 +402,7 @@ public class SportingGoodsMain {
             System.out.println("2. Redeem Gift Card");
             System.out.println("3. Back to Manager Menu");
             System.out.print("Enter your choice: ");
-
             String choice = scanner.nextLine().trim();
-
             switch (choice) {
                 case "1":
                     sellGiftCardMenu();
