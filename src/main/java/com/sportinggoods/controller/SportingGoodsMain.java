@@ -40,7 +40,7 @@ public class SportingGoodsMain {
         supplierRepo = new SupplierRepository();
         orderRepo = new SupplierOrderRepository();
         supplierController = new SupplierController(supplierRepo, orderRepo);
-        giftCardRepository = new GiftCardRepository(new ArrayList<>());
+        giftCardRepository = new GiftCardRepository();
         giftCardController = new GiftCardController(giftCardRepository);
     }
 
@@ -431,7 +431,8 @@ public class SportingGoodsMain {
             System.out.println("\nGift Card Management:");
             System.out.println("1. Sell New Gift Card");
             System.out.println("2. Redeem Gift Card");
-            System.out.println("3. Back to Manager Menu");
+            System.out.println("3. View Gift Card Details");
+            System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
             
             String choice = scanner.nextLine().trim();
@@ -444,6 +445,9 @@ public class SportingGoodsMain {
                     redeemGiftCardMenu();
                     break;
                 case "3":
+                    viewGiftCardDetailsMenu();
+                    break;
+                case "4":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -463,8 +467,11 @@ public class SportingGoodsMain {
             System.out.println("Error: Invalid amount format. Please enter a valid number.");
             return;
         }
-
-        String result = giftCardController.sellGiftCard(amount);
+    
+        System.out.print("Enter customer information (optional): ");
+        String customerInfo = scanner.nextLine().trim();
+    
+        String result = giftCardController.sellGiftCard(amount, customerInfo);
         System.out.println(result);
     }
 
@@ -486,7 +493,18 @@ public class SportingGoodsMain {
 
         String result = giftCardController.redeemGiftCard(code, amount);
         System.out.println(result);
-    }   
+    }
+
+    /**
+     * View details of a gift card.
+     */
+    private static void viewGiftCardDetailsMenu() {
+        System.out.print("\nEnter the gift card code to view details: ");
+        String code = scanner.nextLine().trim();
+    
+        String details = giftCardController.viewGiftCardDetails(code);
+        System.out.println(details);
+    }
 
     /**
      * Manager Functionality: Update Supplier Information
