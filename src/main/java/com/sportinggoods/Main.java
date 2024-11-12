@@ -1,10 +1,10 @@
-package src.main.java.com.sportinggoods;
+package com.sportinggoods;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import src.main.java.com.sportinggoods.model.Inventory;
-import src.main.java.com.sportinggoods.model.Item;
+import com.sportinggoods.model.Inventory;
+import com.sportinggoods.model.Item;
 
 public class Main {
 

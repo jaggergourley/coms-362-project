@@ -1,7 +1,7 @@
-package src.main.java.com.sportinggoods.repository;
+package com.sportinggoods.repository;
 
-import src.main.java.com.sportinggoods.model.Cashier;
-import src.main.java.com.sportinggoods.util.FileUtils;
+import com.sportinggoods.model.Cashier;
+import com.sportinggoods.util.FileUtils;
 
 import java.util.List;
 

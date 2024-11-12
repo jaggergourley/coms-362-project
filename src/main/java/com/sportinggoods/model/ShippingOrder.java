@@ -1,6 +1,6 @@
 package src.main.java.com.sportinggoods.model;
 
-import src.main.java.com.sportinggoods.model.Item;
+import com.sportinggoods.model.Item;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -166,6 +166,7 @@ public class ShippingOrder {
                 int quantity = Integer.parseInt(itemData[3]);
 
                 Item item = new Item(name, price, department, quantity, 1);
+                Item item = new Item(name, price, department, quantity, 0);
                 items.put(item, quantity); // Add the item and its quantity to the map
             }
         }

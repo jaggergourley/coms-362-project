@@ -1,4 +1,4 @@
-package src.main.java.com.sportinggoods.model;
+package com.sportinggoods.model;
 
 public class Supplier {
     private String supplierId;
@@ -57,6 +57,15 @@ public class Supplier {
 
     public void setFollowUpAction(String followUpAction) {
         this.followUpAction = followUpAction;
+    }
+
+    @Override
+    public String toString() {
+        return "Supplier ID: " + supplierId +
+                ", Name: " + name +
+                ", Contact Info: " + contactInfo +
+                ", Relationship Status: " + relationshipStatus +
+                ", Follow-Up Action: " + followUpAction;
     }
 
     // toCSV method for CSV representation

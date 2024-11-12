@@ -1,17 +1,18 @@
-package src.main.java.com.sportinggoods.repository;
+package com.sportinggoods.repository;
 
-import src.main.java.com.sportinggoods.model.SupplierOrder;
-import src.main.java.com.sportinggoods.util.FileUtils;
+import com.sportinggoods.model.SupplierOrder;
+import com.sportinggoods.util.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SupplierOrderRepository {
     private final String filePath = "data/supplierOrders.csv";
+    private final String header = "orderId,supplierId,productDetails,quantity,totalPrice,orderDate,status";
 
     public SupplierOrderRepository() {
         // Initialize the supplierOrders.csv file with headers if it doesn't exist
-        FileUtils.initializeFile(filePath, "orderId,supplierId,productDetails,quantity,totalPrice,orderDate,status");
+        FileUtils.initializeFile(filePath, header);
     }
 
     /**
@@ -35,6 +36,9 @@ public class SupplierOrderRepository {
         List<String> lines = FileUtils.readAllLines(filePath);
         List<String> updatedLines = new ArrayList<>();
         boolean found = false;
+
+        // Add header back
+        updatedLines.add(header);
 
         for (String line : lines) {
             SupplierOrder order = SupplierOrder.fromCSV(line);

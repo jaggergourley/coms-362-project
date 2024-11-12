@@ -1,4 +1,4 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
 import src.main.java.com.sportinggoods.model.Inventory;
 import src.main.java.com.sportinggoods.model.Item;

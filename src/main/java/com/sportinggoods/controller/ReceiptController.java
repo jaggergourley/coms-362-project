@@ -1,7 +1,7 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.Receipt;
-import src.main.java.com.sportinggoods.repository.ReceiptRepository;
+import com.sportinggoods.model.Receipt;
+import com.sportinggoods.repository.ReceiptRepository;
 
 public class ReceiptController {
     private ReceiptRepository receiptRepo;

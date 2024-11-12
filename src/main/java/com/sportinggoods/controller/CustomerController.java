@@ -1,7 +1,7 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.Customer;
-import src.main.java.com.sportinggoods.repository.CustomerRepository;
+import com.sportinggoods.model.Customer;
+import com.sportinggoods.repository.CustomerRepository;
 
 public class CustomerController {
     private CustomerRepository customerRepo;

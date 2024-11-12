@@ -1,4 +1,4 @@
-package src.main.java.com.sportinggoods.model;
+package com.sportinggoods.model;
 
 import java.time.LocalDate;
 
@@ -79,6 +79,17 @@ public class SupplierOrder {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "Order ID: " + orderId +
+                ", Supplier ID: " + supplierId +
+                ", Product Details: " + productDetails +
+                ", Quantity: " + quantity +
+                ", Total Price: $" + totalPrice +
+                ", Order Date: " + orderDate +
+                ", Status: " + status;
     }
 
     // toCSV method for CSV representation

@@ -1,9 +1,9 @@
-package src.main.java.com.sportinggoods.controller;
+package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.Supplier;
-import src.main.java.com.sportinggoods.model.SupplierOrder;
-import src.main.java.com.sportinggoods.repository.SupplierOrderRepository;
-import src.main.java.com.sportinggoods.repository.SupplierRepository;
+import com.sportinggoods.model.Supplier;
+import com.sportinggoods.model.SupplierOrder;
+import com.sportinggoods.repository.SupplierOrderRepository;
+import com.sportinggoods.repository.SupplierRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -69,6 +69,16 @@ public class SupplierController {
 
         // Add the order to the repository
         return orderRepo.addSupplierOrder(order);
+    }
+
+    /**
+     * Retrieves a supplier by their ID.
+     *
+     * @param supplierId The ID of the supplier.
+     * @return The Supplier object if found, null otherwise.
+     */
+    public Supplier getSupplierById(String supplierId) {
+        return supplierRepo.getSupplierById(supplierId);
     }
 
     /**
