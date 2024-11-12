@@ -28,6 +28,10 @@ public class SportingGoodsMain {
     private static ReceiptRepository receiptRepo;
     private static RegisterController registerController;
 
+    // Employee and Schedule
+    private static Employee employee;
+    private static Schedule schedule;
+
     public static void main(String[] args) {
         initializeRepositories();
         initializeCashierSystem();
@@ -45,13 +49,16 @@ public class SportingGoodsMain {
         pricingController = new PricingController(itemRepository);
         giftCardRepository = new GiftCardRepository(new ArrayList<>());
         giftCardController = new GiftCardController(giftCardRepository);
+
+        schedule = new Schedule();
+        employee = new Employee("Mason", 1, schedule);
     }
 
     /**
      * Initializes cashier-related systems.
      */
     private static void initializeCashierSystem() {
-        Cashier cashier = new Cashier("John Doe", 101); // Sample cashier
+        Cashier cashier = new Cashier("John Doe", 101, null); // Sample cashier
         inventory = new Inventory();
         Register register = new Register();
         receiptRepo = new ReceiptRepository();
@@ -107,9 +114,11 @@ public class SportingGoodsMain {
             System.out.println("2. Place Supplier Order");
             System.out.println("3. View All Suppliers");
             System.out.println("4. View All Supplier Orders");
-            System.out.println("5. Adjust Item Price"); // New option
-            System.out.println("6. Manage Gift Cards");
-            System.out.println("7. Back to Main Menu");
+            System.out.println("5. Adjust Item Price");
+            System.out.println("6. Update Inventory");
+            System.out.println("7. Manage Gift Cards");
+            System.out.println("8. Manage Work Schedule");
+            System.out.println("9. Back to Main Menu");
             System.out.print("Enter your choice: ");
     
             String choice = scanner.nextLine();
@@ -128,12 +137,18 @@ public class SportingGoodsMain {
                     viewAllSupplierOrders();
                     break;
                 case "5":
-                    adjustPriceMenu(); // Call the new method
+                    adjustPriceMenu(); // Call the adjust price method
                     break;
                 case "6":
-                    manageGiftCards();
+                    updateInventory(); // Call the update inventory method
                     break;
                 case "7":
+                    manageGiftCards(); // Call the manage gift cards method
+                    break;
+                case "8":
+                    manageShifts(); // Call the manage shifts method
+                    break;
+                case "9":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -387,9 +402,7 @@ public class SportingGoodsMain {
             System.out.println("2. Redeem Gift Card");
             System.out.println("3. Back to Manager Menu");
             System.out.print("Enter your choice: ");
-            
             String choice = scanner.nextLine().trim();
-            
             switch (choice) {
                 case "1":
                     sellGiftCardMenu();
@@ -440,7 +453,7 @@ public class SportingGoodsMain {
 
         String result = giftCardController.redeemGiftCard(code, amount);
         System.out.println(result);
-    }   
+    }
 
     /**
      * Manager Functionality: Update Supplier Information
@@ -720,6 +733,258 @@ public class SportingGoodsMain {
             } catch (NumberFormatException e) {
                 System.out.println("Invalid Customer ID. Defaulting to Guest.");
                 return new Customer("Guest", -1);
+            }
+        }
+    }
+
+    /**
+     * Manager Functionality: Update Inventory
+     */
+    private static void updateInventory() {
+        System.out.println();
+        System.out.println("Current Inventory:");
+        inventory.printInventory();
+        System.out.println("------------------");
+        System.out.println("Select Inventory Operation");
+        System.out.println("------------------");
+        System.out.println("1. Add item");
+        System.out.println("2. Delete item");
+        System.out.println("3. Add items in bulk");
+        System.out.println("4. Delete items in bulk");
+        System.out.println("5. Send item to another store");
+
+        System.out.print("Enter choice: ");
+        String choice = scanner.nextLine();
+
+        switch (choice) {
+            case "1":
+                System.out.print("Enter item name: ");
+                String name = scanner.nextLine();
+
+                System.out.print("Enter item price: ");
+                double price = scanner.nextDouble();
+                scanner.nextLine();
+
+                System.out.print("Enter item Department: ");
+                String department = scanner.nextLine();
+
+                System.out.print("Enter item Quantity: ");
+                int quantity = scanner.nextInt();
+
+                System.out.print("Enter item Store ID: ");
+                int storeID = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+
+                // Create a new Item with the user input
+                Item newItem = new Item(name, price, department, quantity, storeID);
+
+                inventory.addItem(newItem);
+
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "2":
+                System.out.print("Enter item name: ");
+                name = scanner.nextLine();
+
+                System.out.print("Enter item price: ");
+                price = scanner.nextDouble();
+                scanner.nextLine();
+
+                System.out.print("Enter item Department: ");
+                department = scanner.nextLine();
+
+                System.out.print("Enter item Quantity: ");
+                quantity = scanner.nextInt();
+
+                System.out.print("Enter item Store ID: ");
+                storeID = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+
+                // Create a new Item with the user input
+                newItem = new Item(name, price, department, quantity, storeID);
+                inventory.deleteItem(newItem);
+
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "3":
+                ArrayList<Item> itemList = new ArrayList<>();
+                int x = 0;
+                while(x == 0){
+                    System.out.println("Current item List: ");
+                    for(int i = 0; i < itemList.size(); i++){
+                        System.out.println(itemList.get(i).toString());
+                    }
+                    System.out.println();
+
+                    System.out.println("+ - add item to list");
+                    System.out.println("x - finished adding items");
+                    System.out.print("Enter choice: ");
+                    choice = scanner.nextLine();
+
+                    switch (choice) {
+                        case "+":
+                            System.out.print("Enter item name: ");
+                            name = scanner.nextLine();
+
+                            System.out.print("Enter item price: ");
+                            price = scanner.nextDouble();
+                            scanner.nextLine();
+
+                            System.out.print("Enter item Department: ");
+                            department = scanner.nextLine();
+
+                            System.out.print("Enter item Quantity: ");
+                            quantity = scanner.nextInt();
+
+                            System.out.print("Enter item Store ID: ");
+                            storeID = scanner.nextInt();
+                            scanner.nextLine();
+
+                            newItem = new Item(name, price, department, quantity, storeID);
+                            itemList.add(newItem);
+                            break;
+                        case "x":
+                            x = 1;
+                            break;
+
+                        default:
+                            System.out.println("Not an option");
+                            break;
+                    }
+                }
+                inventory.addItems(itemList);
+                System.out.println("Items added");
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "4":
+                itemList = new ArrayList<>();
+                x = 0;
+                while(x == 0){
+                    System.out.println("Current item List: ");
+                    for(int i = 0; i < itemList.size(); i++){
+                        System.out.println(itemList.get(i).toString());
+                    }
+                    System.out.println();
+
+                    System.out.println("+ - add item to list");
+                    System.out.println("x - finished adding items");
+                    System.out.print("Enter choice: ");
+                    choice = scanner.nextLine();
+
+                    switch (choice) {
+                        case "+":
+                            System.out.print("Enter item name: ");
+                            name = scanner.nextLine();
+
+                            System.out.print("Enter item price: ");
+                            price = scanner.nextDouble();
+                            scanner.nextLine();
+
+                            System.out.print("Enter item Department: ");
+                            department = scanner.nextLine();
+
+                            System.out.print("Enter item Quantity: ");
+                            quantity = scanner.nextInt();
+
+                            System.out.print("Enter item Store ID: ");
+                            storeID = scanner.nextInt();
+                            scanner.nextLine();
+
+                            newItem = new Item(name, price, department, quantity, storeID);
+                            itemList.add(newItem);
+                            break;
+                        case "x":
+                            x = 1;
+                            break;
+
+                        default:
+                            System.out.println("Not an option");
+                            break;
+                    }
+                }
+                inventory.deleteItems(itemList);
+                System.out.println("Items removed");
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "5":
+                System.out.print("Enter item name: ");
+                name = scanner.nextLine();
+
+                System.out.print("Enter item's new Store ID: ");
+                storeID = scanner.nextInt();
+                scanner.nextLine();
+
+                inventory.swapStore(name, storeID);
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            default:
+                System.out.println("Not an option");
+                break;
+        }
+    }
+
+    /**
+     * Manager Functionality: Manage Work Shifts
+     */
+    private static void manageShifts() {
+        while (true) {
+            System.out.println("\nWork Shift Management:");
+            System.out.println("1. Add a Work Shift");
+            System.out.println("2. Remove a Work Shift");
+            System.out.println("3. Back to Manager Menu");
+            System.out.print("Please select an option: ");
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    // Add a Work Shift
+                    System.out.print("Enter the date of shift (DD): ");
+                    int date = Integer.parseInt(scanner.nextLine().trim());
+
+                    System.out.print("Enter the start time of the shift (HH:mm): ");
+                    String startTime = scanner.nextLine().trim();
+
+                    System.out.print("Enter the end time of the shift (HH:mm): ");
+                    String endTime = scanner.nextLine().trim();
+
+                    Shift s = new Shift(date, startTime, endTime);
+                    employee.getWorkSchedule().addShift(s);
+
+                    System.out.println("Shift added: " + startTime + " to " + endTime);
+                    break;
+
+                case "2":
+                    System.out.print("Enter the date of shift to remove (DD): ");
+                    int dateToRemove = Integer.parseInt(scanner.nextLine().trim());
+
+                    // Remove a Work Shift
+                    System.out.print("Enter the start time of the shift to remove (HH:mm): ");
+                    String startTimeToRemove = scanner.nextLine().trim();
+
+                    System.out.print("Enter the end time of the shift to remove (HH:mm): ");
+                    String endTimeToRemove = scanner.nextLine().trim();
+
+                    s = new Shift(dateToRemove, startTimeToRemove, endTimeToRemove);
+                    employee.getWorkSchedule().deleteShift(s);
+                    System.out.println("Shift removed with date: "+ dateToRemove + ", start time: " + startTimeToRemove + " and end time: " + endTimeToRemove);
+                    break;
+
+                case "3":
+                    return;  // Exit to Manager Menu
+
+                default:
+                    System.out.println("Invalid choice, please try again.");
+                    break;
             }
         }
     }

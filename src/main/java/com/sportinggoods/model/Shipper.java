@@ -8,8 +8,8 @@ public class Shipper extends Employee {
     }
 
     // Constructor for Shipper with additional canShipOrders permission
-    public Shipper(String name, int id, boolean canShipOrders) {
-        super(name, id);
+    public Shipper(String name, int id, boolean canShipOrders, Schedule workSchedule) {
+        super(name, id, workSchedule);
         this.canShipOrders = canShipOrders;
     }
 

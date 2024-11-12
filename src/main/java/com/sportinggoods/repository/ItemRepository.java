@@ -21,15 +21,15 @@ public class ItemRepository {
     // Search item by name
     public Optional<Item> findByName(String name) {
         return items.stream()
-                    .filter(item -> item.getName().equalsIgnoreCase(name))
-                    .findFirst();
+                .filter(item -> item.getName().equalsIgnoreCase(name))
+                .findFirst();
     }
 
     // Search items by department
     public List<Item> findByDepartment(String department) {
         return items.stream()
-                    .filter(item -> item.getDepartment().equalsIgnoreCase(department))
-                    .toList();
+                .filter(item -> item.getDepartment().equalsIgnoreCase(department))
+                .toList();
     }
 
     // Save or update an item

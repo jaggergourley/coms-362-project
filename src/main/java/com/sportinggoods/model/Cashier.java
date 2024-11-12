@@ -5,8 +5,8 @@ import java.time.LocalDate;
 
 public class Cashier extends Employee {
     //Constructor from Employee
-    public Cashier(String name, int id) {
-        super(name, id);
+    public Cashier(String name, int id, Schedule workSchedule) {
+        super(name, id, workSchedule);
     }
 
     // Converts a Cashier object to a CSV string
@@ -22,7 +22,7 @@ public class Cashier extends Employee {
         }
         int id = Integer.parseInt(tokens[0]);
         String name = tokens[1];
-        return new Cashier(name, id);
+        return new Cashier(name, id, null);
     }
 
     @Override
