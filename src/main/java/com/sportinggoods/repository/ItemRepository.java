@@ -31,6 +31,13 @@ public class ItemRepository {
                     .filter(item -> item.getDepartment().equalsIgnoreCase(department))
                     .toList();
     }
+    
+    // Search items by store ID
+    public List<Item> findByStoreID(int storeID) {
+        return items.stream()
+                    .filter(item -> item.getStoreID() == storeID)
+                    .toList();
+    }
 
     // Save or update an item
     public void save(Item item) {

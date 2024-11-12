@@ -351,39 +351,90 @@ public class SportingGoodsMain {
      * Manager Functionality: Adjust Item Price
      */
     private static void adjustPriceMenu() {
-        System.out.print("\nEnter the name of the item to adjust the price: ");
-        String itemName = scanner.nextLine().trim();
-    
-        Optional<Item> itemOpt = itemRepository.findByName(itemName);
-        if (itemOpt.isEmpty()) {
-            System.out.println("Error: Item not found. Returning to Manager Menu.");
-            return;
-        }
-    
-        // Display item details if found
-        Item item = itemOpt.get();
-        System.out.println("\nItem Found:");
-        System.out.println("Name: " + item.getName());
-        System.out.println("Current Price: $" + item.getPrice());
-        System.out.println("Department: " + item.getDepartment());
-        System.out.println("Quantity: " + item.getQuantity());
-        System.out.println("Store ID: " + item.getStoreID());
-    
-        double newPrice = -1;
-        while (newPrice <= 0) {
-            System.out.print("Enter the new price: ");
+        while (true) {
+            System.out.println("\nAdjust Item Price Menu:");
+            System.out.println("1. Search by Name");
+            System.out.println("2. Search by Department");
+            System.out.println("3. Search by Store ID");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+
+            String searchChoice = scanner.nextLine().trim();
+            List<Item> foundItems = new ArrayList<>();
+
+            switch (searchChoice) {
+                case "1":
+                    System.out.print("Enter the name of the item: ");
+                    String itemName = scanner.nextLine().trim();
+                    itemRepository.findByName(itemName).ifPresent(foundItems::add);
+                    break;
+                case "2":
+                    System.out.print("Enter the department: ");
+                    String department = scanner.nextLine().trim();
+                    foundItems = itemRepository.findByDepartment(department);
+                    break;
+                case "3":
+                    System.out.print("Enter the store ID: ");
+                    try {
+                        int storeID = Integer.parseInt(scanner.nextLine().trim());
+                        foundItems = itemRepository.findByStoreID(storeID);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error: Invalid store ID. Please enter a numeric value.");
+                        continue;
+                    }
+                    break;
+                case "4":
+                    System.out.println("Returning to Manager Menu.");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    continue;
+            }
+
+            if (foundItems.isEmpty()) {
+                System.out.println("No items found with the specified criteria. Please try another search.");
+                continue;
+            }
+
+            System.out.println("\nFound Items:");
+            for (int i = 0; i < foundItems.size(); i++) {
+                System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
+            }
+
+            System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
+            int itemIndex;
             try {
-                newPrice = Double.parseDouble(scanner.nextLine().trim());
-                if (newPrice <= 0) {
-                    System.out.println("Error: Price must be greater than 0. Please try again.");
+                itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (itemIndex == -1) {
+                    continue; // Return to search menu
+                }
+                if (itemIndex < 0 || itemIndex >= foundItems.size()) {
+                    System.out.println("Invalid selection. Returning to search menu.");
+                    continue;
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Error: Invalid price format. Please enter a valid number.");
+                System.out.println("Error: Please enter a valid number.");
+                continue;
             }
+
+            Item selectedItem = foundItems.get(itemIndex);
+            double newPrice = -1;
+            while (newPrice <= 0) {
+                System.out.print("Enter the new price: ");
+                try {
+                    newPrice = Double.parseDouble(scanner.nextLine().trim());
+                    if (newPrice <= 0) {
+                        System.out.println("Error: Price must be greater than 0. Please try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: Invalid price format. Please enter a valid number.");
+                }
+            }
+
+            String result = pricingController.adjustPrice(selectedItem.getName(), newPrice);
+            System.out.println(result);
+            break;
         }
-    
-        String result = pricingController.adjustPrice(itemName, newPrice);
-        System.out.println(result);
     }
 
     /**
