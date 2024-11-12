@@ -3,30 +3,62 @@ package com.sportinggoods.model;
 import java.time.LocalDate;
 
 public class Receipt {
+    private int receiptId;
     private Customer customer;
     private Cashier cashier;
-    private String itemName;
-    private int quantity;
+    private String receiptDetails; // Stores multiple items with quantities
     private double totalCost;
     private LocalDate date;
 
-    //Constructor
-    public Receipt(Customer customer, Cashier cashier, String itemName, int quantity, double totalCost, LocalDate date) {
+    // Constructor
+    public Receipt(Customer customer, Cashier cashier, String receiptDetails, double totalCost, LocalDate date) {
         this.customer = customer;
         this.cashier = cashier;
-        this.itemName = itemName;
-        this.quantity = quantity;
+        this.receiptDetails = receiptDetails;
         this.totalCost = totalCost;
         this.date = date;
     }
 
-    //Convert Receipt information to CSV file
+    // Default constructor
+    public Receipt() {}
+
+    // Getters and setters
+    public int getReceiptId() {
+        return receiptId;
+    }
+
+    public void setReceiptId(int receiptId) {
+        this.receiptId = receiptId;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public Cashier getCashier() {
+        return cashier;
+    }
+
+    public String getReceiptDetails() {
+        return receiptDetails;
+    }
+
+    public double getTotalCost() {
+        return totalCost;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    // Convert Receipt information to CSV format
     public String toCSV() {
-        return customer.getCustomerId() + "," + itemName + "," + quantity + "," + totalCost + "," + date;
+        return receiptId + "," + customer.getCustomerId() + ",\"" + receiptDetails + "\"," + totalCost + "," + date;
     }
 
     @Override
     public String toString() {
-        return "Receipt: " + quantity + " x " + itemName + " for " + customer + ", Total: $" + totalCost + ", Date: " + date;
+        return "Receipt: " + receiptDetails + " for Customer: " + customer.getName() +
+                " (ID: " + customer.getCustomerId() + "), Total: $" + totalCost + ", Date: " + date;
     }
 }
