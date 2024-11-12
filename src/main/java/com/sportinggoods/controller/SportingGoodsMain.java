@@ -353,13 +353,22 @@ public class SportingGoodsMain {
     private static void adjustPriceMenu() {
         System.out.print("\nEnter the name of the item to adjust the price: ");
         String itemName = scanner.nextLine().trim();
-
+    
         Optional<Item> itemOpt = itemRepository.findByName(itemName);
         if (itemOpt.isEmpty()) {
             System.out.println("Error: Item not found. Returning to Manager Menu.");
             return;
         }
-
+    
+        // Display item details if found
+        Item item = itemOpt.get();
+        System.out.println("\nItem Found:");
+        System.out.println("Name: " + item.getName());
+        System.out.println("Current Price: $" + item.getPrice());
+        System.out.println("Department: " + item.getDepartment());
+        System.out.println("Quantity: " + item.getQuantity());
+        System.out.println("Store ID: " + item.getStoreID());
+    
         double newPrice = -1;
         while (newPrice <= 0) {
             System.out.print("Enter the new price: ");
@@ -372,7 +381,7 @@ public class SportingGoodsMain {
                 System.out.println("Error: Invalid price format. Please enter a valid number.");
             }
         }
-
+    
         String result = pricingController.adjustPrice(itemName, newPrice);
         System.out.println(result);
     }
