@@ -6,24 +6,22 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Schedule {
-   private ArrayList<shift> workSchedual = new ArrayList<shift>();
+   private ArrayList<Shift> workSchedual = new ArrayList<Shift>();
    private static final String FILE_PATH = "data/WorkSchedual.csv";
 
     public Schedule() {
         workSchedual = loadShiftsFromFile();
     }
 
-    public ArrayList<shift> loadShiftsFromFile(){ // gets the current list of shifts from csv file
-        ArrayList<shift> loadedItems = new ArrayList<shift>();
+    public ArrayList<Shift> loadShiftsFromFile(){ // gets the current list of shifts from csv file
+        ArrayList<Shift> loadedItems = new ArrayList<Shift>();
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
             reader.readLine(); // Skip header
             while ((line = reader.readLine()) != null) {
-                shift item = shift.fromCSV(line);
+                Shift item = Shift.fromCSV(line);
                 if (item != null) {
                     loadedItems.add(item);
                 }
@@ -34,15 +32,15 @@ public class Schedule {
         return loadedItems;
     }
 
-    public void addShift(shift s){
+    public void addShift(Shift s){
         workSchedual.add(s);
         saveShiftsToFile();
         System.out.println("shift has been added");
     }
     
-    public void deleteShift(shift s){
+    public void deleteShift(Shift s){
         for(int i = 0; i < workSchedual.size(); i++){
-            shift temp = workSchedual.get(i);
+            Shift temp = workSchedual.get(i);
             if(temp.getDate() == s.getDate() && temp.getStartTime().matches(s.getStartTime()) == true && temp.getEndTime().matches(s.getEndTime())){
                 workSchedual.remove(i);
                 saveShiftsToFile();
@@ -55,7 +53,7 @@ public class Schedule {
     public void saveShiftsToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
             writer.write("date,startTime,endTime\n"); // Write CSV header
-            for (shift shift : workSchedual) {
+            for (Shift shift : workSchedual) {
                 writer.write(shift.toCSV());
                 writer.newLine();
             }
@@ -66,7 +64,7 @@ public class Schedule {
 
     public void printWorkSchedule(){
         for(int i = 0; i < workSchedual.size(); i++){
-            shift temp = workSchedual.get(i);
+            Shift temp = workSchedual.get(i);
             System.out.println(temp.getDate() + "-" + temp.getStartTime() + " " + temp.getEndTime());
         }
     }

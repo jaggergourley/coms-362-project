@@ -28,7 +28,7 @@ public class Manager extends Employee{
         inventory.swapStore(item.getName(), newStoreId);
     }
 
-    public void addShiftToEmployee(Employee employee, shift shift) {
+    public void addShiftToEmployee(Employee employee, Shift shift) {
         employee.getWorkSchedule().addShift(shift);  // Assuming Employee has getSchedule method
     }
 

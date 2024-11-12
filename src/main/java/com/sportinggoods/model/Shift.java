@@ -1,19 +1,19 @@
 package com.sportinggoods.model;
 
-public class shift {
+public class Shift {
 
     private int date;
     private String startTime;
     private String endTime;
 
     // Constructor
-    public shift(int date, String startTime, String endTime){
+    public Shift(int date, String startTime, String endTime){
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
     }
 
-    public shift(){
+    public Shift(){
         // read from csv
     }
 
@@ -45,7 +45,7 @@ public class shift {
         return date + "," + startTime + "," + endTime;
     }
 
-    public static shift fromCSV(String csvLine) {
+    public static Shift fromCSV(String csvLine) {
         String[] tokens = csvLine.split(",");
         if (tokens.length != 3) {
             return null;  // Invalid format
@@ -53,7 +53,7 @@ public class shift {
         int date = Integer.parseInt(tokens[0]);
         String startTime = tokens[1];
         String startEnd = tokens[2];
-        return new shift(date, startTime, startEnd);
+        return new Shift(date, startTime, startEnd);
     }
     
 }

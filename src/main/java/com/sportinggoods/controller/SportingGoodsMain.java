@@ -16,12 +16,21 @@ public class SportingGoodsMain {
     private static SupplierOrderRepository orderRepo;
     private static SupplierController supplierController;
 
+    // Item-related controllers and repositories
+    private static PricingController pricingController;
+    private static ItemRepository itemRepository;
+
+    // Gift card-related controllers and repositories
+    private static GiftCardRepository giftCardRepository;
+    private static GiftCardController giftCardController;
+
     // Cashier-related controllers and repositories
     private static CashierController cashierController;
     private static Inventory inventory;
     private static ReceiptRepository receiptRepo;
     private static RegisterController registerController;
 
+    // Employee and Schedule
     private static Employee employee;
     private static Schedule schedule;
 
@@ -38,9 +47,13 @@ public class SportingGoodsMain {
         supplierRepo = new SupplierRepository();
         orderRepo = new SupplierOrderRepository();
         supplierController = new SupplierController(supplierRepo, orderRepo);
+        itemRepository = new ItemRepository();
+        pricingController = new PricingController(itemRepository);
+        giftCardRepository = new GiftCardRepository(new ArrayList<>());
+        giftCardController = new GiftCardController(giftCardRepository);
 
         schedule = new Schedule();
-        employee = new Employee("mason", 1, schedule);
+        employee = new Employee("Mason", 1, schedule);
     }
 
     /**
@@ -103,9 +116,11 @@ public class SportingGoodsMain {
             System.out.println("2. Place Supplier Order");
             System.out.println("3. View All Suppliers");
             System.out.println("4. View All Supplier Orders");
-            System.out.println("5. UpdateInvetory");
-            System.out.println("6. Manage work schedule");
-            System.out.println("7. Back to Main Menu");
+            System.out.println("5. Adjust Item Price");
+            System.out.println("6. Update Inventory");
+            System.out.println("7. Manage Gift Cards");
+            System.out.println("8. Manage Work Schedule");
+            System.out.println("9. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine();
@@ -124,12 +139,18 @@ public class SportingGoodsMain {
                     viewAllSupplierOrders();
                     break;
                 case "5":
-                    updateInventory();
+                    adjustPriceMenu(); // Call the adjust price method
                     break;
                 case "6":
-                    manageShifts();
+                    updateInventory(); // Call the update inventory method
                     break;
                 case "7":
+                    manageGiftCards(); // Call the manage gift cards method
+                    break;
+                case "8":
+                    manageShifts(); // Call the manage shifts method
+                    break;
+                case "9":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -145,7 +166,9 @@ public class SportingGoodsMain {
             System.out.println("\nCashier Menu:");
             System.out.println("1. Process Sale");
             System.out.println("2. Handle Return");
-            System.out.println("3. Back to Main Menu");
+            System.out.println("3. Sell Gift Card");
+            System.out.println("4. Redeem Gift Card");
+            System.out.println("5. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine().trim();
@@ -158,6 +181,12 @@ public class SportingGoodsMain {
                     handleReturn();
                     break;
                 case "3":
+                    sellGiftCardMenu();
+                    break;
+                case "4":
+                    redeemGiftCardMenu();
+                    break;
+                case "5":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -333,6 +362,101 @@ public class SportingGoodsMain {
         for (SupplierOrder order : orders) {
             System.out.println(order);
         }
+    }
+
+    /**
+     * Manager Functionality: Adjust Item Price
+     */
+    private static void adjustPriceMenu() {
+        System.out.print("\nEnter the name of the item to adjust the price: ");
+        String itemName = scanner.nextLine().trim();
+
+        Optional<Item> itemOpt = itemRepository.findByName(itemName);
+        if (itemOpt.isEmpty()) {
+            System.out.println("Error: Item not found. Returning to Manager Menu.");
+            return;
+        }
+
+        double newPrice = -1;
+        while (newPrice <= 0) {
+            System.out.print("Enter the new price: ");
+            try {
+                newPrice = Double.parseDouble(scanner.nextLine().trim());
+                if (newPrice <= 0) {
+                    System.out.println("Error: Price must be greater than 0. Please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Invalid price format. Please enter a valid number.");
+            }
+        }
+
+        String result = pricingController.adjustPrice(itemName, newPrice);
+        System.out.println(result);
+    }
+
+    /**
+     * Manager Functionality: Manage Gift Cards
+     */
+    private static void manageGiftCards() {
+        while (true) {
+            System.out.println("\nGift Card Management:");
+            System.out.println("1. Sell New Gift Card");
+            System.out.println("2. Redeem Gift Card");
+            System.out.println("3. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    sellGiftCardMenu();
+                    break;
+                case "2":
+                    redeemGiftCardMenu();
+                    break;
+                case "3":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /**
+     * Sell a new gift card.
+     */
+    private static void sellGiftCardMenu() {
+        System.out.print("\nEnter the amount for the new gift card: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid amount format. Please enter a valid number.");
+            return;
+        }
+
+        String result = giftCardController.sellGiftCard(amount);
+        System.out.println(result);
+    }
+
+    /**
+     * Redeem an existing gift card.
+     */
+    private static void redeemGiftCardMenu() {
+        System.out.print("\nEnter the gift card code: ");
+        String code = scanner.nextLine().trim();
+
+        System.out.print("Enter the amount to redeem: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid amount format. Please enter a valid number.");
+            return;
+        }
+
+        String result = giftCardController.redeemGiftCard(code, amount);
+        System.out.println(result);
     }
 
     /**
@@ -617,12 +741,15 @@ public class SportingGoodsMain {
         }
     }
 
+    /**
+     * Manager Functionality: Update Inventory
+     */
     private static void updateInventory() {
         System.out.println();
         System.out.println("Current Inventory:");
         inventory.printInventory();
         System.out.println("------------------");
-        System.out.println("select Inventory operation");
+        System.out.println("Select Inventory Operation");
         System.out.println("------------------");
         System.out.println("1. Add item");
         System.out.println("2. Delete item");
@@ -635,27 +762,27 @@ public class SportingGoodsMain {
 
         switch (choice) {
             case "1":
-                 System.out.print("Enter item name: ");
-                 String name = scanner.nextLine();
+                System.out.print("Enter item name: ");
+                String name = scanner.nextLine();
 
-                 System.out.print("Enter item price: ");
-                 double price = scanner.nextDouble();
-                 scanner.nextLine();
+                System.out.print("Enter item price: ");
+                double price = scanner.nextDouble();
+                scanner.nextLine();
 
-                 System.out.print("Enter item Department: ");
-                 String department = scanner.nextLine();
- 
-                 System.out.print("Enter item Quantity: ");
-                 int quantity = scanner.nextInt();
+                System.out.print("Enter item Department: ");
+                String department = scanner.nextLine();
 
-                 System.out.print("Enter item Store ID: ");
-                 int storeID = scanner.nextInt();
-                 scanner.nextLine(); // Consume the newline character
- 
-                 // Create a new Item with the user input
-                 Item newItem = new Item(name, price, department, quantity, storeID);
+                System.out.print("Enter item Quantity: ");
+                int quantity = scanner.nextInt();
 
-                 inventory.addItem(newItem);
+                System.out.print("Enter item Store ID: ");
+                int storeID = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+
+                // Create a new Item with the user input
+                Item newItem = new Item(name, price, department, quantity, storeID);
+
+                inventory.addItem(newItem);
 
                 System.out.println("Updated Inventory: ");
                 inventory.printInventory();
@@ -706,19 +833,20 @@ public class SportingGoodsMain {
                         case "+":
                             System.out.print("Enter item name: ");
                             name = scanner.nextLine();
-        
+
                             System.out.print("Enter item price: ");
                             price = scanner.nextDouble();
                             scanner.nextLine();
-        
+
                             System.out.print("Enter item Department: ");
                             department = scanner.nextLine();
-        
+
                             System.out.print("Enter item Quantity: ");
                             quantity = scanner.nextInt();
-        
+
                             System.out.print("Enter item Store ID: ");
                             storeID = scanner.nextInt();
+                            scanner.nextLine();
 
                             newItem = new Item(name, price, department, quantity, storeID);
                             itemList.add(newItem);
@@ -726,9 +854,9 @@ public class SportingGoodsMain {
                         case "x":
                             x = 1;
                             break;
-                    
+
                         default:
-                            System.out.println("Not a option");
+                            System.out.println("Not an option");
                             break;
                     }
                 }
@@ -739,48 +867,49 @@ public class SportingGoodsMain {
                 System.out.println();
                 break;
             case "4":
-            itemList = new ArrayList<>();
-            x = 0;
-            while(x == 0){
-                System.out.println("Current item List: ");
-                for(int i = 0; i < itemList.size(); i++){
-                    System.out.println(itemList.get(i).toString());
-                }
-                System.out.println();
+                itemList = new ArrayList<>();
+                x = 0;
+                while(x == 0){
+                    System.out.println("Current item List: ");
+                    for(int i = 0; i < itemList.size(); i++){
+                        System.out.println(itemList.get(i).toString());
+                    }
+                    System.out.println();
 
-                System.out.println("+ - add item to list");
-                System.out.println("x - finished adding items");
-                System.out.print("Enter choice: ");
-                choice = scanner.nextLine();
+                    System.out.println("+ - add item to list");
+                    System.out.println("x - finished adding items");
+                    System.out.print("Enter choice: ");
+                    choice = scanner.nextLine();
 
-                switch (choice) {
-                    case "+":
-                        System.out.print("Enter item name: ");
-                        name = scanner.nextLine();
-    
-                        System.out.print("Enter item price: ");
-                        price = scanner.nextDouble();
-                        scanner.nextLine();
-    
-                        System.out.print("Enter item Department: ");
-                        department = scanner.nextLine();
-    
-                        System.out.print("Enter item Quantity: ");
-                        quantity = scanner.nextInt();
-    
-                        System.out.print("Enter item Store ID: ");
-                        storeID = scanner.nextInt();
+                    switch (choice) {
+                        case "+":
+                            System.out.print("Enter item name: ");
+                            name = scanner.nextLine();
 
-                        newItem = new Item(name, price, department, quantity, storeID);
-                        itemList.add(newItem);
-                        break;
-                    case "x":
-                        x = 1;
-                        break;
-                
-                    default:
-                        System.out.println("Not a option");
-                        break;
+                            System.out.print("Enter item price: ");
+                            price = scanner.nextDouble();
+                            scanner.nextLine();
+
+                            System.out.print("Enter item Department: ");
+                            department = scanner.nextLine();
+
+                            System.out.print("Enter item Quantity: ");
+                            quantity = scanner.nextInt();
+
+                            System.out.print("Enter item Store ID: ");
+                            storeID = scanner.nextInt();
+                            scanner.nextLine();
+
+                            newItem = new Item(name, price, department, quantity, storeID);
+                            itemList.add(newItem);
+                            break;
+                        case "x":
+                            x = 1;
+                            break;
+
+                        default:
+                            System.out.println("Not an option");
+                            break;
                     }
                 }
                 inventory.deleteItems(itemList);
@@ -795,6 +924,7 @@ public class SportingGoodsMain {
 
                 System.out.print("Enter item's new Store ID: ");
                 storeID = scanner.nextInt();
+                scanner.nextLine();
 
                 inventory.swapStore(name, storeID);
                 System.out.println("Updated Inventory: ");
@@ -802,73 +932,64 @@ public class SportingGoodsMain {
                 System.out.println();
                 break;
             default:
-                System.out.println("Not a option");
+                System.out.println("Not an option");
                 break;
         }
-
-
     }
 
-    public static void manageShifts() {
-        Scanner scanner = new Scanner(System.in);
-
-        // Simulate a simple shift list (this can be an actual data structure like an ArrayList)
-        // For now, we're just printing messages to indicate the shift operations.
+    /**
+     * Manager Functionality: Manage Work Shifts
+     */
+    private static void manageShifts() {
         while (true) {
+            System.out.println("\nWork Shift Management:");
             System.out.println("1. Add a Work Shift");
             System.out.println("2. Remove a Work Shift");
-            System.out.println("0. Exit");
-
+            System.out.println("3. Back to Manager Menu");
             System.out.print("Please select an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // Consume the newline
+            String choice = scanner.nextLine().trim();
 
             switch (choice) {
-                case 1:
+                case "1":
                     // Add a Work Shift
-                    System.out.print("Enter the date of shift(DD): ");
-                    int date = scanner.nextInt();
-                    scanner.nextLine();
+                    System.out.print("Enter the date of shift (DD): ");
+                    int date = Integer.parseInt(scanner.nextLine().trim());
 
                     System.out.print("Enter the start time of the shift (HH:mm): ");
-                    String startTime = scanner.nextLine();
-                    
-                    System.out.print("Enter the end time of the shift (HH:mm): ");
-                    String endTime = scanner.nextLine();
+                    String startTime = scanner.nextLine().trim();
 
-                    shift s = new shift(date, startTime, endTime);
+                    System.out.print("Enter the end time of the shift (HH:mm): ");
+                    String endTime = scanner.nextLine().trim();
+
+                    Shift s = new Shift(date, startTime, endTime);
                     employee.getWorkSchedule().addShift(s);
 
-                    // Simulate adding the shift (replace with actual logic in your code)
                     System.out.println("Shift added: " + startTime + " to " + endTime);
                     break;
 
-                case 2:
-                    System.out.print("Enter the date of shift to remove(DD): ");
-                    int dateToRemove = scanner.nextInt();
-                    scanner.nextLine();
+                case "2":
+                    System.out.print("Enter the date of shift to remove (DD): ");
+                    int dateToRemove = Integer.parseInt(scanner.nextLine().trim());
 
                     // Remove a Work Shift
                     System.out.print("Enter the start time of the shift to remove (HH:mm): ");
-                    String startTimeToRemove = scanner.nextLine();
+                    String startTimeToRemove = scanner.nextLine().trim();
 
                     System.out.print("Enter the end time of the shift to remove (HH:mm): ");
-                    String endTimeToRemove = scanner.nextLine();
+                    String endTimeToRemove = scanner.nextLine().trim();
 
-                    s = new shift(dateToRemove, startTimeToRemove, endTimeToRemove);
+                    s = new Shift(dateToRemove, startTimeToRemove, endTimeToRemove);
                     employee.getWorkSchedule().deleteShift(s);
-                    System.out.println("Shift removed with date: "+ dateToRemove + ", start time: " + startTimeToRemove + " and End time: " + endTimeToRemove);
+                    System.out.println("Shift removed with date: "+ dateToRemove + ", start time: " + startTimeToRemove + " and end time: " + endTimeToRemove);
                     break;
 
-                case 0:
-                    System.out.println("Exiting Shift Management.");
-                    scanner.close();
-                    return;  // Exit the method and program
+                case "3":
+                    return;  // Exit to Manager Menu
 
                 default:
                     System.out.println("Invalid choice, please try again.");
                     break;
             }
         }
-}
+    }
 }
