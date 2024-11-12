@@ -106,7 +106,7 @@ public class SportingGoodsMain {
             System.out.println("2. Place Supplier Order");
             System.out.println("3. View All Suppliers");
             System.out.println("4. View All Supplier Orders");
-            System.out.println("5. Adjust Item Price"); // New option
+            System.out.println("5. Adjust Item Price");
             System.out.println("6. Manage Gift Cards");
             System.out.println("7. Back to Main Menu");
             System.out.print("Enter your choice: ");
@@ -127,7 +127,7 @@ public class SportingGoodsMain {
                     viewAllSupplierOrders();
                     break;
                 case "5":
-                    adjustPriceMenu(); // Call the new method
+                    adjustPriceMenu();
                     break;
                 case "6":
                     manageGiftCards();
