@@ -1,12 +1,14 @@
 package com.sportinggoods.controller;
 
-import src.main.java.com.sportinggoods.model.Inventory;
-import src.main.java.com.sportinggoods.model.Item;
-import src.main.java.com.sportinggoods.model.ShippingOrder;
-import src.main.java.com.sportinggoods.repository.ShippingOrderRepository;
+import com.sportinggoods.model.Inventory;
+import com.sportinggoods.model.Item;
+import com.sportinggoods.model.ShippingOrder;
+import com.sportinggoods.repository.ShippingOrderRepository;
 
 import java.time.LocalDate;
 import java.util.*;
+
+
 
 public class ShippingController {
 

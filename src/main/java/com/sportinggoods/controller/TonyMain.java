@@ -23,7 +23,7 @@ public class TonyMain {
      * Initializes all necessary components of the system.
      */
     private static void initializeSystem() {
-        Cashier cashier = new Cashier("John Doe", 101); // Sample cashier
+        Cashier cashier = new Cashier("John Doe", 101, null); // Sample cashier
         inventory = new Inventory();
         Register register = new Register();
         receiptRepo = new ReceiptRepository();

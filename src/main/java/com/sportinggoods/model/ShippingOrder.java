@@ -1,4 +1,4 @@
-package src.main.java.com.sportinggoods.model;
+package com.sportinggoods.model;
 
 import com.sportinggoods.model.Item;
 
@@ -166,7 +166,6 @@ public class ShippingOrder {
                 int quantity = Integer.parseInt(itemData[3]);
 
                 Item item = new Item(name, price, department, quantity, 1);
-                Item item = new Item(name, price, department, quantity, 0);
                 items.put(item, quantity); // Add the item and its quantity to the map
             }
         }
