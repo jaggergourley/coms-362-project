@@ -228,6 +228,7 @@ public class ShippingOrder {
             } catch (NumberFormatException e) {
                 System.out.println("Error parsing item details: " + e.getMessage());
                 continue;
+         
             }
 
             // Create the Item object with parsed details
