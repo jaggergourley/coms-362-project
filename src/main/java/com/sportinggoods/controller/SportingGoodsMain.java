@@ -2,8 +2,6 @@ package com.sportinggoods.controller;
 
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
-import com.sportinggoods.util.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,6 +13,10 @@ public class SportingGoodsMain {
     private static SupplierRepository supplierRepo;
     private static SupplierOrderRepository orderRepo;
     private static SupplierController supplierController;
+
+    // Item-related controllers and repositories
+    private static PricingController pricingController;
+    private static ItemRepository itemRepository;
 
     // Cashier-related controllers and repositories
     private static CashierController cashierController;
@@ -35,6 +37,8 @@ public class SportingGoodsMain {
         supplierRepo = new SupplierRepository();
         orderRepo = new SupplierOrderRepository();
         supplierController = new SupplierController(supplierRepo, orderRepo);
+        itemRepository = new ItemRepository();
+        pricingController = new PricingController(itemRepository);
     }
 
     /**
@@ -97,11 +101,12 @@ public class SportingGoodsMain {
             System.out.println("2. Place Supplier Order");
             System.out.println("3. View All Suppliers");
             System.out.println("4. View All Supplier Orders");
-            System.out.println("5. Back to Main Menu");
+            System.out.println("5. Adjust Item Price"); // New option
+            System.out.println("6. Back to Main Menu");
             System.out.print("Enter your choice: ");
-
+    
             String choice = scanner.nextLine();
-
+    
             switch (choice) {
                 case "1":
                     coordinateSuppliers();
@@ -116,6 +121,9 @@ public class SportingGoodsMain {
                     viewAllSupplierOrders();
                     break;
                 case "5":
+                    adjustPriceMenu(); // Call the new method
+                    break;
+                case "6":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -319,6 +327,36 @@ public class SportingGoodsMain {
         for (SupplierOrder order : orders) {
             System.out.println(order);
         }
+    }
+
+    /**
+     * Manager Functionality: Adjust Item Price
+     */
+    private static void adjustPriceMenu() {
+        System.out.print("\nEnter the name of the item to adjust the price: ");
+        String itemName = scanner.nextLine().trim();
+
+        Optional<Item> itemOpt = itemRepository.findByName(itemName);
+        if (itemOpt.isEmpty()) {
+            System.out.println("Error: Item not found. Returning to Manager Menu.");
+            return;
+        }
+
+        double newPrice = -1;
+        while (newPrice <= 0) {
+            System.out.print("Enter the new price: ");
+            try {
+                newPrice = Double.parseDouble(scanner.nextLine().trim());
+                if (newPrice <= 0) {
+                    System.out.println("Error: Price must be greater than 0. Please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Invalid price format. Please enter a valid number.");
+            }
+        }
+
+        String result = pricingController.adjustPrice(itemName, newPrice);
+        System.out.println(result);
     }
 
     /**
