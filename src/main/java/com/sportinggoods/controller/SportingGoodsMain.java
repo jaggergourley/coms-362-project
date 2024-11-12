@@ -2,8 +2,6 @@ package com.sportinggoods.controller;
 
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
-import com.sportinggoods.util.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,6 +13,14 @@ public class SportingGoodsMain {
     private static SupplierRepository supplierRepo;
     private static SupplierOrderRepository orderRepo;
     private static SupplierController supplierController;
+
+    // Item-related controllers and repositories
+    private static PricingController pricingController;
+    private static ItemRepository itemRepository;
+
+    // Gift card-related controllers and repositories
+    private static GiftCardRepository giftCardRepository;
+    private static GiftCardController giftCardController;
 
     // Cashier-related controllers and repositories
     private static CashierController cashierController;
@@ -35,6 +41,10 @@ public class SportingGoodsMain {
         supplierRepo = new SupplierRepository();
         orderRepo = new SupplierOrderRepository();
         supplierController = new SupplierController(supplierRepo, orderRepo);
+        itemRepository = new ItemRepository();
+        pricingController = new PricingController(itemRepository);
+        giftCardRepository = new GiftCardRepository(new ArrayList<>());
+        giftCardController = new GiftCardController(giftCardRepository);
     }
 
     /**
@@ -97,11 +107,13 @@ public class SportingGoodsMain {
             System.out.println("2. Place Supplier Order");
             System.out.println("3. View All Suppliers");
             System.out.println("4. View All Supplier Orders");
-            System.out.println("5. Back to Main Menu");
+            System.out.println("5. Adjust Item Price"); // New option
+            System.out.println("6. Manage Gift Cards");
+            System.out.println("7. Back to Main Menu");
             System.out.print("Enter your choice: ");
-
+    
             String choice = scanner.nextLine();
-
+    
             switch (choice) {
                 case "1":
                     coordinateSuppliers();
@@ -116,6 +128,12 @@ public class SportingGoodsMain {
                     viewAllSupplierOrders();
                     break;
                 case "5":
+                    adjustPriceMenu(); // Call the new method
+                    break;
+                case "6":
+                    manageGiftCards();
+                    break;
+                case "7":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -131,7 +149,9 @@ public class SportingGoodsMain {
             System.out.println("\nCashier Menu:");
             System.out.println("1. Process Sale");
             System.out.println("2. Handle Return");
-            System.out.println("3. Back to Main Menu");
+            System.out.println("3. Sell Gift Card");
+            System.out.println("4. Redeem Gift Card");
+            System.out.println("5. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine().trim();
@@ -144,6 +164,12 @@ public class SportingGoodsMain {
                     handleReturn();
                     break;
                 case "3":
+                    sellGiftCardMenu();
+                    break;
+                case "4":
+                    redeemGiftCardMenu();
+                    break;
+                case "5":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -320,6 +346,101 @@ public class SportingGoodsMain {
             System.out.println(order);
         }
     }
+
+    /**
+     * Manager Functionality: Adjust Item Price
+     */
+    private static void adjustPriceMenu() {
+        System.out.print("\nEnter the name of the item to adjust the price: ");
+        String itemName = scanner.nextLine().trim();
+
+        Optional<Item> itemOpt = itemRepository.findByName(itemName);
+        if (itemOpt.isEmpty()) {
+            System.out.println("Error: Item not found. Returning to Manager Menu.");
+            return;
+        }
+
+        double newPrice = -1;
+        while (newPrice <= 0) {
+            System.out.print("Enter the new price: ");
+            try {
+                newPrice = Double.parseDouble(scanner.nextLine().trim());
+                if (newPrice <= 0) {
+                    System.out.println("Error: Price must be greater than 0. Please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Invalid price format. Please enter a valid number.");
+            }
+        }
+
+        String result = pricingController.adjustPrice(itemName, newPrice);
+        System.out.println(result);
+    }
+
+    /**
+     * Manager Functionality: Manage Gift Cards
+     */
+    private static void manageGiftCards() {
+        while (true) {
+            System.out.println("\nGift Card Management:");
+            System.out.println("1. Sell New Gift Card");
+            System.out.println("2. Redeem Gift Card");
+            System.out.println("3. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+            
+            String choice = scanner.nextLine().trim();
+            
+            switch (choice) {
+                case "1":
+                    sellGiftCardMenu();
+                    break;
+                case "2":
+                    redeemGiftCardMenu();
+                    break;
+                case "3":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /**
+     * Sell a new gift card.
+     */
+    private static void sellGiftCardMenu() {
+        System.out.print("\nEnter the amount for the new gift card: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid amount format. Please enter a valid number.");
+            return;
+        }
+
+        String result = giftCardController.sellGiftCard(amount);
+        System.out.println(result);
+    }
+
+    /**
+     * Redeem an existing gift card.
+     */
+    private static void redeemGiftCardMenu() {
+        System.out.print("\nEnter the gift card code: ");
+        String code = scanner.nextLine().trim();
+
+        System.out.print("Enter the amount to redeem: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid amount format. Please enter a valid number.");
+            return;
+        }
+
+        String result = giftCardController.redeemGiftCard(code, amount);
+        System.out.println(result);
+    }   
 
     /**
      * Manager Functionality: Update Supplier Information
