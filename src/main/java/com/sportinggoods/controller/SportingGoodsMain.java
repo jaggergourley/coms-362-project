@@ -2,8 +2,6 @@ package com.sportinggoods.controller;
 
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
-import com.sportinggoods.util.*;
-
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,10 +14,6 @@ public class SportingGoodsMain {
     private static SupplierRepository supplierRepo;
     private static SupplierOrderRepository orderRepo;
     private static SupplierController supplierController;
-
-    // Item-related controllers and repositories
-    private static PricingController pricingController;
-    private static ItemRepository itemRepository;
 
     // Gift card-related controllers and repositories
     private static GiftCardRepository giftCardRepository;
@@ -39,6 +33,9 @@ public class SportingGoodsMain {
     private static Employee employee;
     private static Schedule schedule;
 
+    // Pricing-related controllers
+    private static PricingController pricingController;
+
     public static void main(String[] args) {
         initializeRepositories();
         initializeCashierSystem();
@@ -53,9 +50,7 @@ public class SportingGoodsMain {
         supplierRepo = new SupplierRepository();
         orderRepo = new SupplierOrderRepository();
         supplierController = new SupplierController(supplierRepo, orderRepo);
-        itemRepository = new ItemRepository();
-        pricingController = new PricingController(itemRepository);
-        giftCardRepository = new GiftCardRepository(new ArrayList<>());
+        giftCardRepository = new GiftCardRepository();
         giftCardController = new GiftCardController(giftCardRepository);
 
         schedule = new Schedule();
@@ -75,6 +70,8 @@ public class SportingGoodsMain {
         receiptRepo = new ReceiptRepository();
         registerController = new RegisterController(register);
         cashierController = new CashierController(cashier, inventory, registerController, receiptRepo);
+
+        pricingController = new PricingController(inventory); //Used by manager to adjust prices
     }
 
     /**
@@ -431,30 +428,77 @@ public class SportingGoodsMain {
      * Manager Functionality: Adjust Item Price
      */
     private static void adjustPriceMenu() {
-        System.out.print("\nEnter the name of the item to adjust the price: ");
-        String itemName = scanner.nextLine().trim();
-
-        Optional<Item> itemOpt = itemRepository.findByName(itemName);
-        if (itemOpt.isEmpty()) {
-            System.out.println("Error: Item not found. Returning to Manager Menu.");
-            return;
-        }
-
-        double newPrice = -1;
-        while (newPrice <= 0) {
-            System.out.print("Enter the new price: ");
+        while (true) {
+            System.out.println("\nAdjust Item Price Menu:");
+            System.out.println("1. Search by Name");
+            System.out.println("2. Search by Department");
+            System.out.println("3. Search by Store ID");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+            
+            String searchChoice = scanner.nextLine().trim();
+            String criteria = switch (searchChoice) {
+                case "1" -> "name";
+                case "2" -> "department";
+                case "3" -> "storeid";
+                case "4" -> {
+                    System.out.println("Returning to Manager Menu.");
+                    yield null;
+                }
+                default -> {
+                    System.out.println("Invalid choice. Please try again.");
+                    yield null;
+                }
+            };
+            if (criteria == null) continue;
+    
+            System.out.print("Enter the search value: ");
+            String value = scanner.nextLine().trim();
+    
+            List<Item> foundItems = pricingController.searchItems(criteria, value);
+    
+            if (foundItems.isEmpty()) {
+                System.out.println("No items found with the specified criteria. Please try another search.");
+                continue;
+            }
+    
+            System.out.println("\nFound Items:");
+            for (int i = 0; i < foundItems.size(); i++) {
+                System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
+            }
+    
+            System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
+            int itemIndex;
             try {
-                newPrice = Double.parseDouble(scanner.nextLine().trim());
-                if (newPrice <= 0) {
-                    System.out.println("Error: Price must be greater than 0. Please try again.");
+                itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (itemIndex == -1) continue;
+                if (itemIndex < 0 || itemIndex >= foundItems.size()) {
+                    System.out.println("Invalid selection. Returning to search menu.");
+                    continue;
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Error: Invalid price format. Please enter a valid number.");
+                System.out.println("Error: Please enter a valid number.");
+                continue;
             }
+    
+            Item selectedItem = foundItems.get(itemIndex);
+            double newPrice = -1;
+            while (newPrice <= 0) {
+                System.out.print("Enter the new price: ");
+                try {
+                    newPrice = Double.parseDouble(scanner.nextLine().trim());
+                    if (newPrice <= 0) {
+                        System.out.println("Error: Price must be greater than 0. Please try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: Invalid price format. Please enter a valid number.");
+                }
+            }
+    
+            String result = pricingController.adjustPrice(selectedItem, newPrice);
+            System.out.println(result);
+            break;
         }
-
-        String result = pricingController.adjustPrice(itemName, newPrice);
-        System.out.println(result);
     }
 
     /**
@@ -465,7 +509,8 @@ public class SportingGoodsMain {
             System.out.println("\nGift Card Management:");
             System.out.println("1. Sell New Gift Card");
             System.out.println("2. Redeem Gift Card");
-            System.out.println("3. Back to Manager Menu");
+            System.out.println("3. View Gift Card Details");
+            System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
             String choice = scanner.nextLine().trim();
             switch (choice) {
@@ -476,6 +521,9 @@ public class SportingGoodsMain {
                     redeemGiftCardMenu();
                     break;
                 case "3":
+                    viewGiftCardDetailsMenu();
+                    break;
+                case "4":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -495,8 +543,11 @@ public class SportingGoodsMain {
             System.out.println("Error: Invalid amount format. Please enter a valid number.");
             return;
         }
-
-        String result = giftCardController.sellGiftCard(amount);
+    
+        System.out.print("Enter customer information (optional): ");
+        String customerInfo = scanner.nextLine().trim();
+    
+        String result = giftCardController.sellGiftCard(amount, customerInfo);
         System.out.println(result);
     }
 
@@ -518,6 +569,17 @@ public class SportingGoodsMain {
 
         String result = giftCardController.redeemGiftCard(code, amount);
         System.out.println(result);
+    }
+
+    /**
+     * View details of a gift card.
+     */
+    private static void viewGiftCardDetailsMenu() {
+        System.out.print("\nEnter the gift card code to view details: ");
+        String code = scanner.nextLine().trim();
+    
+        String details = giftCardController.viewGiftCardDetails(code);
+        System.out.println(details);
     }
 
     /**

@@ -1,49 +1,59 @@
 package com.sportinggoods.controller;
 
+import com.sportinggoods.model.Inventory;
 import com.sportinggoods.model.Item;
-import com.sportinggoods.repository.ItemRepository;
-
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PricingController {
-    private ItemRepository itemRepository;
-    private static final double AUTHORIZATION_THRESHOLD = 1000.0; // Example threshold
+    private Inventory inventory;
+    private static final double AUTHORIZATION_THRESHOLD = 1000.0;
 
-    public PricingController(ItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
+    public PricingController(Inventory inventory) {
+        this.inventory = inventory;
     }
 
-    public String adjustPrice(String itemName, double newPrice) {
-        Optional<Item> itemOpt = itemRepository.findByName(itemName);
-
-        if (itemOpt.isEmpty()) {
-            return "Error: Item not found.";
-        }
-
-        Item item = itemOpt.get();
-
-        if (newPrice <= 0) {
-            return "Error: Invalid price. Price must be greater than 0.";
-        }
-
-        if (newPrice > AUTHORIZATION_THRESHOLD) {
-            boolean authorized = requestAuthorization();
-            if (!authorized) {
-                return "Error: Authorization required for high-price adjustments.";
+    public List<Item> searchItems(String criteria, String value) {
+        return switch (criteria.toLowerCase()) {
+            case "name" -> {
+                Item itemByName = inventory.getItem(value);
+                yield itemByName != null ? List.of(itemByName) : List.of();
             }
+            case "department" -> inventory.getItems().values().stream()
+                    .filter(item -> item.getDepartment().equalsIgnoreCase(value))
+                    .collect(Collectors.toList());
+            case "storeid" -> {
+                try {
+                    int storeID = Integer.parseInt(value);
+                    yield inventory.getItems().values().stream()
+                            .filter(item -> item.getStoreID() == storeID)
+                            .collect(Collectors.toList());
+                } catch (NumberFormatException e) {
+                    yield List.of();
+                }
+            }
+            default -> List.of();
+        };
+    }
+
+    public String adjustPrice(Item item, double newPrice) {
+        if (newPrice <= 0) {
+            return "Error: Price must be greater than 0.";
+        }
+
+        if (newPrice > AUTHORIZATION_THRESHOLD && !requestAuthorization()) {
+            return "Error: Authorization required for high-price adjustments.";
         }
 
         item.setPrice(newPrice);
-        itemRepository.save(item);
-
+        inventory.saveItemsToFile(); // Save updated inventory to file
         logPriceAdjustment(item);
 
         return "Price adjusted successfully for " + item.getName() + ". New price: $" + item.getPrice();
     }
 
     private boolean requestAuthorization() {
-        // Authorization logic placeholder
-        return true; // Always granted
+        return true;
     }
 
     private void logPriceAdjustment(Item item) {
