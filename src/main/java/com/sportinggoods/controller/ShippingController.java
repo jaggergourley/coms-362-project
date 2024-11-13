@@ -8,6 +8,8 @@ import com.sportinggoods.repository.ShippingOrderRepository;
 import java.time.LocalDate;
 import java.util.*;
 
+
+
 public class ShippingController {
 
     private ShippingOrderRepository orderRepo;
@@ -61,25 +63,33 @@ public class ShippingController {
 
         boolean available = false;
         Map<Item, Integer> shippedItems = new HashMap<>();
+        Map<Item, Integer> unfinishedShippingOrder = new HashMap<>();
 
         for(Map.Entry<Item, Integer> entry : order.getItems().entrySet()){
             Item item = entry.getKey();
             int quantity = entry.getValue();
+
+
             if(i.checkAvailability(item.getName(), quantity)){
-                i.updateQuantity(item.getName(), item.getQuantity() - quantity);
+                i.updateQuantity(item.getName(), -quantity);
                 shippedItems.put(item, quantity);
+                System.out.println("Shipped " + item.getName() + ", Items Left: " + i.getItem(item.getName()).getQuantity());
             }
             else{
-                i.updateQuantity(item.getName(), 0);
-                int amountSendable = item.getQuantity();
+                int amountSendable = i.getItem(item.getName()).getQuantity();
+                i.updateQuantity(item.getName(), -i.getItem(item.getName()).getQuantity());
+                unfinishedShippingOrder.put(item, quantity - amountSendable);
                 shippedItems.put(item, amountSendable);
+                System.out.println(item.getName() + " only shipped " + amountSendable + "/" + quantity + ". The rest will be sent in another order from another store");
 
             }
         }
+
 
         if(shippedItems.isEmpty()){
             return false;
         }
+
 
         for(Map.Entry<Item, Integer> entry : order.getItems().entrySet()){
             for(Map.Entry<Item, Integer> shippedEntry : order.getItems().entrySet()){
@@ -87,7 +97,18 @@ public class ShippingController {
                     return orderRepo.updateOrderStatus(order.getOrderId(), "Shipped");
                 }
                 else{
-                    return orderRepo.updateOrderStatus(order.getOrderId(), "Partially Shipped");
+
+                    double newPrice = 0;
+
+
+
+                    for(Map.Entry<Item, Integer> price : unfinishedShippingOrder.entrySet()) {
+                        Item item = entry.getKey();
+
+                        newPrice += Math.round(item.getPrice() * item.getQuantity() * 100.0) / 100.0;  //might need to change
+                    }
+                    handleShippingOrder(order.getCustomerFirstName(), order.getCustomerLastName(), unfinishedShippingOrder, newPrice, order.getShippingAddress(), order.getCustomerEmail(), order.getCustomerPhoneNumber());
+                    return orderRepo.updateOrderStatus(order.getOrderId(), "Partially Shipped") && orderRepo.updateOrderQuantity(order.getOrderId(), shippedItems) && orderRepo.updateOrderPrice(order.getOrderId(), shippedItems);
                 }
             }
         }

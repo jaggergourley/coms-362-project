@@ -1,16 +1,27 @@
 package com.sportinggoods.model;
 
+import com.sportinggoods.controller.ShippingController;
+import com.sportinggoods.repository.ShippingOrderRepository;
+
 public class Shipper extends Employee {
     private boolean canShipOrders;
+
+    private ShippingController shippingController;
+
+    private ShippingOrderRepository shippingOrderRepository;
 
     public Shipper() {
         super();
     }
 
     // Constructor for Shipper with additional canShipOrders permission
-    public Shipper(String name, int id, boolean canShipOrders) {
-        super(name, id);
+
+
+    public Shipper(String name, int id, boolean canShipOrders, Schedule workSchedule, ShippingController cont) {
+        super(name, id, workSchedule);
+
         this.canShipOrders = canShipOrders;
+        this.shippingController = cont;
     }
 
     // Getter and Setter for canShipOrders
@@ -39,10 +50,12 @@ public class Shipper extends Employee {
     }
 
     // Method specific to Shipper role
-    public void shipOrder(int orderId) {
+    public void shipOrder(ShippingOrder shippingOrder, Inventory inventory) {
         if (canShipOrders) {
-            System.out.println("Shipper " + getName() + " is shipping order with ID: " + orderId);
-            // Insert additional shipping logic here
+            System.out.println("Shipper " + getName() + " is shipping order with ID: " + shippingOrder.getOrderId());
+            if(shippingController.processShippingOrder(shippingOrder, inventory)){
+                System.out.println(shippingOrder.getStatus());
+            }
         } else {
             System.out.println("Shipper " + getName() + " does not have permission to ship orders.");
         }

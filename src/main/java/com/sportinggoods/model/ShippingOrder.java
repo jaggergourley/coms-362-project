@@ -3,6 +3,7 @@ package com.sportinggoods.model;
 import com.sportinggoods.model.Item;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ShippingOrder {
@@ -118,59 +119,125 @@ public class ShippingOrder {
 
     // toCSV method for CSV representation
     public String toCSV() {
-        return orderId + "," + customerFirstName + "," + customerLastName + "," + itemsToCSV() + "," + totalPrice +
-                "," + shippingAddress + "," + customerEmail + "," + customerPhoneNumber + "," + orderDate + "," + status;
+        return orderId + "|" + customerFirstName + "|" + customerLastName + "|" + itemsToCSV() + "|" + totalPrice +
+                "|" + shippingAddress + "|" + customerEmail + "|" + customerPhoneNumber + "|" + orderDate + "|" + status;
     }
 
     // Helper method to convert items map to CSV format
     private String itemsToCSV() {
         StringBuilder itemsCSV = new StringBuilder();
         for (Map.Entry<Item, Integer> entry : items.entrySet()) {
-            itemsCSV.append(entry.getKey()).append(":").append(entry.getValue()).append(";");
+            Item item = entry.getKey();
+            int quantity = entry.getValue();
+
+            // Append item details in the format "name,price,department,quantity"
+            itemsCSV.append(item.getName())
+                    .append(",")
+                    .append(item.getPrice())
+                    .append(",")
+                    .append(item.getDepartment())
+                    .append(",")
+                    .append(quantity)
+                    .append(";");
         }
         return itemsCSV.toString();
     }
 
     // Create ShippingOrder from CSV
     public static ShippingOrder fromCSV(String csvLine) {
-        String[] tokens = csvLine.split(",");
-        if (tokens.length != 10) {
+        try {
+            // Split the line into 10 tokens by "|"
+            String[] tokens = csvLine.split("\\|", -1); // The -1 argument keeps empty tokens if present
+
+             //Ensure we have exactly 10 tokens
+//            if (tokens.length != 10) {
+//                //System.out.println("Error: Expected 10 tokens, got " + tokens.length);
+//                return null;
+//            }
+
+            // Parse items using the updated parseItems method
+            Map<Item, Integer> items = parseItems(tokens[3]);
+            if (items == null || items.isEmpty()) {
+                System.out.println("Error: Items could not be parsed.");
+                return null;
+            }
+
+            // Parse totalPrice
+            double totalPrice;
+            try {
+                totalPrice = Double.parseDouble(tokens[4]);
+            } catch (NumberFormatException e) {
+                System.out.println("Error parsing totalPrice: " + e.getMessage());
+                return null;
+            }
+
+            // Parse order date
+            LocalDate orderDate;
+            try {
+                orderDate = LocalDate.parse(tokens[8]);
+            } catch (Exception e) {
+                System.out.println("Error parsing orderDate: " + e.getMessage());
+                return null;
+            }
+
+            // Construct and return the ShippingOrder object
+            return new ShippingOrder(
+                    tokens[0],                // orderId
+                    tokens[1],                // customerFirstName
+                    tokens[2],                // customerLastName
+                    items,                    // items
+                    totalPrice,               // totalPrice
+                    tokens[5],                // shippingAddress
+                    tokens[6],                // customerEmail
+                    tokens[7],                // customerPhoneNumber
+                    orderDate,                // orderDate
+                    tokens[9]                 // status
+            );
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while parsing CSV: " + e.getMessage());
             return null;
         }
-        Map<Item, Integer> items = parseItems(tokens[3]);
-        return new ShippingOrder(
-                tokens[0],
-                tokens[1],
-                tokens[2],
-                items,
-                Double.parseDouble(tokens[4]),
-                tokens[5],
-                tokens[6],
-                tokens[7],
-                LocalDate.parse(tokens[8]),
-                tokens[9]
-        );
     }
+
 
     // Helper method to parse items from CSV format
     private static Map<Item, Integer> parseItems(String itemsCSV) {
-        Map<Item, Integer> items = new java.util.HashMap<>();
+        Map<Item, Integer> items = new HashMap<>();
         String[] itemEntries = itemsCSV.split(";"); // Each entry represents an item
 
         for (String entry : itemEntries) {
-            String[] itemData = entry.split(":");
-            if (itemData.length == 4) { // Ensure we have all required data (name, price, department, quantity)
-                String name = itemData[0];
-                double price = Double.parseDouble(itemData[1]);
-                String department = itemData[2];
-                int quantity = Integer.parseInt(itemData[3]);
+            if (entry.isEmpty()) continue; // Skip empty entries
 
-                Item item = new Item(name, price, department, quantity, 0);
-                items.put(item, quantity); // Add the item and its quantity to the map
+            // Split each item entry into name, price, department, and quantity
+            String[] itemData = entry.split(",");
+            if (itemData.length != 4) {
+                System.out.println("Error parsing item entry: " + entry);
+                continue;
             }
+
+            // Parse item details
+            String name = itemData[0].trim();
+            double price;
+            String department = itemData[2].trim();
+            int quantity;
+
+            try {
+                price = Double.parseDouble(itemData[1].trim());
+                quantity = Integer.parseInt(itemData[3].trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Error parsing item details: " + e.getMessage());
+                continue;
+         
+            }
+
+            // Create the Item object with parsed details
+            Item item = new Item(name, price, department, 0, 0); // Use 0 for inventory quantity and storeID by default
+            items.put(item, quantity);
         }
         return items;
     }
+
 
 }
 

@@ -2,6 +2,7 @@ package com.sportinggoods.controller;
 
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,17 +25,26 @@ public class SportingGoodsMain {
     private static ReceiptRepository receiptRepo;
     private static RegisterController registerController;
 
+    // Shipping-related repositories and controllers
+    private static ShippingOrderRepository shippingRepo;
+    private static ShippingController shippingController;
+
+    // Employee and Schedule
+    private static Employee employee;
+    private static Schedule schedule;
+
     // Pricing-related controllers
     private static PricingController pricingController;
 
     public static void main(String[] args) {
         initializeRepositories();
         initializeCashierSystem();
+        fillInventory(); // Initialize inventory with items
         mainMenu();
     }
 
     /**
-     * Initializes supplier repositories and controllers.
+     * Initializes repositories and controllers.
      */
     private static void initializeRepositories() {
         supplierRepo = new SupplierRepository();
@@ -42,13 +52,19 @@ public class SportingGoodsMain {
         supplierController = new SupplierController(supplierRepo, orderRepo);
         giftCardRepository = new GiftCardRepository();
         giftCardController = new GiftCardController(giftCardRepository);
+
+        schedule = new Schedule();
+        employee = new Employee("Mason", 1, schedule);
+
+        shippingRepo = new ShippingOrderRepository();
+        shippingController = new ShippingController(shippingRepo);
     }
 
     /**
      * Initializes cashier-related systems.
      */
     private static void initializeCashierSystem() {
-        Cashier cashier = new Cashier("John Doe", 101); // Sample cashier
+        Cashier cashier = new Cashier("John Doe", 101, null); // Sample cashier
         inventory = new Inventory();
         Register register = new Register();
         receiptRepo = new ReceiptRepository();
@@ -56,6 +72,32 @@ public class SportingGoodsMain {
         cashierController = new CashierController(cashier, inventory, registerController, receiptRepo);
 
         pricingController = new PricingController(inventory); //Used by manager to adjust prices
+    }
+
+    /**
+     * Fills the inventory with initial items.
+     */
+    private static void fillInventory() {
+        File file = new File("data/inventory.csv");
+
+        // Check if file exists and is not empty
+        if (file.exists() && file.length() > 0) {
+            System.out.println("Inventory file already initialized.");
+            return;
+        }
+
+        // Initialize items only if the file is missing or empty
+        Item item1 = new Item("Tennis Ball", 29.99, "Sports", 10, 0);
+        Item item2 = new Item("Tennis Racket", 89.99, "Sports", 5, 0);
+        Item item3 = new Item("Football", 24.99, "Sports", 5, 0);
+        Item item4 = new Item("Bike", 309.99, "Sports", 5, 0);
+        Item item5 = new Item("Shorts", 89.99, "Apparel", 5, 0);
+
+        inventory.addItem(item1);
+        inventory.addItem(item2);
+        inventory.addItem(item3);
+        inventory.addItem(item4);
+        inventory.addItem(item5);
     }
 
     /**
@@ -107,12 +149,15 @@ public class SportingGoodsMain {
             System.out.println("3. View All Suppliers");
             System.out.println("4. View All Supplier Orders");
             System.out.println("5. Adjust Item Price");
-            System.out.println("6. Manage Gift Cards");
-            System.out.println("7. Back to Main Menu");
+            System.out.println("6. Update Inventory");
+            System.out.println("7. Manage Gift Cards");
+            System.out.println("8. Manage Work Schedule");
+            System.out.println("9. Manage Shipping Orders"); // New option
+            System.out.println("10. Back to Main Menu");
             System.out.print("Enter your choice: ");
-    
+
             String choice = scanner.nextLine();
-    
+
             switch (choice) {
                 case "1":
                     coordinateSuppliers();
@@ -127,12 +172,21 @@ public class SportingGoodsMain {
                     viewAllSupplierOrders();
                     break;
                 case "5":
-                    adjustPriceMenu();
+                    adjustPriceMenu(); // Call the adjust price method
                     break;
                 case "6":
-                    manageGiftCards();
+                    updateInventory(); // Call the update inventory method
                     break;
                 case "7":
+                    manageGiftCards(); // Call the manage gift cards method
+                    break;
+                case "8":
+                    manageShifts(); // Call the manage shifts method
+                    break;
+                case "9":
+                    manageShippingOrders(); // New method for shipping orders
+                    break;
+                case "10":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -180,8 +234,28 @@ public class SportingGoodsMain {
      * Displays the Employee menu with placeholder functionalities.
      */
     private static void employeeMenu() {
-        System.out.println("\nEmployee functionalities are under development.");
-        // Implement Employee-related actions here
+        while (true) {
+            System.out.println("\nEmployee Menu:");
+            System.out.println("1. View Inventory");
+            System.out.println("2. Process Shipping Orders"); // Employee can process shipping orders
+            System.out.println("3. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    getInventory();
+                    break;
+                case "2":
+                    processAndSendShipment();
+                    break;
+                case "3":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
     }
 
     /**
@@ -192,7 +266,8 @@ public class SportingGoodsMain {
             System.out.println("\nCustomer Menu:");
             System.out.println("1. Shop for Items");
             System.out.println("2. Return Items");
-            System.out.println("3. Back to Main Menu");
+            System.out.println("3. Place Shipping Order"); // Customers can place shipping orders
+            System.out.println("4. Back to Main Menu");
             System.out.print("Enter your choice: ");
             String choice = scanner.nextLine().trim();
 
@@ -204,6 +279,9 @@ public class SportingGoodsMain {
                     returnItemAsCustomer();
                     break;
                 case "3":
+                    makeShippingOrderInput();
+                    break;
+                case "4":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -434,9 +512,7 @@ public class SportingGoodsMain {
             System.out.println("3. View Gift Card Details");
             System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
-            
             String choice = scanner.nextLine().trim();
-            
             switch (choice) {
                 case "1":
                     sellGiftCardMenu();
@@ -784,6 +860,455 @@ public class SportingGoodsMain {
             } catch (NumberFormatException e) {
                 System.out.println("Invalid Customer ID. Defaulting to Guest.");
                 return new Customer("Guest", -1);
+            }
+        }
+    }
+
+    /**
+     * Manager Functionality: Update Inventory
+     */
+    private static void updateInventory() {
+        System.out.println();
+        System.out.println("Current Inventory:");
+        inventory.printInventory();
+        System.out.println("------------------");
+        System.out.println("Select Inventory Operation");
+        System.out.println("------------------");
+        System.out.println("1. Add item");
+        System.out.println("2. Delete item");
+        System.out.println("3. Add items in bulk");
+        System.out.println("4. Delete items in bulk");
+        System.out.println("5. Send item to another store");
+
+        System.out.print("Enter choice: ");
+        String choice = scanner.nextLine();
+
+        switch (choice) {
+            case "1":
+                System.out.print("Enter item name: ");
+                String name = scanner.nextLine();
+
+                System.out.print("Enter item price: ");
+                double price = scanner.nextDouble();
+                scanner.nextLine();
+
+                System.out.print("Enter item Department: ");
+                String department = scanner.nextLine();
+
+                System.out.print("Enter item Quantity: ");
+                int quantity = scanner.nextInt();
+
+                System.out.print("Enter item Store ID: ");
+                int storeID = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+
+                // Create a new Item with the user input
+                Item newItem = new Item(name, price, department, quantity, storeID);
+
+                inventory.addItem(newItem);
+
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "2":
+                System.out.print("Enter item name: ");
+                name = scanner.nextLine();
+
+                System.out.print("Enter item price: ");
+                price = scanner.nextDouble();
+                scanner.nextLine();
+
+                System.out.print("Enter item Department: ");
+                department = scanner.nextLine();
+
+                System.out.print("Enter item Quantity: ");
+                quantity = scanner.nextInt();
+
+                System.out.print("Enter item Store ID: ");
+                storeID = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+
+                // Create a new Item with the user input
+                newItem = new Item(name, price, department, quantity, storeID);
+                inventory.deleteItem(newItem);
+
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "3":
+                ArrayList<Item> itemList = new ArrayList<>();
+                int x = 0;
+                while(x == 0){
+                    System.out.println("Current item List: ");
+                    for(int i = 0; i < itemList.size(); i++){
+                        System.out.println(itemList.get(i).toString());
+                    }
+                    System.out.println();
+
+                    System.out.println("+ - add item to list");
+                    System.out.println("x - finished adding items");
+                    System.out.print("Enter choice: ");
+                    choice = scanner.nextLine();
+
+                    switch (choice) {
+                        case "+":
+                            System.out.print("Enter item name: ");
+                            name = scanner.nextLine();
+
+                            System.out.print("Enter item price: ");
+                            price = scanner.nextDouble();
+                            scanner.nextLine();
+
+                            System.out.print("Enter item Department: ");
+                            department = scanner.nextLine();
+
+                            System.out.print("Enter item Quantity: ");
+                            quantity = scanner.nextInt();
+
+                            System.out.print("Enter item Store ID: ");
+                            storeID = scanner.nextInt();
+                            scanner.nextLine();
+
+                            newItem = new Item(name, price, department, quantity, storeID);
+                            itemList.add(newItem);
+                            break;
+                        case "x":
+                            x = 1;
+                            break;
+
+                        default:
+                            System.out.println("Not an option");
+                            break;
+                    }
+                }
+                inventory.addItems(itemList);
+                System.out.println("Items added");
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "4":
+                itemList = new ArrayList<>();
+                x = 0;
+                while(x == 0){
+                    System.out.println("Current item List: ");
+                    for(int i = 0; i < itemList.size(); i++){
+                        System.out.println(itemList.get(i).toString());
+                    }
+                    System.out.println();
+
+                    System.out.println("+ - add item to list");
+                    System.out.println("x - finished adding items");
+                    System.out.print("Enter choice: ");
+                    choice = scanner.nextLine();
+
+                    switch (choice) {
+                        case "+":
+                            System.out.print("Enter item name: ");
+                            name = scanner.nextLine();
+
+                            System.out.print("Enter item price: ");
+                            price = scanner.nextDouble();
+                            scanner.nextLine();
+
+                            System.out.print("Enter item Department: ");
+                            department = scanner.nextLine();
+
+                            System.out.print("Enter item Quantity: ");
+                            quantity = scanner.nextInt();
+
+                            System.out.print("Enter item Store ID: ");
+                            storeID = scanner.nextInt();
+                            scanner.nextLine();
+
+                            newItem = new Item(name, price, department, quantity, storeID);
+                            itemList.add(newItem);
+                            break;
+                        case "x":
+                            x = 1;
+                            break;
+
+                        default:
+                            System.out.println("Not an option");
+                            break;
+                    }
+                }
+                inventory.deleteItems(itemList);
+                System.out.println("Items removed");
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            case "5":
+                System.out.print("Enter item name: ");
+                name = scanner.nextLine();
+
+                System.out.print("Enter item's new Store ID: ");
+                storeID = scanner.nextInt();
+                scanner.nextLine();
+
+                inventory.swapStore(name, storeID);
+                System.out.println("Updated Inventory: ");
+                inventory.printInventory();
+                System.out.println();
+                break;
+            default:
+                System.out.println("Not an option");
+                break;
+        }
+    }
+
+    /**
+     * Manager Functionality: Manage Work Shifts
+     */
+    private static void manageShifts() {
+        while (true) {
+            System.out.println("\nWork Shift Management:");
+            System.out.println("1. Add a Work Shift");
+            System.out.println("2. Remove a Work Shift");
+            System.out.println("3. Back to Manager Menu");
+            System.out.print("Please select an option: ");
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    // Add a Work Shift
+                    System.out.print("Enter the date of shift (DD): ");
+                    int date = Integer.parseInt(scanner.nextLine().trim());
+
+                    System.out.print("Enter the start time of the shift (HH:mm): ");
+                    String startTime = scanner.nextLine().trim();
+
+                    System.out.print("Enter the end time of the shift (HH:mm): ");
+                    String endTime = scanner.nextLine().trim();
+
+                    Shift s = new Shift(date, startTime, endTime);
+                    employee.getWorkSchedule().addShift(s);
+
+                    System.out.println("Shift added: " + startTime + " to " + endTime);
+                    break;
+
+                case "2":
+                    System.out.print("Enter the date of shift to remove (DD): ");
+                    int dateToRemove = Integer.parseInt(scanner.nextLine().trim());
+
+                    // Remove a Work Shift
+                    System.out.print("Enter the start time of the shift to remove (HH:mm): ");
+                    String startTimeToRemove = scanner.nextLine().trim();
+
+                    System.out.print("Enter the end time of the shift to remove (HH:mm): ");
+                    String endTimeToRemove = scanner.nextLine().trim();
+
+                    s = new Shift(dateToRemove, startTimeToRemove, endTimeToRemove);
+                    employee.getWorkSchedule().deleteShift(s);
+                    System.out.println("Shift removed with date: "+ dateToRemove + ", start time: " + startTimeToRemove + " and end time: " + endTimeToRemove);
+                    break;
+
+                case "3":
+                    return;  // Exit to Manager Menu
+
+                default:
+                    System.out.println("Invalid choice, please try again.");
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Employee Functionality: View Inventory
+     */
+    private static void getInventory() {
+        System.out.println("\nCurrent Inventory:");
+        inventory.printInventory();
+    }
+
+    /**
+     * Customer Functionality: Make Shipping Order
+     */
+    private static void makeShippingOrderInput() {
+        System.out.println("\nPlace a Shipping Order:");
+
+        // Get customer details
+        System.out.print("Enter your first name: ");
+        String customerFirstName = scanner.nextLine();
+
+        System.out.print("Enter your last name: ");
+        String customerLastName = scanner.nextLine();
+
+        System.out.print("Enter shipping address: ");
+        String shippingAddress = scanner.nextLine();
+
+        System.out.print("Enter your email: ");
+        String customerEmail = scanner.nextLine();
+
+        System.out.print("Enter your phone number: ");
+        String customerPhoneNumber = scanner.nextLine();
+
+        // Collect items for the order
+        Map<Item, Integer> items = new HashMap<>();
+        double totalPrice = 0.0;
+
+        while (true) {
+            // Display inventory with numbered options
+            List<Item> availableItems = new ArrayList<>(inventory.getItems().values());
+            System.out.println("Select an item to add to the order (type 'done' to finish):");
+            for (int i = 0; i < availableItems.size(); i++) {
+                System.out.println((i + 1) + ". " + availableItems.get(i).getName() + " - $" + availableItems.get(i).getPrice());
+            }
+
+            // Get user input for item selection
+            String input = scanner.nextLine();
+            if (input.equalsIgnoreCase("done")) {
+                break;
+            }
+
+            // Parse selection number and validate
+            int itemIndex;
+            try {
+                itemIndex = Integer.parseInt(input) - 1;
+                if (itemIndex < 0 || itemIndex >= availableItems.size()) {
+                    System.out.println("Invalid selection. Please enter a valid item number.");
+                    continue;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number corresponding to an item or 'done' to finish.");
+                continue;
+            }
+
+            Item selectedItem = availableItems.get(itemIndex);
+
+            // Get quantity to order
+            System.out.print("Quantity to order: ");
+            int orderQuantity;
+            try {
+                orderQuantity = Integer.parseInt(scanner.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid quantity. Please enter a valid number.");
+                continue;
+            }
+
+            if (!inventory.checkAvailability(selectedItem.getName(), orderQuantity)) {
+                System.out.println("Insufficient quantity in inventory. Please enter a valid quantity.");
+                continue;
+            }
+
+            Item newItem = new Item(selectedItem.getName(), selectedItem.getPrice(), selectedItem.getDepartment(), orderQuantity, selectedItem.getStoreID());
+            items.put(newItem, orderQuantity);
+            totalPrice += Math.round(selectedItem.getPrice() * orderQuantity * 100.0) / 100.0;
+            System.out.println("Added " + orderQuantity + " of " + selectedItem.getName() + " to the order.");
+        }
+
+        // Create and handle the shipping order
+        boolean orderCreated = shippingController.handleShippingOrder(
+                customerFirstName, customerLastName, items, totalPrice, shippingAddress, customerEmail, customerPhoneNumber
+        );
+
+        if (orderCreated) {
+            System.out.println("\nOrder created successfully!");
+            System.out.println("Order Details:");
+            System.out.println("Customer Name: " + customerFirstName + " " + customerLastName);
+            System.out.println("Shipping Address: " + shippingAddress);
+            System.out.println("Email: " + customerEmail);
+            System.out.println("Phone Number: " + customerPhoneNumber);
+            System.out.println("Items Ordered:");
+
+            for (Item orderedItem : items.keySet()) {
+                int quantity = orderedItem.getQuantity();
+                System.out.println("Item: " + orderedItem.getName() + ", Quantity: " + quantity);
+            }
+
+            // Format the total price to two decimal places
+            System.out.printf("Total Price: $%.2f\n", totalPrice);
+            System.out.println("Order Status: Confirmed");
+        } else {
+            System.out.println("Failed to create the order.");
+        }
+    }
+
+    /**
+     * Employee Functionality: Process and Send Shipment
+     */
+    private static void processAndSendShipment() {
+        System.out.println("\nProcess and Send Shipment:");
+
+        List<ShippingOrder> orders = shippingRepo.getAllShippingOrders();
+
+        List<ShippingOrder> confirmedOrders = orders.stream()
+                .filter(order -> "Confirmed".equalsIgnoreCase(order.getStatus()))
+                .collect(Collectors.toList());
+
+        if (confirmedOrders.isEmpty()) {
+            System.out.println("No confirmed orders available.");
+        } else {
+            System.out.println("Select a confirmed order by entering the corresponding number:");
+            for (int i = 0; i < confirmedOrders.size(); i++) {
+                ShippingOrder order = confirmedOrders.get(i);
+                System.out.println((i + 1) + ". Order ID: " + order.getOrderId() + ", Customer: " +
+                        order.getCustomerFirstName() + " " + order.getCustomerLastName());
+            }
+
+            System.out.print("Enter order number: ");
+            int orderNumber;
+            try {
+                orderNumber = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (orderNumber < 0 || orderNumber >= confirmedOrders.size()) {
+                    System.out.println("Invalid selection. Please enter a number within the list range.");
+                    return;
+                } else {
+                    ShippingOrder selectedOrder = confirmedOrders.get(orderNumber);
+                    System.out.println("You selected Order ID: " + selectedOrder.getOrderId());
+
+                    Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController);
+                    shipper.shipOrder(selectedOrder, inventory);
+                    System.out.println("Order shipped successfully.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
+    }
+
+    /**
+     * Manager Functionality: Manage Shipping Orders
+     */
+    private static void manageShippingOrders() {
+        while (true) {
+            System.out.println("\nShipping Order Management:");
+            System.out.println("1. View All Shipping Orders");
+            System.out.println("2. Process and Send Shipment");
+            System.out.println("3. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    viewAllShippingOrders();
+                    break;
+                case "2":
+                    processAndSendShipment();
+                    break;
+                case "3":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /**
+     * Manager Functionality: View All Shipping Orders
+     */
+    private static void viewAllShippingOrders() {
+        System.out.println("\nAll Shipping Orders:");
+        List<ShippingOrder> orders = shippingRepo.getAllShippingOrders();
+        if (orders.isEmpty()) {
+            System.out.println("No shipping orders found.");
+        } else {
+            for (ShippingOrder order : orders) {
+                System.out.println(order);
             }
         }
     }
