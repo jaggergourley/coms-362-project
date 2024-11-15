@@ -155,8 +155,9 @@ public class SportingGoodsMain {
             System.out.println("6. Update Inventory");
             System.out.println("7. Manage Gift Cards");
             System.out.println("8. Manage Work Schedule");
-            System.out.println("9. Manage Shipping Orders"); // New option
-            System.out.println("10. Back to Main Menu");
+            System.out.println("9. Manage Shipping Orders");
+            System.out.println("10. Manage Coupons");
+            System.out.println("11. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine();
@@ -190,6 +191,9 @@ public class SportingGoodsMain {
                     manageShippingOrders(); // New method for shipping orders
                     break;
                 case "10":
+                    manageCoupons(); // New method for managing coupons
+                    break;
+                case "11":
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -589,39 +593,68 @@ public class SportingGoodsMain {
         System.out.println(details);
     }
 
-/**
- * Displays the Coupon Menu for the cashier.
- */
-private static void applyCouponMenu() {
-    while (true) {
-        System.out.println("\nCoupon Menu:");
-        System.out.println("1. Enter Coupon Code");
-        System.out.println("2. Back to Cashier Menu");
-        System.out.print("Enter your choice: ");
+    /**
+     * Displays the Coupon Menu for the cashier.
+     */
+    private static void applyCouponMenu() {
+        while (true) {
+            System.out.println("\nCoupon Menu:");
+            System.out.println("1. Enter Coupon Code");
+            System.out.println("2. Back to Cashier Menu");
+            System.out.print("Enter your choice: ");
 
-        String choice = scanner.nextLine().trim();
-        switch (choice) {
-            case "1":
-                System.out.print("\nEnter the coupon code: ");
-                String couponCode = scanner.nextLine().trim();
-                double discount = cashierController.previewCoupon(couponCode);
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1":
+                    System.out.print("\nEnter the coupon code: ");
+                    String couponCode = scanner.nextLine().trim();
+                    double discount = cashierController.previewCoupon(couponCode);
 
-                if (discount > 0) {
-                    appliedCouponCode = couponCode; // Set the applied coupon
-                    System.out.println("Coupon is valid. Discount: " +
-                            (cashierController.isPercentageCoupon(couponCode) ? discount + "%" : "$" + discount));
-                    return; // Exit the menu after applying a coupon
-                } else {
-                    System.out.println("Invalid coupon. Please check the code and try again.");
-                }
-                break;
-            case "2":
-                return; // Return to Cashier Menu
-            default:
-                System.out.println("Invalid choice. Please try again.");
+                    if (discount > 0) {
+                        appliedCouponCode = couponCode; // Set the applied coupon
+                        System.out.println("Coupon is valid. Discount: " +
+                                (cashierController.isPercentageCoupon(couponCode) ? discount + "%" : "$" + discount));
+                        return; // Exit the menu after applying a coupon
+                    } else {
+                        System.out.println("Invalid coupon. Please check the code and try again.");
+                    }
+                    break;
+                case "2":
+                    return; // Return to Cashier Menu
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
         }
     }
-}
+
+    private static void manageCoupons() {
+        while (true) {
+            System.out.println("\nManage Coupon Codes:");
+            System.out.println("1. View All Coupons");
+            System.out.println("2. Add New Coupon");
+            System.out.println("3. Delete a Coupon");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+    
+            String choice = scanner.nextLine().trim();
+    
+            switch (choice) {
+                case "1":
+                    cashierController.viewAllCoupons();
+                    break;
+                case "2":
+                    cashierController.addNewCoupon();
+                    break;
+                case "3":
+                    cashierController.deleteCoupon();
+                    break;
+                case "4":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
     
     /**
      * Manager Functionality: Update Supplier Information

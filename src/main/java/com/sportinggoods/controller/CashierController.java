@@ -4,8 +4,10 @@ import com.sportinggoods.model.*;
 import com.sportinggoods.repository.CouponRepository;
 import com.sportinggoods.repository.ReceiptRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
 
 public class CashierController {
     private Cashier cashier;
@@ -158,5 +160,62 @@ public class CashierController {
     public boolean isPercentageCoupon(String couponCode) {
         Optional<Coupon> coupon = couponRepo.findByCode(couponCode);
         return coupon.isPresent() && "PERCENTAGE".equalsIgnoreCase(coupon.get().getDiscountType());
+    }
+
+    public void viewAllCoupons() {
+        List<Coupon> activeCoupons = couponRepo.getActiveCoupons();
+        if (activeCoupons.isEmpty()) {
+            System.out.println("No active coupons available.");
+        } else {
+            System.out.println("\nActive Coupons:");
+            for (Coupon coupon : activeCoupons) {
+                System.out.println(coupon);
+            }
+        }
+    }
+
+    public void addNewCoupon() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter coupon code: ");
+        String code = scanner.nextLine().trim();
+
+        System.out.print("Enter discount type (PERCENTAGE/FIXED): ");
+        String discountType = scanner.nextLine().trim().toUpperCase();
+
+        System.out.print("Enter discount value: ");
+        double discountValue;
+        try {
+            discountValue = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid discount value. Please enter a number.");
+            return;
+        }
+
+        System.out.print("Enter expiration date (YYYY-MM-DD): ");
+        String expirationDateInput = scanner.nextLine().trim();
+
+        try {
+            LocalDate expirationDate = LocalDate.parse(expirationDateInput);
+            Coupon newCoupon = new Coupon(code, discountType, discountValue, expirationDate);
+            couponRepo.addCoupon(newCoupon);
+            System.out.println("Coupon added successfully.");
+        } catch (Exception e) {
+            System.out.println("Invalid date format. Coupon not added.");
+        }
+    }
+
+    public void deleteCoupon() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the coupon code to delete: ");
+        String code = scanner.nextLine().trim();
+
+        boolean success = couponRepo.removeCoupon(code);
+        if (success) {
+            System.out.println("Coupon deleted successfully.");
+        } else {
+            System.out.println("Coupon not found. No changes made.");
+        }
     }
 }
