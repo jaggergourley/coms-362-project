@@ -45,6 +45,22 @@ public class SportingGoodsMain {
         mainMenu();
     }
 
+    private static void clearConsole() {
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            // Fallback: Print multiple newlines if clearing fails
+            for (int i = 0; i < 50; i++) {
+                System.out.println();
+            }
+        }
+    }
+
     /**
      * Initializes repositories and controllers.
      */
@@ -107,6 +123,7 @@ public class SportingGoodsMain {
      * Displays the main menu and handles user role selection.
      */
     private static void mainMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nWelcome to Sporting Goods Management System");
             System.out.println("Please select your role:");
@@ -145,6 +162,7 @@ public class SportingGoodsMain {
      * Displays the Manager menu and handles manager-specific actions.
      */
     private static void managerMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nManager Menu:");
             System.out.println("1. Coordinate Suppliers");
@@ -194,6 +212,7 @@ public class SportingGoodsMain {
                     manageCoupons(); // New method for managing coupons
                     break;
                 case "11":
+                    clearConsole();
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -205,6 +224,7 @@ public class SportingGoodsMain {
      * Displays the Cashier menu and handles cashier-specific actions.
      */
     private static void cashierMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nCashier Menu:");
             System.out.println("1. Process Sale");
@@ -234,6 +254,7 @@ public class SportingGoodsMain {
                     applyCouponMenu();
                     break;
                 case "6":
+                    clearConsole();
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -245,6 +266,7 @@ public class SportingGoodsMain {
      * Displays the Employee menu with placeholder functionalities.
      */
     private static void employeeMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nEmployee Menu:");
             System.out.println("1. View Inventory");
@@ -273,6 +295,7 @@ public class SportingGoodsMain {
      * Displays the Customer menu with options for shopping or returning items.
      */
     private static void customerMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nCustomer Menu:");
             System.out.println("1. Shop for Items");
@@ -304,6 +327,7 @@ public class SportingGoodsMain {
      * Manager Functionality: Coordinate Suppliers
      */
     private static void coordinateSuppliers() {
+        clearConsole();
         while (true) {
             System.out.println("\nCoordinate Suppliers:");
             System.out.println("1. View Suppliers");
@@ -439,6 +463,7 @@ public class SportingGoodsMain {
      * Manager Functionality: Adjust Item Price
      */
     private static void adjustPriceMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nAdjust Item Price Menu:");
             System.out.println("1. Search by Name");
@@ -446,22 +471,29 @@ public class SportingGoodsMain {
             System.out.println("3. Search by Store ID");
             System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
-            
+    
             String searchChoice = scanner.nextLine().trim();
-            String criteria = switch (searchChoice) {
-                case "1" -> "name";
-                case "2" -> "department";
-                case "3" -> "storeid";
-                case "4" -> {
+            String criteria = null;
+    
+            switch (searchChoice) {
+                case "1":
+                    criteria = "name";
+                    break;
+                case "2":
+                    criteria = "department";
+                    break;
+                case "3":
+                    criteria = "storeid";
+                    break;
+                case "4":
                     System.out.println("Returning to Manager Menu.");
-                    yield null;
-                }
-                default -> {
+                    clearConsole();
+                    return;
+                default:
                     System.out.println("Invalid choice. Please try again.");
-                    yield null;
-                }
-            };
-            if (criteria == null) continue;
+                    clearConsole();
+                    continue;
+            }
     
             System.out.print("Enter the search value: ");
             String value = scanner.nextLine().trim();
@@ -469,6 +501,7 @@ public class SportingGoodsMain {
             List<Item> foundItems = pricingController.searchItems(criteria, value);
     
             if (foundItems.isEmpty()) {
+                clearConsole();
                 System.out.println("No items found with the specified criteria. Please try another search.");
                 continue;
             }
@@ -482,12 +515,14 @@ public class SportingGoodsMain {
             int itemIndex;
             try {
                 itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
-                if (itemIndex == -1) continue;
+                if (itemIndex == -1) continue; // Return to search menu
                 if (itemIndex < 0 || itemIndex >= foundItems.size()) {
+                    clearConsole();
                     System.out.println("Invalid selection. Returning to search menu.");
                     continue;
                 }
             } catch (NumberFormatException e) {
+                clearConsole();
                 System.out.println("Error: Please enter a valid number.");
                 continue;
             }
@@ -507,8 +542,9 @@ public class SportingGoodsMain {
             }
     
             String result = pricingController.adjustPrice(selectedItem, newPrice);
+            clearConsole();
             System.out.println(result);
-            break;
+            break; // Break the loop after adjusting the price
         }
     }
 
@@ -516,6 +552,7 @@ public class SportingGoodsMain {
      * Manager Functionality: Manage Gift Cards
      */
     private static void manageGiftCards() {
+        clearConsole();
         while (true) {
             System.out.println("\nGift Card Management:");
             System.out.println("1. Sell New Gift Card");
@@ -546,6 +583,7 @@ public class SportingGoodsMain {
      * Sell a new gift card.
      */
     private static void sellGiftCardMenu() {
+        clearConsole();
         System.out.print("\nEnter the amount for the new gift card: ");
         double amount;
         try {
@@ -566,6 +604,7 @@ public class SportingGoodsMain {
      * Redeem an existing gift card.
      */
     private static void redeemGiftCardMenu() {
+        clearConsole();
         System.out.print("\nEnter the gift card code: ");
         String code = scanner.nextLine().trim();
 
@@ -586,6 +625,7 @@ public class SportingGoodsMain {
      * View details of a gift card.
      */
     private static void viewGiftCardDetailsMenu() {
+        clearConsole();
         System.out.print("\nEnter the gift card code to view details: ");
         String code = scanner.nextLine().trim();
     
@@ -597,6 +637,7 @@ public class SportingGoodsMain {
      * Displays the Coupon Menu for the cashier.
      */
     private static void applyCouponMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nCoupon Menu:");
             System.out.println("1. Enter Coupon Code");
@@ -628,6 +669,7 @@ public class SportingGoodsMain {
     }
 
     private static void manageCoupons() {
+        clearConsole();
         while (true) {
             System.out.println("\nManage Coupon Codes:");
             System.out.println("1. View All Coupons");
@@ -729,6 +771,7 @@ public class SportingGoodsMain {
      * Cashier Functionality: Process Sale
      */
     private static void processSale() {
+        clearConsole();
         Customer customer = getCustomerDetails();
         Map<Item, Integer> itemsToBuy = new HashMap<>();
         String couponCode = appliedCouponCode;
@@ -774,6 +817,7 @@ public class SportingGoodsMain {
 
             // Add to cart
             itemsToBuy.put(selectedItem, itemsToBuy.getOrDefault(selectedItem, 0) + quantity);
+            clearConsole();
             System.out.println(quantity + " of " + selectedItem.getName() + " added to cart.");
         }
 
