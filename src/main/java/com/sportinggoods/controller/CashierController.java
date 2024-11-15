@@ -1,22 +1,25 @@
 package com.sportinggoods.controller;
 
 import com.sportinggoods.model.*;
+import com.sportinggoods.repository.CouponRepository;
 import com.sportinggoods.repository.ReceiptRepository;
-
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 
 public class CashierController {
     private Cashier cashier;
     private Inventory inventory;
     private RegisterController registerController;
     private ReceiptRepository receiptRepo;
+    private CouponRepository couponRepo;
 
-    public CashierController(Cashier cashier, Inventory inventory, RegisterController registerController, ReceiptRepository receiptRepo) {
+    public CashierController(Cashier cashier, Inventory inventory, RegisterController registerController, ReceiptRepository receiptRepo, CouponRepository couponRepo) {
         this.cashier = cashier;
         this.inventory = inventory;
         this.registerController = registerController;
         this.receiptRepo = receiptRepo;
+        this.couponRepo = couponRepo;
     }
 
     /**
@@ -27,7 +30,7 @@ public class CashierController {
      * @param paymentMethod The payment method used.
      * @return The receipt if the sale was successful, null otherwise.
      */
-    public Receipt processSale(Customer customer, Map<Item, Integer> items, String paymentMethod) {
+    public Receipt processSale(Customer customer, Map<Item, Integer> items, String paymentMethod, String couponCode) {
         double totalCost = 0.0;
         StringBuilder receiptDetails = new StringBuilder();
 
@@ -48,6 +51,12 @@ public class CashierController {
                 return null; // Exit if any item is unavailable
             }
         }
+
+        // Apply coupon
+        double discount = applyCoupon(couponCode, totalCost, receiptDetails);
+
+        // Adjust total cost with discount
+        totalCost -= discount;
 
         // Remove trailing comma and space from receipt details
         if (receiptDetails.length() > 0) {
@@ -110,5 +119,44 @@ public class CashierController {
         receiptRepo.logReceipt(receipt);
         System.out.println("Return processed: " + receipt);
         return receipt;
+    }
+
+    public double applyCoupon(String couponCode, double totalCost, StringBuilder receiptDetails) {
+        double discount = 0.0;
+    
+        if (couponCode != null && !couponCode.isEmpty()) {
+            Optional<Coupon> optionalCoupon = couponRepo.findByCode(couponCode);
+            if (optionalCoupon.isPresent()) {
+                Coupon coupon = optionalCoupon.get();
+                if (!coupon.isExpired()) {
+                    if (coupon.getDiscountType().equalsIgnoreCase("PERCENTAGE")) {
+                        discount = totalCost * (coupon.getDiscountValue() / 100);
+                    } else if (coupon.getDiscountType().equalsIgnoreCase("FIXED")) {
+                        discount = coupon.getDiscountValue();
+                    }
+                    receiptDetails.append("Coupon applied: ").append(couponCode)
+                        .append(" (-$").append(discount).append("), ");
+                } else {
+                    System.out.println("The coupon has expired.");
+                }
+            } else {
+                System.out.println("Invalid coupon code.");
+            }
+        }
+    
+        return discount;
+    }
+
+    public double previewCoupon(String couponCode) {
+        Optional<Coupon> coupon = couponRepo.findByCode(couponCode);
+        if (coupon.isPresent() && !coupon.get().isExpired()) {
+            return coupon.get().getDiscountValue(); // Return discount value
+        }
+        return 0.0; // Invalid or expired coupon
+    }
+
+    public boolean isPercentageCoupon(String couponCode) {
+        Optional<Coupon> coupon = couponRepo.findByCode(couponCode);
+        return coupon.isPresent() && "PERCENTAGE".equalsIgnoreCase(coupon.get().getDiscountType());
     }
 }
