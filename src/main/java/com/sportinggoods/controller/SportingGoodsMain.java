@@ -966,6 +966,56 @@ private static void handleAddDiscount() {
             clearConsole();
             System.out.println(quantity + " of " + selectedItem.getName() + " added to cart.");
         }
+
+    // Calculate total cost
+    double totalCost = itemsToBuy.entrySet().stream()
+    .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
+    .sum();
+
+    System.out.println("Total before discounts: $" + totalCost);
+
+    // Coupon handling
+    if (couponCode != null && !couponCode.isEmpty()) {
+        discount = cashierController.previewCoupon(couponCode);
+        if (discount > 0) {
+            if (cashierController.isPercentageCoupon(couponCode)) {
+                System.out.printf("Coupon applied: %.2f%% off\n", discount);
+                discount = totalCost * (discount / 100);
+            } else {
+                System.out.printf("Coupon applied: $%.2f off\n", discount);
+            }
+            System.out.printf("Total after coupon: $%.2f\n", totalCost - discount);
+        } else {
+            System.out.println("Previously applied coupon is invalid. Proceeding without a discount.");
+            couponCode = ""; // Reset invalid coupon code
+            discount = 0.0;
+        }
+    } else {
+        System.out.print("Do you have a coupon code to apply? (yes/no): ");
+        String hasCoupon = scanner.nextLine().trim();
+
+        if (hasCoupon.equalsIgnoreCase("yes")) {
+            System.out.print("Enter the coupon code: ");
+            couponCode = scanner.nextLine().trim();
+
+            discount = cashierController.previewCoupon(couponCode);
+            if (discount > 0) {
+                if (cashierController.isPercentageCoupon(couponCode)) {
+                    System.out.printf("Coupon applied: %.2f%% off\n", discount);
+                    discount = totalCost * (discount / 100);
+                } else {
+                    System.out.printf("Coupon applied: $%.2f off\n", discount);
+                }
+                totalCost -= discount;
+                System.out.printf("Total after coupon: $%.2f\n", totalCost);
+                appliedCouponCode = couponCode; // Save the applied coupon
+            } else {
+                System.out.println("Invalid coupon. Proceeding without applying a discount.");
+                couponCode = ""; // Reset invalid coupon code
+                discount = 0.0;
+            }
+        }
+    }
     
         // Calculate total cost with dynamic effective prices
         double totalCost = itemsToBuy.entrySet().stream()
