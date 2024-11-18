@@ -40,7 +40,7 @@ public class Employee{
     public void setWorkSchedule(Schedule workSchedule) {
         this.workSchedule = workSchedule;
     }
-    
+
 
     //Functions that all objects that are employees have
     public Boolean canPlaceOrder() {

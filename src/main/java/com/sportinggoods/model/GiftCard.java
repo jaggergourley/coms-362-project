@@ -38,6 +38,11 @@ public class GiftCard {
         transactionHistory.add(transaction);
     }
 
+    // Public method to add transactions externally
+    public void addTransaction(String transaction) {
+        logTransaction(transaction);
+    }
+
     // Redeem an amount from the balance
     public String redeem(double amount) {
         if (!isActive || balance <= 0) {
@@ -54,11 +59,18 @@ public class GiftCard {
         return "Redemption successful. Remaining balance: $" + balance;
     }
 
-    // Activate a new gift card or reactivate one with added balance
     public void activate(double amount) {
         this.balance = amount;
         this.isActive = true;
         logTransaction("Gift Card activated with balance: $" + amount);
+    }
+
+    public String toCSV() {
+        return String.format("%s,%.2f,%s,%s",
+                code,
+                balance,
+                isActive ? "active" : "inactive",
+                String.join(";", transactionHistory));
     }
 
     @Override

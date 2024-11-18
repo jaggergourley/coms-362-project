@@ -149,7 +149,7 @@ public class ShippingOrder {
             // Split the line into 10 tokens by "|"
             String[] tokens = csvLine.split("\\|", -1); // The -1 argument keeps empty tokens if present
 
-             //Ensure we have exactly 10 tokens
+            //Ensure we have exactly 10 tokens
 //            if (tokens.length != 10) {
 //                //System.out.println("Error: Expected 10 tokens, got " + tokens.length);
 //                return null;
@@ -228,7 +228,7 @@ public class ShippingOrder {
             } catch (NumberFormatException e) {
                 System.out.println("Error parsing item details: " + e.getMessage());
                 continue;
-         
+
             }
 
             // Create the Item object with parsed details
@@ -240,4 +240,3 @@ public class ShippingOrder {
 
 
 }
-

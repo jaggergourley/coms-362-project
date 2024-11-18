@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MenuInvoker {
-    private Map<String, Runnable> commandMap;
+    private Map<String, Command> commandMap;
 
     public MenuInvoker() {
         commandMap = new HashMap<>();
@@ -13,10 +13,10 @@ public class MenuInvoker {
     /**
      * Registers a command with a key.
      *
-     * @param key The command key (e.g., user input)
+     * @param key The command key
      * @param command The command to execute
      */
-    public void register(String key, Runnable command) {
+    public void register(String key, Command command) {
         commandMap.put(key, command);
     }
 
@@ -26,9 +26,9 @@ public class MenuInvoker {
      * @param key The command key
      */
     public void executeCommand(String key) {
-        Runnable command = commandMap.get(key);
+        Command command = commandMap.get(key);
         if (command != null) {
-            command.run();
+            command.execute();
         } else {
             System.out.println("Invalid choice. Please try again.");
         }

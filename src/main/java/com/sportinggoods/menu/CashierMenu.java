@@ -1,108 +1,102 @@
 package com.sportinggoods.menu;
 
-import com.sportinggoods.commands.MenuInvoker;
 import com.sportinggoods.controller.*;
-import com.sportinggoods.model.Customer;
-import com.sportinggoods.model.Item;
+import com.sportinggoods.model.*;
+import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
-public class CashierMenu {
-    private Scanner scanner;
-    private MenuInvoker cashierInvoker;
-    private InitializationManager initManager;
+/**
+ * Represents the Cashier Menu in the Sporting Goods Management System.
+ * Handles cashier-specific actions such as processing sales, handling returns, managing gift cards, and applying coupons.
+ */
+public class CashierMenu extends BaseMenu {
 
-    // Controllers obtained from InitializationManager
+    // Controllers
     private CashierController cashierController;
     private GiftCardController giftCardController;
+    private RegisterController registerController;
 
-    public CashierMenu(InitializationManager initManager) {
-        this.scanner = new Scanner(System.in);
-        this.cashierInvoker = new MenuInvoker();
-        this.initManager = initManager;
+    // Repositories
+    private CouponRepository couponRepository;
+    private ReceiptRepository receiptRepository;
 
-        // Initialize controllers from InitializationManager
+    // Models
+    private Inventory inventory;
+
+    // State
+    private String appliedCouponCode = null;
+
+    /**
+     * Constructs a CashierMenu with the provided InitializationManager and Scanner.
+     *
+     * @param initManager The InitializationManager instance for dependency injection.
+     * @param scanner     The shared Scanner instance for user input.
+     */
+    public CashierMenu(InitializationManager initManager, Scanner scanner) {
+        super(initManager, scanner);
+        // Initialize controllers and repositories
         this.cashierController = initManager.getCashierController();
         this.giftCardController = initManager.getGiftCardController();
-
-        registerCommands();
+        this.registerController = initManager.getRegisterController();
+        this.couponRepository = initManager.getCouponRepo();
+        this.receiptRepository = initManager.getReceiptRepo();
+        this.inventory = initManager.getInventory();
     }
 
-    private void registerCommands() {
-        cashierInvoker.register("1", this::processSale);
-        cashierInvoker.register("2", this::handleReturn);
-        cashierInvoker.register("3", this::sellGiftCardMenu);
-        cashierInvoker.register("4", this::redeemGiftCardMenu);
-        cashierInvoker.register("5", this::backToMainMenu);
+    @Override
+    protected void registerCommands() {
+        invoker.register("1", this::processSale);
+        invoker.register("2", this::handleReturn);
+        invoker.register("3", this::sellGiftCardMenu);
+        invoker.register("4", this::redeemGiftCardMenu);
+        invoker.register("5", this::applyCouponMenu);
     }
 
-    public void display() {
-        while (true) {
-            System.out.println("\nCashier Menu:");
-            System.out.println("1. Process Sale");
-            System.out.println("2. Handle Return");
-            System.out.println("3. Sell Gift Card");
-            System.out.println("4. Redeem Gift Card");
-            System.out.println("5. Back to Main Menu");
-            System.out.print("Enter your choice: ");
-
-            String choice = scanner.nextLine().trim();
-            if (choice.equals("5")) {
-                break; // Exit to Main Menu
-            }
-            cashierInvoker.executeCommand(choice);
-        }
+    @Override
+    protected void printMenuOptions() {
+        clearConsole();
+        System.out.println("\nCashier Menu:");
+        System.out.println("1. Process Sale");
+        System.out.println("2. Handle Return");
+        System.out.println("3. Sell Gift Card");
+        System.out.println("4. Redeem Gift Card");
+        System.out.println("5. Apply Coupon");
+        System.out.println("6. Back to Main Menu");
     }
+
+    @Override
+    protected boolean isExitChoice(String choice) {
+        return choice.equals("6");
+    }
+
+    @Override
+    protected void handleExit() {
+        System.out.println("Returning to Main Menu...");
+    }
+
+    // ==========================
+    // Sales Operations
+    // ==========================
 
     /**
-     * Sell a new gift card.
+     * Processes a sale transaction.
      */
-    private static void sellGiftCardMenu() {
-        System.out.print("\nEnter the amount for the new gift card: ");
-        double amount;
-        try {
-            amount = Double.parseDouble(scanner.nextLine().trim());
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Invalid amount format. Please enter a valid number.");
-            return;
-        }
-
-        String result = giftCardController.sellGiftCard(amount);
-        System.out.println(result);
-    }
-
-    /**
-     * Redeem an existing gift card.
-     */
-    private static void redeemGiftCardMenu() {
-        System.out.print("\nEnter the gift card code: ");
-        String code = scanner.nextLine().trim();
-
-        System.out.print("Enter the amount to redeem: ");
-        double amount;
-        try {
-            amount = Double.parseDouble(scanner.nextLine().trim());
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Invalid amount format. Please enter a valid number.");
-            return;
-        }
-
-        String result = giftCardController.redeemGiftCard(code, amount);
-        System.out.println(result);
-    }
-
-    /**
-     * Cashier Functionality: Process Sale
-     */
-    private static void processSale() {
+    private void processSale() {
+        clearConsole();
         Customer customer = getCustomerDetails();
         Map<Item, Integer> itemsToBuy = new HashMap<>();
+        String couponCode = appliedCouponCode;
+        double discount = 0.0;
 
         while (true) {
             List<Item> availableItems = inventory.getItems().values().stream()
-                    .filter(item -> item.getStoreID() == 1) // Assuming store ID 1 for simplicity
+                    .filter(item -> item.getStoreID() == 1) // Assuming store ID 1
                     .collect(Collectors.toList());
 
             if (availableItems.isEmpty()) {
@@ -111,7 +105,7 @@ public class CashierMenu {
             }
 
             displayAvailableItems(availableItems);
-            System.out.print("Enter the number of the item you want to add to the cart (or type 'checkout' to finish): ");
+            System.out.print("Enter the number of the item to add to the cart (or type 'checkout' to finish): ");
             String input = scanner.nextLine().trim();
 
             if (input.equalsIgnoreCase("checkout")) {
@@ -122,7 +116,7 @@ public class CashierMenu {
             try {
                 itemChoice = Integer.parseInt(input) - 1;
             } catch (NumberFormatException e) {
-                System.out.println("Invalid choice. Please enter a valid number or type 'checkout'.");
+                System.out.println("Invalid input. Please enter a valid number or 'checkout'.");
                 continue;
             }
 
@@ -140,10 +134,61 @@ public class CashierMenu {
 
             // Add to cart
             itemsToBuy.put(selectedItem, itemsToBuy.getOrDefault(selectedItem, 0) + quantity);
+            clearConsole();
             System.out.println(quantity + " of " + selectedItem.getName() + " added to cart.");
         }
 
-        // Checkout
+        // Calculate total cost
+        double totalCost = itemsToBuy.entrySet().stream()
+                .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
+                .sum();
+
+        System.out.println("Total before discounts: $" + totalCost);
+
+        // Handle coupon if applied
+        if (couponCode != null && !couponCode.isEmpty()) {
+            discount = cashierController.previewCoupon(couponCode);
+            if (discount > 0) {
+                if (cashierController.isPercentageCoupon(couponCode)) {
+                    System.out.printf("Coupon applied: %.2f%% off%n", discount);
+                    discount = totalCost * (discount / 100);
+                } else {
+                    System.out.printf("Coupon applied: $%.2f off%n", discount);
+                }
+                System.out.printf("Total after coupon: $%.2f%n", totalCost - discount);
+            } else {
+                System.out.println("Previously applied coupon is invalid. Proceeding without a discount.");
+                couponCode = ""; // Reset invalid coupon code
+                discount = 0.0;
+            }
+        } else {
+            System.out.print("Do you have a coupon code to apply? (yes/no): ");
+            String hasCoupon = scanner.nextLine().trim();
+
+            if (hasCoupon.equalsIgnoreCase("yes")) {
+                System.out.print("Enter the coupon code: ");
+                couponCode = scanner.nextLine().trim();
+
+                discount = cashierController.previewCoupon(couponCode);
+                if (discount > 0) {
+                    if (cashierController.isPercentageCoupon(couponCode)) {
+                        System.out.printf("Coupon applied: %.2f%% off%n", discount);
+                        discount = totalCost * (discount / 100);
+                    } else {
+                        System.out.printf("Coupon applied: $%.2f off%n", discount);
+                    }
+                    totalCost -= discount;
+                    System.out.printf("Total after coupon: $%.2f%n", totalCost);
+                    appliedCouponCode = couponCode; // Save the applied coupon
+                } else {
+                    System.out.println("Invalid coupon. Proceeding without applying a discount.");
+                    couponCode = ""; // Reset invalid coupon code
+                    discount = 0.0;
+                }
+            }
+        }
+
+        // Proceed to checkout
         if (!itemsToBuy.isEmpty()) {
             System.out.println("\nSelect Payment Method:");
             System.out.println("1. Cash");
@@ -165,7 +210,7 @@ public class CashierMenu {
                     paymentMethod = "Cash";
             }
 
-            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod);
+            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod, couponCode);
             if (receipt != null) {
                 System.out.println("Checkout completed successfully.");
             } else {
@@ -177,14 +222,14 @@ public class CashierMenu {
     }
 
     /**
-     * Cashier Functionality: Handle Return
+     * Handles the return of items by a customer.
      */
-    private static void handleReturn() {
+    private void handleReturn() {
         Customer customer = getCustomerDetails();
         Map<Item, Integer> itemsToReturn = new HashMap<>();
 
         while (true) {
-            System.out.print("Enter item name (or type 'done' to finish adding items): ");
+            System.out.print("Enter item name (or type 'done' to finish): ");
             String itemName = scanner.nextLine().trim();
             if (itemName.equalsIgnoreCase("done")) {
                 break;
@@ -201,7 +246,7 @@ public class CashierMenu {
             int quantity = Integer.parseInt(quantityInput);
 
             // Validate the return against existing receipts
-            if (!receiptRepo.hasReceiptForReturn(customer.getCustomerId(), itemName, quantity)) {
+            if (!receiptRepository.hasReceiptForReturn(customer.getCustomerId(), itemName, quantity)) {
                 System.out.println("Return denied: No valid receipt found for " + itemName + " with quantity " + quantity);
                 continue;
             }
@@ -232,15 +277,117 @@ public class CashierMenu {
     }
 
     /**
+     * Sells a new gift card based on user input.
+     */
+    private void sellGiftCardMenu() {
+        clearConsole();
+        System.out.print("\nEnter the amount for the new gift card: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid amount format. Please enter a valid number.");
+            return;
+        }
+
+        System.out.print("Enter customer information (optional): ");
+        String customerInfo = scanner.nextLine().trim();
+
+        String result = giftCardController.sellGiftCard(amount, customerInfo);
+        System.out.println(result);
+    }
+
+    /**
+     * Redeems an existing gift card based on user input.
+     */
+    private void redeemGiftCardMenu() {
+        clearConsole();
+        System.out.print("\nEnter the gift card code: ");
+        String code = scanner.nextLine().trim();
+
+        System.out.print("Enter the amount to redeem: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid amount format. Please enter a valid number.");
+            return;
+        }
+
+        String result = giftCardController.redeemGiftCard(code, amount);
+        System.out.println(result);
+    }
+
+    /**
+     * Applies a coupon code to the current sale.
+     */
+    private void applyCouponMenu() {
+        clearConsole();
+        while (true) {
+            System.out.println("\nCoupon Menu:");
+            System.out.println("1. Enter Coupon Code");
+            System.out.println("2. Back to Cashier Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1":
+                    System.out.print("\nEnter the coupon code: ");
+                    String couponCode = scanner.nextLine().trim();
+                    double discount = cashierController.previewCoupon(couponCode);
+
+                    if (discount > 0) {
+                        appliedCouponCode = couponCode; // Set the applied coupon
+                        System.out.println("Coupon is valid. Discount: " +
+                                (cashierController.isPercentageCoupon(couponCode) ? discount + "%" : "$" + discount));
+                        return; // Exit the menu after applying a coupon
+                    } else {
+                        System.out.println("Invalid coupon. Please check the code and try again.");
+                    }
+                    break;
+                case "2":
+                    return; // Return to Cashier Menu
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    // ==========================
+    // Helper Methods
+    // ==========================
+
+    /**
+     * Retrieves customer details, defaulting to "Guest" if no ID is provided.
+     *
+     * @return A Customer object representing the current customer.
+     */
+    private Customer getCustomerDetails() {
+        System.out.print("Enter Customer ID (or press Enter for Guest): ");
+        String customerIdInput = scanner.nextLine().trim();
+        if (customerIdInput.isEmpty()) {
+            return new Customer("Guest", -1); // Guest customer
+        } else {
+            try {
+                int customerId = Integer.parseInt(customerIdInput);
+                return new Customer("Returning Customer", customerId); // Returning customer
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid Customer ID. Defaulting to Guest.");
+                return new Customer("Guest", -1);
+            }
+        }
+    }
+
+    /**
      * Displays available items to the user.
      *
      * @param availableItems List of available items.
      */
-    private static void displayAvailableItems(List<Item> availableItems) {
+    private void displayAvailableItems(List<Item> availableItems) {
         System.out.println("\nAvailable Items:");
         for (int i = 0; i < availableItems.size(); i++) {
             Item item = availableItems.get(i);
-            System.out.printf("%d. %s (Price: $%.2f, Quantity: %d)\n",
+            System.out.printf("%d. %s (Price: $%.2f, Quantity: %d)%n",
                     i + 1, item.getName(), item.getPrice(), item.getQuantity());
         }
     }
@@ -251,7 +398,7 @@ public class CashierMenu {
      * @param selectedItem The item selected by the user.
      * @return The quantity entered, or -1 if invalid.
      */
-    private static int promptForQuantity(Item selectedItem) {
+    private int promptForQuantity(Item selectedItem) {
         System.out.print("Enter quantity: ");
         String quantityInput = scanner.nextLine().trim();
 
@@ -270,22 +417,57 @@ public class CashierMenu {
     }
 
     /**
-     * Gets customer details, either by ID for existing customers or as "Guest" for one-time purchases.
+     * Prompts the user for an integer within a specified range.
      *
-     * @return A Customer object representing the current customer.
+     * @param prompt The prompt message.
+     * @param min    The minimum acceptable value.
+     * @param max    The maximum acceptable value.
+     * @return The validated integer input, or -1 if the user chooses to cancel.
      */
-    private static Customer getCustomerDetails() {
-        System.out.print("Enter Customer ID (or press Enter for Guest): ");
-        String customerIdInput = scanner.nextLine().trim();
-        if (customerIdInput.isEmpty()) {
-            return new Customer("Guest", -1); // Guest customer
-        } else {
+    private int promptForInteger(String prompt, int min, int max) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            if (input.equalsIgnoreCase("cancel")) {
+                return -1; // Indicates cancellation
+            }
             try {
-                int customerId = Integer.parseInt(customerIdInput);
-                return new Customer("Returning Customer", customerId); // Returning customer
+                int value = Integer.parseInt(input);
+                if (value < min || value > max) {
+                    System.out.printf("Input must be between %d and %d.%n", min, max);
+                } else {
+                    return value;
+                }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid Customer ID. Defaulting to Guest.");
-                return new Customer("Guest", -1);
+                System.out.println("Invalid input. Please enter a valid integer or type 'cancel' to abort.");
+            }
+        }
+    }
+
+    /**
+     * Prompts the user for a double within a specified range.
+     *
+     * @param prompt The prompt message.
+     * @param min    The minimum acceptable value.
+     * @param max    The maximum acceptable value.
+     * @return The validated double input, or -1 if the user chooses to cancel.
+     */
+    private double promptForDouble(String prompt, double min, double max) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            if (input.equalsIgnoreCase("cancel")) {
+                return -1; // Indicates cancellation
+            }
+            try {
+                double value = Double.parseDouble(input);
+                if (value < min || value > max) {
+                    System.out.printf("Input must be between %.2f and %.2f.%n", min, max);
+                } else {
+                    return value;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number or type 'cancel' to abort.");
             }
         }
     }
