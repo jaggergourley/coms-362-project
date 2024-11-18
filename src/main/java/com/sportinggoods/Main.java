@@ -1,15 +1,20 @@
 package com.sportinggoods;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.sportinggoods.menu.MainMenu;
+import com.sportinggoods.util.InitializationManager;
 
-import com.sportinggoods.model.Inventory;
-import com.sportinggoods.model.Item;
-
+/**
+ * The entry point of the Sporting Goods Management System.
+ */
 public class Main {
 
     public static void main(String[] args) {
-        
+        // Initialize the system components
+        InitializationManager initManager = new InitializationManager();
+
+        // Instantiate and display the main menu
+        MainMenu mainMenu = new MainMenu(initManager);
+        mainMenu.display();
     }
-    
+
 }
