@@ -38,6 +38,10 @@ public class SportingGoodsMain {
     // Pricing-related controllers
     private static PricingController pricingController;
 
+    // Discount-related controllers
+    private static DiscountController discountController;
+    private static DiscountRepository discountRepository;
+
     public static void main(String[] args) {
         initializeRepositories();
         initializeCashierSystem();
@@ -77,6 +81,7 @@ public class SportingGoodsMain {
 
         shippingRepo = new ShippingOrderRepository();
         shippingController = new ShippingController(shippingRepo);
+
     }
 
     /**
@@ -91,6 +96,9 @@ public class SportingGoodsMain {
         cashierController = new CashierController(cashier, inventory, registerController, receiptRepo, couponRepo);
 
         pricingController = new PricingController(inventory); //Used by manager to adjust prices
+
+        discountRepository = new DiscountRepository();
+        discountController = new DiscountController(discountRepository, inventory);
     }
 
     /**
@@ -175,7 +183,8 @@ public class SportingGoodsMain {
             System.out.println("8. Manage Work Schedule");
             System.out.println("9. Manage Shipping Orders");
             System.out.println("10. Manage Coupons");
-            System.out.println("11. Back to Main Menu");
+            System.out.println("11. Manage Discounts");
+            System.out.println("12. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine();
@@ -212,6 +221,9 @@ public class SportingGoodsMain {
                     manageCoupons(); // New method for managing coupons
                     break;
                 case "11":
+                    manageDiscounts(); // New method for managing discounts
+                    break;
+                case "12":
                     clearConsole();
                     return;
                 default:
@@ -697,6 +709,140 @@ public class SportingGoodsMain {
             }
         }
     }
+
+    private static void manageDiscounts() {
+        while (true) {
+            clearConsole();
+            System.out.println("\nManage Discounts:");
+            System.out.println("1. Add Discount");
+            System.out.println("2. Remove Discount");
+            System.out.println("3. View All Discounts");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+        
+            String choice = scanner.nextLine().trim();
+        
+            switch (choice) {
+                case "1":
+                    handleAddDiscount();
+                    break;
+                case "2":
+                    handleRemoveDiscount();
+                    break;
+                case "3":
+                    viewAllDiscounts();
+                    break;
+                case "4":
+                    clearConsole();
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+    
+    private static void handleRemoveDiscount() {
+        clearConsole();
+        List<Discount> discounts = discountController.listDiscounts();
+        
+        if (discounts.isEmpty()) {
+            System.out.println("No active discounts to remove.");
+            System.out.println("\nPress Enter to return to the menu...");
+            scanner.nextLine();
+            return;
+        }
+        
+        System.out.println("Active Discounts:");
+        for (int i = 0; i < discounts.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, discounts.get(i));
+        }
+        
+        System.out.print("\nEnter the number of the discount to remove (or 0 to cancel): ");
+        int choice;
+        try {
+            choice = Integer.parseInt(scanner.nextLine().trim());
+            if (choice == 0) {
+                return; // Cancel removal
+            }
+            if (choice < 1 || choice > discounts.size()) {
+                System.out.println("Invalid choice. Returning to menu...");
+                System.out.println("\nPress Enter to return to the menu...");
+                scanner.nextLine();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            System.out.println("\nPress Enter to return to the menu...");
+            scanner.nextLine();
+            return;
+        }
+        
+        Discount selectedDiscount = discounts.get(choice - 1);
+        String result = discountController.removeDiscount(selectedDiscount.getTarget());
+        System.out.println(result);
+        System.out.println("\nPress Enter to return to the menu...");
+        scanner.nextLine();
+    }
+    
+    private static void viewAllDiscounts() {
+        clearConsole();
+        List<Discount> discounts = discountController.listDiscounts();
+        if (discounts.isEmpty()) {
+            System.out.println("No active discounts.");
+        } else {
+            System.out.println("Active Discounts:");
+            discounts.forEach(System.out::println);
+        }
+        System.out.println("\nPress Enter to return to the menu...");
+        scanner.nextLine();
+    }
+
+private static void handleAddDiscount() {
+    clearConsole();
+    System.out.println("\nSelect Discount Type:");
+    System.out.println("1. Apply Discount to Item");
+    System.out.println("2. Apply Discount to Department");
+    System.out.println("3. Apply Store-Wide Discount");
+    System.out.print("Enter your choice: ");
+    
+    String discountTypeChoice = scanner.nextLine().trim();
+    
+    clearConsole();
+    System.out.print("Enter discount value (numeric): ");
+    double value;
+    try {
+        value = Double.parseDouble(scanner.nextLine().trim());
+    } catch (NumberFormatException e) {
+        System.out.println("Invalid input. Discount value must be a number.");
+        System.out.println("Press Enter to return to the menu...");
+        scanner.nextLine();
+        return;
+    }
+    
+    System.out.print("Enter discount type (PERCENTAGE/FIXED): ");
+    String type = scanner.nextLine().trim();
+    
+    switch (discountTypeChoice) {
+        case "1":
+            System.out.print("Enter item name: ");
+            String itemName = scanner.nextLine().trim();
+            System.out.println(discountController.addDiscountToItem(itemName, value, type));
+            break;
+        case "2":
+            System.out.print("Enter department name: ");
+            String department = scanner.nextLine().trim();
+            System.out.println(discountController.addDiscountToDepartment(department, value, type));
+            break;
+        case "3":
+            System.out.println(discountController.addDiscountStoreWide(value, type));
+            break;
+        default:
+            System.out.println("Invalid choice. Returning to Manage Discounts menu.");
+    }
+    
+    System.out.println("\nPress Enter to return to the menu...");
+    scanner.nextLine();
+}
     
     /**
      * Manager Functionality: Update Supplier Information
