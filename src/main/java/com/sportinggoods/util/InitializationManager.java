@@ -4,44 +4,60 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 /**
- * Manages the initialization of controllers, repositories, and models.
- * Ensures proper dependency injection and resource management.
+ * Manages initialization of controllers, repositories, and models.
  */
 public class InitializationManager {
     // Controllers
-    private SupplierController supplierController;
-    private PricingController pricingController;
-    private GiftCardController giftCardController;
-    private ShippingController shippingController;
     private CashierController cashierController;
-    private RegisterController registerController;
+    private CustomerController customerController;
+    private DiscountController discountController;
+    private GiftCardController giftCardController;
+    private PricingController pricingController;
     private ReceiptController receiptController;
-
-    // Repositories
-    private SupplierRepository supplierRepo;
-    private SupplierOrderRepository orderRepo;
-    private ItemRepository itemRepository;
-    private GiftCardRepository giftCardRepository;
-    private ShippingOrderRepository shippingRepo;
-    private ReceiptRepository receiptRepo;
+    private RegisterController registerController;
+    private ShippingController shippingController;
+    private SupplierController supplierController;
 
     // Models
-    private Inventory inventory;
-    private Employee employee;
-    private Schedule schedule;
-    private Register register;
     private Cashier cashier;
+    private Cart cart;
+    private Coupon coupon;
+    private Customer customer;
+    private Discount discount;
+    private Employee employee;
+    private GiftCard giftCard;
+    private Inventory inventory;
+    private Item item;
+    private Manager manager;
+    private Receipt receipt;
+    private Register register;
+    private Schedule schedule;
+    private Shipper shipper;
+    private ShippingOrder shippingOrder;
+    private Store store;
+    private Supplier supplier;
+    private SupplierOrder supplierOrder;
+
+    // Repositories
+    private CashierRepository cashierRepo;
+    private CouponRepository couponRepo;
+    private CustomerRepository customerRepo;
+    private DiscountRepository discountRepo;
+    private GiftCardRepository giftCardRepo;
+    private ReceiptRepository receiptRepo;
+    private RegisterRepository registerRepo;
+    private ShippingOrderRepository shippingOrderRepo;
+    private SupplierOrderRepository supplierOrderRepo;
+    private SupplierRepository supplierRepo;
 
     // Scanner for user input
     private Scanner scanner;
 
     /**
-     * Initializes all components required by the system.
+     * Initializes all components.
      */
     public InitializationManager() {
         this.scanner = new Scanner(System.in);
@@ -52,74 +68,112 @@ public class InitializationManager {
     }
 
     /**
+     * Initializes all controllers.
+     */
+    private void initializeControllers() {
+        cashierController = new CashierController(cashier, inventory, registerController, receiptRepo, couponRepo);
+        customerController = new CustomerController(customerRepo);
+        discountController = new DiscountController(discountRepo, inventory);
+        giftCardController = new GiftCardController(giftCardRepo);
+        pricingController = new PricingController(inventory);
+        receiptController = new ReceiptController(receiptRepo);
+        registerController = new RegisterController(register);
+        shippingController = new ShippingController(shippingOrderRepo);
+        supplierController = new SupplierController(supplierRepo, supplierOrderRepo);
+    }
+
+    /**
+     * Initializes models.
+     */
+    private void initializeModels() {
+        cashier = new Cashier("John Doe", 101, null);
+        cart = new Cart();
+        employee = new Employee("Mason", 1, new Schedule());
+        inventory = new Inventory();
+        receipt = new Receipt();
+        register = new Register();
+        schedule = new Schedule();
+        shipper = new Shipper();
+        shippingOrder = new ShippingOrder();
+        store = new Store();
+        supplier = new Supplier();
+        supplierOrder = new SupplierOrder();
+    }
+
+    /**
      * Initializes all repositories.
      */
     private void initializeRepositories() {
-        supplierRepo = new SupplierRepository();
-        orderRepo = new SupplierOrderRepository();
-        itemRepository = new ItemRepository();
-        giftCardRepository = new GiftCardRepository(new ArrayList<>());
-        shippingRepo = new ShippingOrderRepository();
+        cashierRepo = new CashierRepository();
+        couponRepo = new CouponRepository();
+        customerRepo = new CustomerRepository();
+        discountRepo = new DiscountRepository();
+        giftCardRepo = new GiftCardRepository();
         receiptRepo = new ReceiptRepository();
+        registerRepo = new RegisterRepository();
+        shippingOrderRepo = new ShippingOrderRepository();
+        supplierOrderRepo = new SupplierOrderRepository();
+        supplierRepo = new SupplierRepository();
     }
 
     /**
-     * Initializes models like Employee and Schedule.
-     */
-    private void initializeModels() {
-        schedule = new Schedule();
-        employee = new Employee("Mason", 1, schedule);
-        inventory = new Inventory();
-    }
-
-    /**
-     * Initializes all controllers with their respective repositories and models.
-     */
-    private void initializeControllers() {
-        supplierController = new SupplierController(supplierRepo, orderRepo);
-        pricingController = new PricingController(inventory);
-        giftCardController = new GiftCardController(giftCardRepository);
-        shippingController = new ShippingController(shippingRepo);
-        receiptController = new ReceiptController(receiptRepo); // Initialize ReceiptController
-
-        register = new Register(); // Initialize Register model
-        registerController = new RegisterController(register);
-
-        cashier = new Cashier("John Doe", 101, null);
-        cashierController = new CashierController(cashier, inventory, registerController, receiptRepo);
-    }
-
-    /**
-     * Populates the inventory with initial items.
+     * Fills inventory with initial items.
      */
     private void fillInventory() {
-        // Example: Adding initial items
-        inventory.addItem(new Item("Football", 29.99, "Sports", 50, 1));
-        inventory.addItem(new Item("Basketball", 24.99, "Sports", 40, 1));
-        inventory.addItem(new Item("Tennis Racket", 89.99, "Sports", 20, 1));
-        // Add more items as needed
+        inventory.addItem(new Item("Tennis Ball", 29.99, "Sports", 10, 1));
+        inventory.addItem(new Item("Tennis Racket", 89.99, "Sports", 5, 1));
+        inventory.addItem(new Item("Football", 24.99, "Sports", 5, 1));
+        inventory.addItem(new Item("Bike", 309.99, "Sports", 5, 1));
+        inventory.addItem(new Item("Shorts", 89.99, "Apparel", 5, 1));
     }
 
-    // Getters for Controllers and Models
-
-    public SupplierController getSupplierController() { return supplierController; }
-    public PricingController getPricingController() { return pricingController; }
-    public GiftCardController getGiftCardController() { return giftCardController; }
-    public ShippingController getShippingController() { return shippingController; }
+    // Getters for controllers
     public CashierController getCashierController() { return cashierController; }
-    public RegisterController getRegisterController() { return registerController; }
+    public CustomerController getCustomerController() { return customerController; }
+    public DiscountController getDiscountController() { return discountController; }
+    public GiftCardController getGiftCardController() { return giftCardController; }
+    public PricingController getPricingController() { return pricingController; }
     public ReceiptController getReceiptController() { return receiptController; }
-    public Inventory getInventory() { return inventory; }
-    public Employee getEmployee() { return employee; }
-    public Register getRegister() { return register; }
+    public RegisterController getRegisterController() { return registerController; }
+    public ShippingController getShippingController() { return shippingController; }
+    public SupplierController getSupplierController() { return supplierController; }
+
+    // Getters for models
     public Cashier getCashier() { return cashier; }
+    public Cart getCart() { return cart; }
+    public Coupon getCoupon() { return coupon; }
+    public Customer getCustomer() { return customer; }
+    public Discount getDiscount() { return discount; }
+    public Employee getEmployee() { return employee; }
+    public GiftCard getGiftCard() { return giftCard; }
+    public Inventory getInventory() { return inventory; }
+    public Item getItem() { return item; }
+    public Manager getManager() { return manager; }
+    public Receipt getReceipt() { return receipt; }
+    public Register getRegister() { return register; }
+    public Schedule getSchedule() { return schedule; }
+    public Shipper getShipper() { return shipper; }
+    public ShippingOrder getShippingOrder() { return shippingOrder; }
+    public Store getStore() { return store; }
+    public Supplier getSupplier() { return supplier; }
+    public SupplierOrder getSupplierOrder() { return supplierOrder; }
+
+    // Getters for repositories
+    public CashierRepository getCashierRepo() { return cashierRepo; }
+    public CouponRepository getCouponRepo() { return couponRepo; }
+    public CustomerRepository getCustomerRepo() { return customerRepo; }
+    public DiscountRepository getDiscountRepo() { return discountRepo; }
+    public GiftCardRepository getGiftCardRepo() { return giftCardRepo; }
+    public ReceiptRepository getReceiptRepo() { return receiptRepo; }
+    public RegisterRepository getRegisterRepo() { return registerRepo; }
+    public ShippingOrderRepository getShippingOrderRepo() { return shippingOrderRepo; }
+    public SupplierOrderRepository getSupplierOrderRepo() { return supplierOrderRepo; }
+    public SupplierRepository getSupplierRepo() { return supplierRepo; }
+
     public Scanner getScanner() { return scanner; }
-    public ShippingOrderRepository getShippingRepo() {
-        return shippingRepo;
-    }
 
     /**
-     * Closes the Scanner and any other resources.
+     * Shuts down and releases resources.
      */
     public void shutdown() {
         if (scanner != null) {

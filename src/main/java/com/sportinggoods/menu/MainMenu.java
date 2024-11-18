@@ -1,40 +1,29 @@
 package com.sportinggoods.menu;
 
-import com.sportinggoods.commands.MenuInvoker;
 import com.sportinggoods.util.InitializationManager;
 
 /**
- * Represents the main menu of the Sporting Goods Management System,
- * allowing users to select their role.
+ * Main menu for selecting user roles.
  */
 public class MainMenu {
-    private MenuInvoker invoker;
     private InitializationManager initManager;
 
-    public MainMenu(InitializationManager initManager) {
-        this.invoker = new MenuInvoker();
-        this.initManager = initManager;
-        registerCommands();
-    }
-
     /**
-     * Registers the main menu commands with their corresponding actions.
+     * Initializes MainMenu with dependencies.
+     *
+     * @param initManager Dependency injection manager.
      */
-    private void registerCommands() {
-        invoker.register("1", this::managerMenu);
-        invoker.register("2", this::cashierMenu);
-        invoker.register("3", this::employeeMenu);
-        invoker.register("4", this::customerMenu);
-        invoker.register("5", this::exitSystem);
+    public MainMenu(InitializationManager initManager) {
+        this.initManager = initManager;
     }
 
     /**
-     * Displays the main menu and handles user input.
+     * Displays the main menu and handles input.
      */
     public void display() {
         while (true) {
+            clearConsole();
             System.out.println("\n=== Sporting Goods Management System ===");
-            System.out.println("Please select your role:");
             System.out.println("1. Manager");
             System.out.println("2. Cashier");
             System.out.println("3. Employee");
@@ -43,48 +32,60 @@ public class MainMenu {
             System.out.print("Enter your choice: ");
 
             String choice = initManager.getScanner().nextLine().trim();
-            invoker.executeCommand(choice);
+
+            switch (choice) {
+                case "1":
+                    new ManagerMenu(initManager, initManager.getScanner()).display();
+                    break;
+                case "2":
+                    new CashierMenu(initManager, initManager.getScanner()).display();
+                    break;
+                case "3":
+                    new EmployeeMenu(initManager, initManager.getScanner()).display();
+                    break;
+                case "4":
+                    new CustomerMenu(initManager, initManager.getScanner()).display();
+                    break;
+                case "5":
+                    exitSystem();
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    pause();
+            }
         }
     }
 
     /**
-     * Launches the Manager menu.
+     * Clears the console.
      */
-    private void managerMenu() {
-        ManagerMenu managerMenu = new ManagerMenu(initManager);
-        managerMenu.display();
+    private void clearConsole() {
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            for (int i = 0; i < 50; i++) System.out.println(); // Fallback
+        }
     }
 
     /**
-     * Launches the Cashier menu.
-     */
-    private void cashierMenu() {
-        CashierMenu cashierMenu = new CashierMenu(initManager);
-        cashierMenu.display();
-    }
-
-    /**
-     * Launches the Employee menu.
-     */
-    private void employeeMenu() {
-        EmployeeMenu employeeMenu = new EmployeeMenu(initManager);
-        employeeMenu.display();
-    }
-
-    /**
-     * Launches the Customer menu.
-     */
-    private void customerMenu() {
-        CustomerMenu customerMenu = new CustomerMenu(initManager);
-        customerMenu.display();
-    }
-
-    /**
-     * Exits the system gracefully.
+     * Exits the system.
      */
     private void exitSystem() {
         System.out.println("Exiting the system. Goodbye!");
-        initManager.shutdown(); // Close Scanner
+        initManager.shutdown();
         System.exit(0);
+    }
+
+    /**
+     * Pauses for user input.
+     */
+    private void pause() {
+        System.out.println("Press Enter to continue...");
+        initManager.getScanner().nextLine();
     }
 }

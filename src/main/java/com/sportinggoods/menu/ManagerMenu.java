@@ -1,13 +1,12 @@
 package com.sportinggoods.menu;
 
-import com.sportinggoods.commands.MenuInvoker;
 import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
+import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -15,111 +14,279 @@ import java.util.stream.Collectors;
  * Represents the Manager Menu in the Sporting Goods Management System.
  * Allows managers to perform various administrative tasks.
  */
-public class ManagerMenu {
-    private Scanner scanner;
-    private MenuInvoker managerInvoker;
-    private InitializationManager initManager;
-    private Employee employee;
+public class ManagerMenu extends BaseMenu {
 
-    // Controllers obtained from InitializationManager
-    private SupplierController supplierController;
-    private PricingController pricingController;
+    // Controllers
+    private CashierController cashierController;
+    private DiscountController discountController;
     private GiftCardController giftCardController;
+    private PricingController pricingController;
     private ShippingController shippingController;
+    private SupplierController supplierController;
+
+    // Repositories and Models
+    private Employee employee;
     private Inventory inventory;
+    private ShippingOrderRepository shippingRepo;
 
     /**
-     * Constructs a ManagerMenu with the provided InitializationManager.
+     * Constructs a ManagerMenu with the provided InitializationManager and Scanner.
      *
      * @param initManager The InitializationManager instance for dependency injection.
+     * @param scanner     The shared Scanner instance for user input.
      */
-    public ManagerMenu(InitializationManager initManager) {
-        this.scanner = new Scanner(System.in);
-        this.managerInvoker = new MenuInvoker();
-        this.initManager = initManager;
-
-        // Initialize controllers from InitializationManager
-        this.supplierController = initManager.getSupplierController();
-        this.pricingController = initManager.getPricingController();
+    public ManagerMenu(InitializationManager initManager, Scanner scanner) {
+        super(initManager, scanner);
+        // Initialize controllers and models
+        this.cashierController = initManager.getCashierController();
+        this.discountController = initManager.getDiscountController();
         this.giftCardController = initManager.getGiftCardController();
+        this.pricingController = initManager.getPricingController();
         this.shippingController = initManager.getShippingController();
+        this.supplierController = initManager.getSupplierController();
+        this.shippingRepo = initManager.getShippingOrderRepo();
         this.inventory = initManager.getInventory();
-
-        // Initialize Employee
         this.employee = initManager.getEmployee();
-
-        registerCommands();
     }
 
-    /**
-     * Registers manager menu commands with their corresponding actions.
-     */
-    private void registerCommands() {
-        managerInvoker.register("1", this::coordinateSuppliers);
-        managerInvoker.register("2", this::placeSupplierOrder);
-        managerInvoker.register("3", this::viewAllSuppliers);
-        managerInvoker.register("4", this::viewAllSupplierOrders);
-        managerInvoker.register("5", this::adjustPriceMenu);
-        managerInvoker.register("6", this::updateInventory);
-        managerInvoker.register("7", this::manageGiftCards);
-        managerInvoker.register("8", this::manageShifts);
-        managerInvoker.register("9", this::manageShippingOrders);
-        managerInvoker.register("10", this::backToMainMenu);
+    @Override
+    protected void registerCommands() {
+        invoker.register("1", this::coordinateSuppliers);
+        invoker.register("2", this::placeSupplierOrder);
+        invoker.register("3", this::viewAllSuppliers);
+        invoker.register("4", this::viewAllSupplierOrders);
+        invoker.register("5", this::adjustPriceMenu);
+        invoker.register("6", this::updateInventory);
+        invoker.register("7", this::manageGiftCards);
+        invoker.register("8", this::manageShifts);
+        invoker.register("9", this::manageShippingOrders);
+        invoker.register("10", this::manageCoupons);
+        invoker.register("11", this::manageDiscounts);
     }
 
+    @Override
+    protected void printMenuOptions() {
+        clearConsole();
+        System.out.println("\nManager Menu:");
+        System.out.println("1. Coordinate Suppliers");
+        System.out.println("2. Place Supplier Order");
+        System.out.println("3. View All Suppliers");
+        System.out.println("4. View All Supplier Orders");
+        System.out.println("5. Adjust Item Price");
+        System.out.println("6. Update Inventory");
+        System.out.println("7. Manage Gift Cards");
+        System.out.println("8. Manage Work Schedule");
+        System.out.println("9. Manage Shipping Orders");
+        System.out.println("10. Manage Coupons");
+        System.out.println("11. Manage Discounts");
+        System.out.println("12. Back to Main Menu");
+    }
+
+    @Override
+    protected boolean isExitChoice(String choice) {
+        return choice.equals("12");
+    }
+
+    @Override
+    protected void handleExit() {
+        System.out.println("Returning to Main Menu...");
+    }
+
+    // ==========================
+    // Coupon Management
+    // ==========================
+
     /**
-     * Displays the Manager Menu and handles user input.
+     * Manages coupon-related operations.
      */
-    public void display() {
+    private void manageCoupons() {
+        clearConsole();
         while (true) {
-            System.out.println("\nManager Menu:");
-            System.out.println("1. Coordinate Suppliers");
-            System.out.println("2. Place Supplier Order");
-            System.out.println("3. View All Suppliers");
-            System.out.println("4. View All Supplier Orders");
-            System.out.println("5. Adjust Item Price");
-            System.out.println("6. Update Inventory");
-            System.out.println("7. Manage Gift Cards");
-            System.out.println("8. Manage Work Schedule");
-            System.out.println("9. Manage Shipping Orders");
-            System.out.println("10. Back to Main Menu");
+            System.out.println("\nManage Coupon Codes:");
+            System.out.println("1. View All Coupons");
+            System.out.println("2. Add New Coupon");
+            System.out.println("3. Delete a Coupon");
+            System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine().trim();
-            if (choice.equals("10")) {
-                break; // Exit to Main Menu
+
+            switch (choice) {
+                case "1":
+                    cashierController.viewAllCoupons();
+                    break;
+                case "2":
+                    cashierController.addNewCoupon();
+                    break;
+                case "3":
+                    cashierController.deleteCoupon();
+                    break;
+                case "4":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
             }
-            managerInvoker.executeCommand(choice);
         }
     }
 
     // ==========================
-    // Supplier Coordination
+    // Discount Management
     // ==========================
 
     /**
-     * Handles the "Coordinate Suppliers" use case.
+     * Manages discount-related operations.
      */
-    private void coordinateSuppliers() {
+    private void manageDiscounts() {
         while (true) {
-            System.out.println("\nCoordinate Suppliers:");
-            System.out.println("1. View Suppliers");
-            System.out.println("2. Update Supplier Information");
-            System.out.println("3. Register New Supplier");
+            clearConsole();
+            System.out.println("\nManage Discounts:");
+            System.out.println("1. Add Discount");
+            System.out.println("2. Remove Discount");
+            System.out.println("3. View All Discounts");
             System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
 
-            String choice = scanner.nextLine();
+            String choice = scanner.nextLine().trim();
 
             switch (choice) {
                 case "1":
-                    viewAllSuppliers();
+                    handleAddDiscount();
                     break;
                 case "2":
-                    updateSupplierInformation();
+                    handleRemoveDiscount();
                     break;
                 case "3":
-                    registerNewSupplier();
+                    viewAllDiscounts();
+                    break;
+                case "4":
+                    clearConsole();
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /**
+     * Adds a new discount based on user input.
+     */
+    private void handleAddDiscount() {
+        clearConsole();
+        System.out.println("\nSelect Discount Type:");
+        System.out.println("1. Apply Discount to Item");
+        System.out.println("2. Apply Discount to Department");
+        System.out.println("3. Apply Store-Wide Discount");
+        System.out.print("Enter your choice: ");
+
+        String discountTypeChoice = scanner.nextLine().trim();
+
+        clearConsole();
+        System.out.print("Enter discount value (numeric): ");
+        double value;
+        try {
+            value = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Discount value must be a number.");
+            promptReturn();
+            return;
+        }
+
+        System.out.print("Enter discount type (PERCENTAGE/FIXED): ");
+        String type = scanner.nextLine().trim();
+
+        switch (discountTypeChoice) {
+            case "1":
+                System.out.print("Enter item name: ");
+                String itemName = scanner.nextLine().trim();
+                System.out.println(discountController.addDiscountToItem(itemName, value, type));
+                break;
+            case "2":
+                System.out.print("Enter department name: ");
+                String department = scanner.nextLine().trim();
+                System.out.println(discountController.addDiscountToDepartment(department, value, type));
+                break;
+            case "3":
+                System.out.println(discountController.addDiscountStoreWide(value, type));
+                break;
+            default:
+                System.out.println("Invalid choice. Returning to Manage Discounts menu.");
+        }
+
+        promptReturn();
+    }
+
+    /**
+     * Removes an existing discount based on user selection.
+     */
+    private void handleRemoveDiscount() {
+        clearConsole();
+        List<Discount> discounts = discountController.listDiscounts();
+
+        if (discounts.isEmpty()) {
+            System.out.println("No active discounts to remove.");
+            promptReturn();
+            return;
+        }
+
+        System.out.println("Active Discounts:");
+        for (int i = 0; i < discounts.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, discounts.get(i));
+        }
+
+        System.out.print("\nEnter the number of the discount to remove (or 0 to cancel): ");
+        int choice = promptForInteger("", 0, discounts.size());
+
+        if (choice == 0) {
+            return; // Cancel removal
+        }
+
+        Discount selectedDiscount = discounts.get(choice - 1);
+        String result = discountController.removeDiscount(selectedDiscount.getTarget());
+        System.out.println(result);
+        promptReturn();
+    }
+
+    /**
+     * Displays all active discounts.
+     */
+    private void viewAllDiscounts() {
+        clearConsole();
+        List<Discount> discounts = discountController.listDiscounts();
+        if (discounts.isEmpty()) {
+            System.out.println("No active discounts.");
+        } else {
+            System.out.println("Active Discounts:");
+            discounts.forEach(System.out::println);
+        }
+        promptReturn();
+    }
+
+    // ==========================
+    // Gift Card Management
+    // ==========================
+
+    /**
+     * Manages gift card-related operations.
+     */
+    private void manageGiftCards() {
+        clearConsole();
+        while (true) {
+            System.out.println("\nGift Card Management:");
+            System.out.println("1. Sell New Gift Card");
+            System.out.println("2. Redeem Gift Card");
+            System.out.println("3. View Gift Card Details");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1":
+                    sellGiftCardMenu();
+                    break;
+                case "2":
+                    redeemGiftCardMenu();
+                    break;
+                case "3":
+                    viewGiftCardDetailsMenu();
                     break;
                 case "4":
                     return;
@@ -130,209 +297,50 @@ public class ManagerMenu {
     }
 
     /**
-     * Manager Functionality: View All Suppliers
+     * Sells a new gift card based on user input.
      */
-    private void viewAllSuppliers() {
-        List<Supplier> suppliers = supplierController.getAllSuppliers();
-        if (suppliers.isEmpty()) {
-            System.out.println("\nNo suppliers registered.");
+    private void sellGiftCardMenu() {
+        clearConsole();
+        System.out.print("\nEnter the amount for the new gift card: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid amount format. Please enter a valid number.");
             return;
         }
-        System.out.println("\nRegistered Suppliers:");
-        suppliers.forEach(System.out::println);
+
+        System.out.print("Enter customer information (optional): ");
+        String customerInfo = scanner.nextLine().trim();
+
+        String result = giftCardController.sellGiftCard(amount, customerInfo);
+        System.out.println(result);
     }
 
     /**
-     * Manager Functionality: Register a New Supplier
+     * Redeems an existing gift card based on user input.
      */
-    private void registerNewSupplier() {
-        System.out.print("\nEnter Supplier ID: ");
-        String supplierId = scanner.nextLine();
+    private void redeemGiftCardMenu() {
+        System.out.print("\nEnter the gift card code: ");
+        String code = scanner.nextLine().trim();
 
-        if (supplierController.getSupplierById(supplierId) != null) {
-            System.out.println("Supplier ID already exists. Please try a different ID.");
-            return;
-        }
+        System.out.print("Enter the amount to redeem: ");
+        double amount = promptForDouble("", 0.01, Double.MAX_VALUE);
 
-        System.out.print("Enter Supplier Name: ");
-        String name = scanner.nextLine();
-
-        System.out.print("Enter Contact Information: ");
-        String contactInfo = scanner.nextLine();
-
-        System.out.print("Enter Relationship Status: ");
-        String relationshipStatus = scanner.nextLine();
-
-        System.out.print("Enter Follow-Up Action: ");
-        String followUpAction = scanner.nextLine();
-
-        Supplier newSupplier = new Supplier(supplierId, name, contactInfo, relationshipStatus, followUpAction);
-        boolean success = supplierController.addSupplier(newSupplier);
-        if (success) {
-            System.out.println("New supplier registered successfully.");
-        } else {
-            System.out.println("Failed to register new supplier.");
-        }
+        String result = giftCardController.redeemGiftCard(code, amount);
+        System.out.println(result);
     }
 
     /**
-     * Manager Functionality: Update Supplier Information
+     * Views details of a specific gift card.
      */
-    private void updateSupplierInformation() {
-        System.out.print("\nEnter Supplier ID to update: ");
-        String supplierId = scanner.nextLine();
+    private void viewGiftCardDetailsMenu() {
+        clearConsole();
+        System.out.print("\nEnter the gift card code to view details: ");
+        String code = scanner.nextLine().trim();
 
-        Supplier supplier = supplierController.getSupplierById(supplierId);
-        if (supplier == null) {
-            System.out.println("Supplier not found.");
-            return;
-        }
-
-        System.out.println("Current Supplier Information:");
-        System.out.println(supplier);
-
-        System.out.print("Enter new Relationship Status (current: " + supplier.getRelationshipStatus() + "): ");
-        String newStatus = scanner.nextLine();
-        if (newStatus.isEmpty()) {
-            newStatus = supplier.getRelationshipStatus(); // Retain current if input is empty
-        }
-
-        System.out.print("Enter Follow-Up Action (current: " + supplier.getFollowUpAction() + "): ");
-        String newAction = scanner.nextLine();
-        if (newAction.isEmpty()) {
-            newAction = supplier.getFollowUpAction(); // Retain current if input is empty
-        }
-
-        boolean success = supplierController.coordinateSuppliers(supplierId, newStatus, newAction);
-        if (success) {
-            System.out.println("Supplier updated successfully.");
-        } else {
-            System.out.println("Failed to update supplier.");
-        }
-    }
-
-    // ==========================
-    // Supplier Orders
-    // ==========================
-
-    /**
-     * Manager Functionality: Place Supplier Order
-     */
-    private void placeSupplierOrder() {
-        System.out.println("\nPlace Supplier Order:");
-
-        // Step 1: Select Supplier
-        List<Supplier> suppliers = supplierController.getAllSuppliers();
-        if (suppliers.isEmpty()) {
-            System.out.println("No suppliers available. Please register a supplier first.");
-            return;
-        }
-
-        System.out.println("Available Suppliers:");
-        suppliers.forEach(System.out::println);
-
-        System.out.print("Enter Supplier ID to place order: ");
-        String supplierId = scanner.nextLine();
-        Supplier supplier = supplierController.getSupplierById(supplierId);
-        if (supplier == null) {
-            System.out.println("Supplier not found.");
-            return;
-        }
-
-        // Step 2: Enter Product Details
-        System.out.print("Enter Product Details: ");
-        String productDetails = scanner.nextLine();
-
-        // Step 3: Enter Quantity
-        int quantity = promptForInteger("Enter Quantity: ", 1, Integer.MAX_VALUE);
-
-        // Step 4: Enter Total Price
-        double totalPrice = promptForDouble("Enter Total Price: ", 0.01, Double.MAX_VALUE);
-
-        // Place the order
-        boolean success = supplierController.placeSupplierOrder(supplierId, productDetails, quantity, totalPrice);
-        if (success) {
-            System.out.println("Order placed successfully.");
-        } else {
-            System.out.println("Failed to place order.");
-        }
-    }
-
-    /**
-     * Manager Functionality: View All Supplier Orders
-     */
-    private void viewAllSupplierOrders() {
-        List<SupplierOrder> orders = supplierController.getAllSupplierOrders();
-        if (orders.isEmpty()) {
-            System.out.println("\nNo supplier orders found.");
-            return;
-        }
-        System.out.println("\nSupplier Orders:");
-        orders.forEach(System.out::println);
-    }
-
-    // ==========================
-    // Pricing Management
-    // ==========================
-
-    /**
-     * Manager Functionality: Adjust Item Price
-     */
-    private void adjustPriceMenu() {
-        while (true) {
-            System.out.println("\nAdjust Item Price Menu:");
-            System.out.println("1. Search by Name");
-            System.out.println("2. Search by Department");
-            System.out.println("3. Search by Store ID");
-            System.out.println("4. Back to Manager Menu");
-            System.out.print("Enter your choice: ");
-
-            String searchChoice = scanner.nextLine().trim();
-            String criteria = switch (searchChoice) {
-                case "1" -> "name";
-                case "2" -> "department";
-                case "3" -> "storeid";
-                case "4" -> {
-                    System.out.println("Returning to Manager Menu.");
-                    yield null;
-                }
-                default -> {
-                    System.out.println("Invalid choice. Please try again.");
-                    yield null;
-                }
-            };
-            if (criteria == null) continue;
-
-            System.out.print("Enter the search value: ");
-            String value = scanner.nextLine().trim();
-
-            List<Item> foundItems = pricingController.searchItems(criteria, value);
-
-            if (foundItems.isEmpty()) {
-                System.out.println("No items found with the specified criteria. Please try another search.");
-                continue;
-            }
-
-            System.out.println("\nFound Items:");
-            for (int i = 0; i < foundItems.size(); i++) {
-                System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
-            }
-
-            System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
-            int itemIndex = promptForInteger("", -1, foundItems.size() - 1);
-            if (itemIndex == -1) continue;
-            if (itemIndex < 0 || itemIndex >= foundItems.size()) {
-                System.out.println("Invalid selection. Returning to search menu.");
-                continue;
-            }
-
-            Item selectedItem = foundItems.get(itemIndex);
-            double newPrice = promptForDouble("Enter the new price: ", 0.01, Double.MAX_VALUE);
-
-            String result = pricingController.adjustPrice(selectedItem, newPrice);
-            System.out.println(result);
-            break;
-        }
+        String details = giftCardController.viewGiftCardDetails(code);
+        System.out.println(details);
     }
 
     // ==========================
@@ -340,7 +348,7 @@ public class ManagerMenu {
     // ==========================
 
     /**
-     * Manager Functionality: Update Inventory
+     * Manages inventory-related operations.
      */
     private void updateInventory() {
         System.out.println("\nCurrent Inventory:");
@@ -508,7 +516,7 @@ public class ManagerMenu {
     }
 
     /**
-     * Sends an item to another store.
+     * Sends an item to another store based on user input.
      */
     private void sendItemToAnotherStore() {
         System.out.print("Enter item name: ");
@@ -549,125 +557,62 @@ public class ManagerMenu {
     }
 
     // ==========================
-    // Gift Card Management
+    // Pricing Management
     // ==========================
 
     /**
-     * Manager Functionality: Manage Gift Cards
+     * Manages pricing-related operations.
      */
-    private void manageGiftCards() {
+    private void adjustPriceMenu() {
         while (true) {
-            System.out.println("\nGift Card Management:");
-            System.out.println("1. Sell New Gift Card");
-            System.out.println("2. Redeem Gift Card");
-            System.out.println("3. Back to Manager Menu");
+            System.out.println("\nAdjust Item Price Menu:");
+            System.out.println("1. Search by Name");
+            System.out.println("2. Search by Department");
+            System.out.println("3. Search by Store ID");
+            System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
-            String choice = scanner.nextLine().trim();
-            switch (choice) {
-                case "1":
-                    sellGiftCardMenu();
-                    break;
-                case "2":
-                    redeemGiftCardMenu();
-                    break;
-                case "3":
-                    return;
-                default:
+
+            String searchChoice = scanner.nextLine().trim();
+            String criteria = switch (searchChoice) {
+                case "1" -> "name";
+                case "2" -> "department";
+                case "3" -> "storeid";
+                case "4" -> {
+                    System.out.println("Returning to Manager Menu.");
+                    yield null;
+                }
+                default -> {
                     System.out.println("Invalid choice. Please try again.");
+                    yield null;
+                }
+            };
+            if (criteria == null) continue;
+
+            System.out.print("Enter the search value: ");
+            String value = scanner.nextLine().trim();
+
+            List<Item> foundItems = pricingController.searchItems(criteria, value);
+
+            if (foundItems.isEmpty()) {
+                System.out.println("No items found with the specified criteria. Please try another search.");
+                continue;
             }
-        }
-    }
 
-    /**
-     * Sell a new gift card.
-     */
-    private void sellGiftCardMenu() {
-        System.out.print("\nEnter the amount for the new gift card: ");
-        double amount = promptForDouble("", 0.01, Double.MAX_VALUE);
-
-        String result = giftCardController.sellGiftCard(amount);
-        System.out.println(result);
-    }
-
-    /**
-     * Redeem an existing gift card.
-     */
-    private void redeemGiftCardMenu() {
-        System.out.print("\nEnter the gift card code: ");
-        String code = scanner.nextLine().trim();
-
-        double amount = promptForDouble("Enter the amount to redeem: ", 0.01, Double.MAX_VALUE);
-
-        String result = giftCardController.redeemGiftCard(code, amount);
-        System.out.println(result);
-    }
-
-    // ==========================
-    // Work Shift Management
-    // ==========================
-
-    /**
-     * Manager Functionality: Manage Work Shifts
-     */
-    private void manageShifts() {
-        while (true) {
-            System.out.println("\nWork Shift Management:");
-            System.out.println("1. Add a Work Shift");
-            System.out.println("2. Remove a Work Shift");
-            System.out.println("3. Back to Manager Menu");
-            System.out.print("Please select an option: ");
-            String choice = scanner.nextLine().trim();
-
-            switch (choice) {
-                case "1":
-                    addWorkShift();
-                    break;
-                case "2":
-                    removeWorkShift();
-                    break;
-                case "3":
-                    return;  // Exit to Manager Menu
-                default:
-                    System.out.println("Invalid choice, please try again.");
-                    break;
+            System.out.println("\nFound Items:");
+            for (int i = 0; i < foundItems.size(); i++) {
+                System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
             }
-        }
-    }
 
-    /**
-     * Adds a new work shift.
-     */
-    private void addWorkShift() {
-        try {
-            int date = promptForInteger("Enter the date of shift (DD): ", 1, 31);
-            String startTime = promptForTime("Enter the start time of the shift (HH:mm): ");
-            String endTime = promptForTime("Enter the end time of the shift (HH:mm): ");
+            System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
+            int itemIndex = promptForInteger("", 0, foundItems.size());
+            if (itemIndex == 0) continue;
 
-            Shift shift = new Shift(date, startTime, endTime);
-            employee.getWorkSchedule().addShift(shift);
+            Item selectedItem = foundItems.get(itemIndex - 1);
+            double newPrice = promptForDouble("Enter the new price: ", 0.01, Double.MAX_VALUE);
 
-            System.out.println("Shift added: " + startTime + " to " + endTime);
-        } catch (Exception e) {
-            System.out.println("Error adding shift: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Removes an existing work shift.
-     */
-    private void removeWorkShift() {
-        try {
-            int dateToRemove = promptForInteger("Enter the date of shift to remove (DD): ", 1, 31);
-            String startTimeToRemove = promptForTime("Enter the start time of the shift to remove (HH:mm): ");
-            String endTimeToRemove = promptForTime("Enter the end time of the shift to remove (HH:mm): ");
-
-            Shift shift = new Shift(dateToRemove, startTimeToRemove, endTimeToRemove);
-            employee.getWorkSchedule().deleteShift(shift);
-
-            System.out.println("Shift removed with date: " + dateToRemove +
-                    ", start time: " + startTimeToRemove + " and end time: " + endTimeToRemove);
-        } catch (Exception e) {
-            System.out.println("Error removing shift: " + e.getMessage());
+            String result = pricingController.adjustPrice(selectedItem, newPrice);
+            System.out.println(result);
+            break;
         }
     }
 
@@ -676,7 +621,7 @@ public class ManagerMenu {
     // ==========================
 
     /**
-     * Manager Functionality: Manage Shipping Orders
+     * Manages shipping order-related operations.
      */
     private void manageShippingOrders() {
         while (true) {
@@ -704,15 +649,17 @@ public class ManagerMenu {
     }
 
     /**
-     * Manager Functionality: View All Shipping Orders
+     * Displays all shipping orders.
      */
     private void viewAllShippingOrders() {
         System.out.println("\nAll Shipping Orders:");
-        List<ShippingOrder> orders = initManager.getShippingRepo().getAllShippingOrders();
+        List<ShippingOrder> orders = shippingRepo.getAllShippingOrders();
         if (orders.isEmpty()) {
             System.out.println("No shipping orders found.");
         } else {
-            orders.forEach(System.out::println);
+            for (ShippingOrder order : orders) {
+                System.out.println(order);
+            }
         }
     }
 
@@ -722,7 +669,7 @@ public class ManagerMenu {
     private void processAndSendShipment() {
         System.out.println("\nProcess and Send Shipment:");
 
-        List<ShippingOrder> orders = initManager.getShippingRepo().getAllShippingOrders();
+        List<ShippingOrder> orders = shippingRepo.getAllShippingOrders();
 
         List<ShippingOrder> confirmedOrders = orders.stream()
                 .filter(order -> "Confirmed".equalsIgnoreCase(order.getStatus()))
@@ -730,30 +677,275 @@ public class ManagerMenu {
 
         if (confirmedOrders.isEmpty()) {
             System.out.println("No confirmed orders available.");
-            return;
+        } else {
+            System.out.println("Select a confirmed order by entering the corresponding number:");
+            for (int i = 0; i < confirmedOrders.size(); i++) {
+                ShippingOrder order = confirmedOrders.get(i);
+                System.out.println((i + 1) + ". Order ID: " + order.getOrderId() + ", Customer: " +
+                        order.getCustomerFirstName() + " " + order.getCustomerLastName());
+            }
+
+            System.out.print("Enter order number: ");
+            int orderNumber = promptForInteger("", 1, confirmedOrders.size());
+
+            ShippingOrder selectedOrder = confirmedOrders.get(orderNumber - 1);
+            System.out.println("You selected Order ID: " + selectedOrder.getOrderId());
+
+            Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController);
+            shipper.shipOrder(selectedOrder, inventory);
+            System.out.println("Order shipped successfully.");
         }
+    }
 
-        System.out.println("Select a confirmed order by entering the corresponding number:");
-        for (int i = 0; i < confirmedOrders.size(); i++) {
-            ShippingOrder order = confirmedOrders.get(i);
-            System.out.println((i + 1) + ". Order ID: " + order.getOrderId() +
-                    ", Customer: " + order.getCustomerFirstName() + " " + order.getCustomerLastName());
+    // ==========================
+    // Shift Management
+    // ==========================
+
+    /**
+     * Manages employee work shifts.
+     */
+    private void manageShifts() {
+        while (true) {
+            System.out.println("\nWork Shift Management:");
+            System.out.println("1. Add a Work Shift");
+            System.out.println("2. Remove a Work Shift");
+            System.out.println("3. Back to Manager Menu");
+            System.out.print("Please select an option: ");
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    addWorkShift();
+                    break;
+                case "2":
+                    removeWorkShift();
+                    break;
+                case "3":
+                    return;  // Exit to Manager Menu
+
+                default:
+                    System.out.println("Invalid choice, please try again.");
+                    break;
+            }
         }
-
-        int orderNumber = promptForInteger("Enter order number: ", 1, confirmedOrders.size());
-        ShippingOrder selectedOrder = confirmedOrders.get(orderNumber - 1);
-        System.out.println("You selected Order ID: " + selectedOrder.getOrderId());
-
-        Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController);
-        shipper.shipOrder(selectedOrder, inventory);
-        System.out.println("Order shipped successfully.");
     }
 
     /**
-     * Returns to the main menu.
+     * Adds a new work shift based on user input.
      */
-    private void backToMainMenu() {
-        // Optional: Additional logic before returning
+    private void addWorkShift() {
+        try {
+            System.out.print("Enter the date of shift (DD): ");
+            int date = Integer.parseInt(scanner.nextLine().trim());
+
+            String startTime = promptForTime("Enter the start time of the shift (HH:mm): ");
+            String endTime = promptForTime("Enter the end time of the shift (HH:mm): ");
+
+            Shift shift = new Shift(date, startTime, endTime);
+            employee.getWorkSchedule().addShift(shift);
+
+            System.out.println("Shift added: " + startTime + " to " + endTime);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter numeric values for the date.");
+        }
+    }
+
+    /**
+     * Removes an existing work shift based on user input.
+     */
+    private void removeWorkShift() {
+        try {
+            System.out.print("Enter the date of shift to remove (DD): ");
+            int dateToRemove = Integer.parseInt(scanner.nextLine().trim());
+
+            String startTimeToRemove = promptForTime("Enter the start time of the shift to remove (HH:mm): ");
+            String endTimeToRemove = promptForTime("Enter the end time of the shift to remove (HH:mm): ");
+
+            Shift shift = new Shift(dateToRemove, startTimeToRemove, endTimeToRemove);
+            employee.getWorkSchedule().deleteShift(shift);
+
+            System.out.println("Shift removed with date: " + dateToRemove + ", start time: " + startTimeToRemove + " and end time: " + endTimeToRemove);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter numeric values for the date.");
+        }
+    }
+
+    // ==========================
+    // Supplier Coordination
+    // ==========================
+
+    /**
+     * Coordinates supplier-related operations.
+     */
+    private void coordinateSuppliers() {
+        while (true) {
+            System.out.println("\nCoordinate Suppliers:");
+            System.out.println("1. View Suppliers");
+            System.out.println("2. Update Supplier Information");
+            System.out.println("3. Register New Supplier");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    viewAllSuppliers();
+                    break;
+                case "2":
+                    updateSupplierInformation();
+                    break;
+                case "3":
+                    registerNewSupplier();
+                    break;
+                case "4":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /**
+     * Views all registered suppliers.
+     */
+    private void viewAllSuppliers() {
+        List<Supplier> suppliers = supplierController.getAllSuppliers();
+        if (suppliers.isEmpty()) {
+            System.out.println("\nNo suppliers registered.");
+            return;
+        }
+        System.out.println("\nRegistered Suppliers:");
+        suppliers.forEach(System.out::println);
+    }
+
+    /**
+     * Registers a new supplier based on user input.
+     */
+    private void registerNewSupplier() {
+        System.out.print("\nEnter Supplier ID: ");
+        String supplierId = scanner.nextLine();
+
+        if (supplierController.getSupplierById(supplierId) != null) {
+            System.out.println("Supplier ID already exists. Please try a different ID.");
+            return;
+        }
+
+        System.out.print("Enter Supplier Name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Enter Contact Information: ");
+        String contactInfo = scanner.nextLine();
+
+        System.out.print("Enter Relationship Status: ");
+        String relationshipStatus = scanner.nextLine();
+
+        System.out.print("Enter Follow-Up Action: ");
+        String followUpAction = scanner.nextLine();
+
+        Supplier newSupplier = new Supplier(supplierId, name, contactInfo, relationshipStatus, followUpAction);
+        boolean success = supplierController.addSupplier(newSupplier);
+        if (success) {
+            System.out.println("New supplier registered successfully.");
+        } else {
+            System.out.println("Failed to register new supplier.");
+        }
+    }
+
+    /**
+     * Updates information of an existing supplier based on user input.
+     */
+    private void updateSupplierInformation() {
+        System.out.print("\nEnter Supplier ID to update: ");
+        String supplierId = scanner.nextLine();
+
+        Supplier supplier = supplierController.getSupplierById(supplierId);
+        if (supplier == null) {
+            System.out.println("Supplier not found.");
+            return;
+        }
+
+        System.out.println("Current Supplier Information:");
+        System.out.println(supplier);
+
+        System.out.print("Enter new Relationship Status (current: " + supplier.getRelationshipStatus() + "): ");
+        String newStatus = scanner.nextLine();
+        if (newStatus.isEmpty()) {
+            newStatus = supplier.getRelationshipStatus(); // Retain current if input is empty
+        }
+
+        System.out.print("Enter Follow-Up Action (current: " + supplier.getFollowUpAction() + "): ");
+        String newAction = scanner.nextLine();
+        if (newAction.isEmpty()) {
+            newAction = supplier.getFollowUpAction(); // Retain current if input is empty
+        }
+
+        boolean success = supplierController.coordinateSuppliers(supplierId, newStatus, newAction);
+        if (success) {
+            System.out.println("Supplier updated successfully.");
+        } else {
+            System.out.println("Failed to update supplier.");
+        }
+    }
+
+    // ==========================
+    // Supplier Orders
+    // ==========================
+
+    /**
+     * Places a new supplier order based on user input.
+     */
+    private void placeSupplierOrder() {
+        System.out.println("\nPlace Supplier Order:");
+
+        // Step 1: Select Supplier
+        List<Supplier> suppliers = supplierController.getAllSuppliers();
+        if (suppliers.isEmpty()) {
+            System.out.println("No suppliers available. Please register a supplier first.");
+            return;
+        }
+
+        System.out.println("Available Suppliers:");
+        suppliers.forEach(System.out::println);
+
+        System.out.print("Enter Supplier ID to place order: ");
+        String supplierId = scanner.nextLine();
+        Supplier supplier = supplierController.getSupplierById(supplierId);
+        if (supplier == null) {
+            System.out.println("Supplier not found.");
+            return;
+        }
+
+        // Step 2: Enter Product Details
+        System.out.print("Enter Product Details: ");
+        String productDetails = scanner.nextLine();
+
+        // Step 3: Enter Quantity
+        int quantity = promptForInteger("Enter Quantity: ", 1, Integer.MAX_VALUE);
+
+        // Step 4: Enter Total Price
+        double totalPrice = promptForDouble("Enter Total Price: ", 0.01, Double.MAX_VALUE);
+
+        // Place the order
+        boolean success = supplierController.placeSupplierOrder(supplierId, productDetails, quantity, totalPrice);
+        if (success) {
+            System.out.println("Order placed successfully.");
+        } else {
+            System.out.println("Failed to place order.");
+        }
+    }
+
+    /**
+     * Views all supplier orders.
+     */
+    private void viewAllSupplierOrders() {
+        List<SupplierOrder> orders = supplierController.getAllSupplierOrders();
+        if (orders.isEmpty()) {
+            System.out.println("\nNo supplier orders found.");
+            return;
+        }
+        System.out.println("\nSupplier Orders:");
+        orders.forEach(System.out::println);
     }
 
     // ==========================
@@ -830,5 +1022,13 @@ public class ManagerMenu {
                 System.out.println("Invalid time format. Please enter in HH:mm format.");
             }
         }
+    }
+
+    /**
+     * Prompts the user to press Enter to return to the menu.
+     */
+    private void promptReturn() {
+        System.out.println("\nPress Enter to return to the menu...");
+        scanner.nextLine();
     }
 }
