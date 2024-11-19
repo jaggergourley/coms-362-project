@@ -1,10 +1,1 @@
 receiptId,customerId,itemsDetails,totalCost,date
-1,3,"basketball: 1 x $10.0, shoes: 1 x $50.0",60.0,2024-11-11
-2,3,"football: 1 x $11.0, baseball: 2 x $2.0",15.0,2024-11-12
-3,1,"shoes: 1 x $50.0 each",50.0,2024-11-11
-4,1,"shoes: 1 x $50.0 each",-50.0,2024-11-11
-5,-1,"basketball: 1 x $59.99 each",59.99,2024-11-15
-6,-1,"basketball: 1 x $59.99 each",59.99,2024-11-15
-7,-1,"basketball: 1 x $59.99 each",59.99,2024-11-15
-8,-1,"basketball: 1 x $100.0 each",100.0,2024-11-18
-
