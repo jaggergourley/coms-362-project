@@ -3,6 +3,7 @@ package com.sportinggoods.model;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // Manages inventory
@@ -70,6 +71,20 @@ public class Inventory {
                 saveItemsToFile();
             }
         }
+    }
+
+    public List<Item> getAllItems() {
+        return new ArrayList<>(items.values());
+    }
+
+    public List<Item> getItemsByDepartment(String department) {
+        List<Item> itemsInDepartment = new ArrayList<>();
+        for (Item item : items.values()) {
+            if (item.getDepartment().equalsIgnoreCase(department)) {
+                itemsInDepartment.add(item);
+            }
+        }
+        return itemsInDepartment;
     }
 
     /**

@@ -17,15 +17,15 @@ public class GiftCardController {
         if (initialBalance <= 0) {
             return "Error: Invalid amount. Enter a positive balance.";
         }
-        
+
         String code = generateUniqueCode();
         GiftCard giftCard = new GiftCard(code, initialBalance);
 
         // Log the sale transaction with customer information if provided
-        giftCard.addTransaction("Gift Card sold to " + 
-                (customerInfo.isEmpty() ? "anonymous" : customerInfo) + 
+        giftCard.addTransaction("Gift Card sold to " +
+                (customerInfo.isEmpty() ? "anonymous" : customerInfo) +
                 " with initial balance: $" + initialBalance);
-        
+
         // Save the new gift card to the repository
         giftCardRepository.save(giftCard);
 
@@ -55,7 +55,7 @@ public class GiftCardController {
         }
 
         String redemptionResult = giftCard.redeem(amount);
-        
+
         // Save the updated gift card to the repository
         giftCardRepository.save(giftCard);
 
@@ -71,6 +71,6 @@ public class GiftCardController {
     public String viewGiftCardDetails(String code) {
         Optional<GiftCard> optionalGiftCard = giftCardRepository.findByCode(code);
         return optionalGiftCard.map(GiftCard::toString)
-                               .orElse("Gift Card with code " + code + " not found.");
+                .orElse("Gift Card with code " + code + " not found.");
     }
 }

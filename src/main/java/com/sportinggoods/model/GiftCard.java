@@ -67,10 +67,10 @@ public class GiftCard {
 
     public String toCSV() {
         return String.format("%s,%.2f,%s,%s",
-            code,
-            balance,
-            isActive ? "active" : "inactive",
-            String.join(";", transactionHistory));
+                code,
+                balance,
+                isActive ? "active" : "inactive",
+                String.join(";", transactionHistory));
     }
 
     @Override

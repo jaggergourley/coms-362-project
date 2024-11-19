@@ -1,22 +1,27 @@
 package com.sportinggoods.controller;
 
 import com.sportinggoods.model.*;
+import com.sportinggoods.repository.CouponRepository;
 import com.sportinggoods.repository.ReceiptRepository;
-
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Scanner;
 
 public class CashierController {
     private Cashier cashier;
     private Inventory inventory;
     private RegisterController registerController;
     private ReceiptRepository receiptRepo;
+    private CouponRepository couponRepo;
 
-    public CashierController(Cashier cashier, Inventory inventory, RegisterController registerController, ReceiptRepository receiptRepo) {
+    public CashierController(Cashier cashier, Inventory inventory, RegisterController registerController, ReceiptRepository receiptRepo, CouponRepository couponRepo) {
         this.cashier = cashier;
         this.inventory = inventory;
         this.registerController = registerController;
         this.receiptRepo = receiptRepo;
+        this.couponRepo = couponRepo;
     }
 
     /**
@@ -27,7 +32,7 @@ public class CashierController {
      * @param paymentMethod The payment method used.
      * @return The receipt if the sale was successful, null otherwise.
      */
-    public Receipt processSale(Customer customer, Map<Item, Integer> items, String paymentMethod) {
+    public Receipt processSale(Customer customer, Map<Item, Integer> items, String paymentMethod, String couponCode) {
         double totalCost = 0.0;
         StringBuilder receiptDetails = new StringBuilder();
 
@@ -48,6 +53,12 @@ public class CashierController {
                 return null; // Exit if any item is unavailable
             }
         }
+
+        // Apply coupon
+        double discount = applyCoupon(couponCode, totalCost, receiptDetails);
+
+        // Adjust total cost with discount
+        totalCost -= discount;
 
         // Remove trailing comma and space from receipt details
         if (receiptDetails.length() > 0) {
@@ -110,5 +121,101 @@ public class CashierController {
         receiptRepo.logReceipt(receipt);
         System.out.println("Return processed: " + receipt);
         return receipt;
+    }
+
+    public double applyCoupon(String couponCode, double totalCost, StringBuilder receiptDetails) {
+        double discount = 0.0;
+
+        if (couponCode != null && !couponCode.isEmpty()) {
+            Optional<Coupon> optionalCoupon = couponRepo.findByCode(couponCode);
+            if (optionalCoupon.isPresent()) {
+                Coupon coupon = optionalCoupon.get();
+                if (!coupon.isExpired()) {
+                    if (coupon.getDiscountType().equalsIgnoreCase("PERCENTAGE")) {
+                        discount = totalCost * (coupon.getDiscountValue() / 100);
+                    } else if (coupon.getDiscountType().equalsIgnoreCase("FIXED")) {
+                        discount = coupon.getDiscountValue();
+                    }
+                    receiptDetails.append("Coupon applied: ").append(couponCode)
+                            .append(" (-$").append(discount).append("), ");
+                } else {
+                    System.out.println("The coupon has expired.");
+                }
+            } else {
+                System.out.println("Invalid coupon code.");
+            }
+        }
+
+        return discount;
+    }
+
+    public double previewCoupon(String couponCode) {
+        Optional<Coupon> coupon = couponRepo.findByCode(couponCode);
+        if (coupon.isPresent() && !coupon.get().isExpired()) {
+            return coupon.get().getDiscountValue(); // Return discount value
+        }
+        return 0.0; // Invalid or expired coupon
+    }
+
+    public boolean isPercentageCoupon(String couponCode) {
+        Optional<Coupon> coupon = couponRepo.findByCode(couponCode);
+        return coupon.isPresent() && "PERCENTAGE".equalsIgnoreCase(coupon.get().getDiscountType());
+    }
+
+    public void viewAllCoupons() {
+        List<Coupon> activeCoupons = couponRepo.getActiveCoupons();
+        if (activeCoupons.isEmpty()) {
+            System.out.println("No active coupons available.");
+        } else {
+            System.out.println("\nActive Coupons:");
+            for (Coupon coupon : activeCoupons) {
+                System.out.println(coupon);
+            }
+        }
+    }
+
+    public void addNewCoupon() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter coupon code: ");
+        String code = scanner.nextLine().trim();
+
+        System.out.print("Enter discount type (PERCENTAGE/FIXED): ");
+        String discountType = scanner.nextLine().trim().toUpperCase();
+
+        System.out.print("Enter discount value: ");
+        double discountValue;
+        try {
+            discountValue = Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid discount value. Please enter a number.");
+            return;
+        }
+
+        System.out.print("Enter expiration date (YYYY-MM-DD): ");
+        String expirationDateInput = scanner.nextLine().trim();
+
+        try {
+            LocalDate expirationDate = LocalDate.parse(expirationDateInput);
+            Coupon newCoupon = new Coupon(code, discountType, discountValue, expirationDate);
+            couponRepo.addCoupon(newCoupon);
+            System.out.println("Coupon added successfully.");
+        } catch (Exception e) {
+            System.out.println("Invalid date format. Coupon not added.");
+        }
+    }
+
+    public void deleteCoupon() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the coupon code to delete: ");
+        String code = scanner.nextLine().trim();
+
+        boolean success = couponRepo.removeCoupon(code);
+        if (success) {
+            System.out.println("Coupon deleted successfully.");
+        } else {
+            System.out.println("Coupon not found. No changes made.");
+        }
     }
 }
