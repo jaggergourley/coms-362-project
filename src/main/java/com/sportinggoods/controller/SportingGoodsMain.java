@@ -922,25 +922,25 @@ private static void handleAddDiscount() {
         Map<Item, Integer> itemsToBuy = new HashMap<>();
         String couponCode = appliedCouponCode;
         double discount = 0.0;
-
+    
         while (true) {
             List<Item> availableItems = inventory.getItems().values().stream()
                     .filter(item -> item.getStoreID() == 1) // Assuming store ID 1 for simplicity
                     .collect(Collectors.toList());
-
+    
             if (availableItems.isEmpty()) {
                 System.out.println("No items are available for sale at the moment.");
                 return;
             }
-
+    
             displayAvailableItems(availableItems);
             System.out.print("Enter the number of the item you want to add to the cart (or type 'checkout' to finish): ");
             String input = scanner.nextLine().trim();
-
+    
             if (input.equalsIgnoreCase("checkout")) {
                 break;
             }
-
+    
             int itemChoice;
             try {
                 itemChoice = Integer.parseInt(input) - 1;
@@ -948,56 +948,34 @@ private static void handleAddDiscount() {
                 System.out.println("Invalid choice. Please enter a valid number or type 'checkout'.");
                 continue;
             }
-
+    
             if (itemChoice < 0 || itemChoice >= availableItems.size()) {
                 System.out.println("Invalid choice. Please try again.");
                 continue;
             }
-
+    
             Item selectedItem = availableItems.get(itemChoice);
             int quantity = promptForQuantity(selectedItem);
-
+    
             if (quantity == -1) {
                 continue; // Invalid quantity entered
             }
-
+    
             // Add to cart
             itemsToBuy.put(selectedItem, itemsToBuy.getOrDefault(selectedItem, 0) + quantity);
             clearConsole();
             System.out.println(quantity + " of " + selectedItem.getName() + " added to cart.");
         }
-
-    // Calculate total cost
-    double totalCost = itemsToBuy.entrySet().stream()
-    .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
-    .sum();
-
-    System.out.println("Total before discounts: $" + totalCost);
-
-    // Coupon handling
-    if (couponCode != null && !couponCode.isEmpty()) {
-        discount = cashierController.previewCoupon(couponCode);
-        if (discount > 0) {
-            if (cashierController.isPercentageCoupon(couponCode)) {
-                System.out.printf("Coupon applied: %.2f%% off\n", discount);
-                discount = totalCost * (discount / 100);
-            } else {
-                System.out.printf("Coupon applied: $%.2f off\n", discount);
-            }
-            System.out.printf("Total after coupon: $%.2f\n", totalCost - discount);
-        } else {
-            System.out.println("Previously applied coupon is invalid. Proceeding without a discount.");
-            couponCode = ""; // Reset invalid coupon code
-            discount = 0.0;
-        }
-    } else {
-        System.out.print("Do you have a coupon code to apply? (yes/no): ");
-        String hasCoupon = scanner.nextLine().trim();
-
-        if (hasCoupon.equalsIgnoreCase("yes")) {
-            System.out.print("Enter the coupon code: ");
-            couponCode = scanner.nextLine().trim();
-
+    
+        // Calculate total cost with dynamic effective prices
+        double totalCost = itemsToBuy.entrySet().stream()
+            .mapToDouble(entry -> inventory.getEffectivePrice(entry.getKey().getName(), discountRepository) * entry.getValue())
+            .sum();
+    
+        System.out.println("Total before discounts: $" + totalCost);
+    
+        // Coupon handling
+        if (couponCode != null && !couponCode.isEmpty()) {
             discount = cashierController.previewCoupon(couponCode);
             if (discount > 0) {
                 if (cashierController.isPercentageCoupon(couponCode)) {
@@ -1006,27 +984,49 @@ private static void handleAddDiscount() {
                 } else {
                     System.out.printf("Coupon applied: $%.2f off\n", discount);
                 }
-                totalCost -= discount;
-                System.out.printf("Total after coupon: $%.2f\n", totalCost);
-                appliedCouponCode = couponCode; // Save the applied coupon
+                System.out.printf("Total after coupon: $%.2f\n", totalCost - discount);
             } else {
-                System.out.println("Invalid coupon. Proceeding without applying a discount.");
+                System.out.println("Previously applied coupon is invalid. Proceeding without a discount.");
                 couponCode = ""; // Reset invalid coupon code
                 discount = 0.0;
             }
+        } else {
+            System.out.print("Do you have a coupon code to apply? (yes/no): ");
+            String hasCoupon = scanner.nextLine().trim();
+    
+            if (hasCoupon.equalsIgnoreCase("yes")) {
+                System.out.print("Enter the coupon code: ");
+                couponCode = scanner.nextLine().trim();
+    
+                discount = cashierController.previewCoupon(couponCode);
+                if (discount > 0) {
+                    if (cashierController.isPercentageCoupon(couponCode)) {
+                        System.out.printf("Coupon applied: %.2f%% off\n", discount);
+                        discount = totalCost * (discount / 100);
+                    } else {
+                        System.out.printf("Coupon applied: $%.2f off\n", discount);
+                    }
+                    totalCost -= discount;
+                    System.out.printf("Total after coupon: $%.2f\n", totalCost);
+                    appliedCouponCode = couponCode; // Save the applied coupon
+                } else {
+                    System.out.println("Invalid coupon. Proceeding without applying a discount.");
+                    couponCode = ""; // Reset invalid coupon code
+                    discount = 0.0;
+                }
+            }
         }
-    }
-
+    
         // Checkout
         if (!itemsToBuy.isEmpty()) {
             System.out.println("\nSelect Payment Method:");
             System.out.println("1. Cash");
             System.out.println("2. Card");
             System.out.print("Enter your choice (1 or 2): ");
-
+    
             String paymentChoice = scanner.nextLine().trim();
             String paymentMethod;
-
+    
             switch (paymentChoice) {
                 case "1":
                     paymentMethod = "Cash";
@@ -1038,7 +1038,7 @@ private static void handleAddDiscount() {
                     System.out.println("Invalid choice. Defaulting to Cash.");
                     paymentMethod = "Cash";
             }
-
+    
             Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod, couponCode);
             if (receipt != null) {
                 System.out.println("Checkout completed successfully.");
@@ -1049,6 +1049,7 @@ private static void handleAddDiscount() {
             System.out.println("No items to purchase.");
         }
     }
+
 
     /**
      * Cashier Functionality: Handle Return
@@ -1130,8 +1131,25 @@ private static void handleAddDiscount() {
         System.out.println("\nAvailable Items:");
         for (int i = 0; i < availableItems.size(); i++) {
             Item item = availableItems.get(i);
-            System.out.printf("%d. %s (Price: $%.2f, Quantity: %d)\n",
-                    i + 1, item.getName(), item.getPrice(), item.getQuantity());
+            String discountInfo = "";
+    
+            // Check if the item has a discount
+            Discount discount = discountRepository.getDiscounts().stream()
+                    .filter(d -> d.getTarget().equalsIgnoreCase(item.getName()))
+                    .findFirst()
+                    .orElse(null);
+    
+            if (discount != null) {
+                // Format the discount information
+                if (discount.getType().equalsIgnoreCase("PERCENTAGE")) {
+                    discountInfo = String.format(" (+ %.2f%% discount)", discount.getValue());
+                } else {
+                    discountInfo = String.format(" (+ $%.2f discount)", discount.getValue());
+                }
+            }
+    
+            System.out.printf("%d. %s (Price: $%.2f%s, Quantity: %d)\n",
+                    i + 1, item.getName(), item.getPrice(), discountInfo, item.getQuantity());
         }
     }
 

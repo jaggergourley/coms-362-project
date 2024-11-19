@@ -39,6 +39,13 @@ public class DiscountRepository {
         return removed;
     }
 
+    public Discount getDiscountForTarget(String target) {
+        return discounts.stream()
+            .filter(discount -> discount.getTarget().equalsIgnoreCase(target))
+            .findFirst()
+            .orElse(null); // Return null if no discount is found
+    }
+
     public double restoreOriginalPrice(String target) {
         if (originalPrices.containsKey(target)) {
             return originalPrices.get(target);

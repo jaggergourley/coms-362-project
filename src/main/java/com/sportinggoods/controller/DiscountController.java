@@ -21,14 +21,10 @@ public class DiscountController {
         if (item == null) {
             return "Item not found.";
         }
-
-        // Save original price before applying discount
-        discountRepository.addDiscount(new Discount(itemName, value, type), item.getPrice());
-
-        double discountedPrice = calculateDiscountedPrice(item.getPrice(), value, type);
-        item.setPrice(discountedPrice);
-
-        inventory.saveItemsToFile(); // Save updated inventory
+    
+        // Save the discount in the repository
+        Discount discount = new Discount(itemName, value, type);
+        discountRepository.addDiscount(discount, item.getPrice());
         return "Discount applied to item: " + itemName;
     }
 
