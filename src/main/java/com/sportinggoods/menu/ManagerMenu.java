@@ -4,7 +4,6 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
