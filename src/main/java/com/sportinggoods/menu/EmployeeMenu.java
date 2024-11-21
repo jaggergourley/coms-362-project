@@ -44,6 +44,8 @@ public class EmployeeMenu extends BaseMenu {
     protected void registerCommands() {
         invoker.register("1", this::viewInventory);
         invoker.register("2", this::processAndSendShipment);
+        invoker.register("3", this::restockDepartmentItems);
+
     }
 
     @Override
@@ -52,7 +54,8 @@ public class EmployeeMenu extends BaseMenu {
         System.out.println("\nEmployee Menu:");
         System.out.println("1. View Inventory");
         System.out.println("2. Process Shipping Orders");
-        System.out.println("3. Back to Main Menu");
+        System.out.println("3. Restock Department Items");
+        System.out.println("4. Back to Main Menu");
     }
 
     @Override
@@ -75,6 +78,15 @@ public class EmployeeMenu extends BaseMenu {
     private void viewInventory() {
         System.out.println("\nCurrent Inventory:");
         inventory.printInventory();
+    }
+
+    /**
+     * Restocks department items by invoking the Inventory's method.
+     */
+    private void restockDepartmentItems() {
+        clearConsole();
+        inventory.restockDepartmentItems();
+        promptReturn();
     }
 
     // ==========================
@@ -178,4 +190,13 @@ public class EmployeeMenu extends BaseMenu {
             }
         }
     }
+
+    /**
+     * Prompts the user to press Enter to return to the menu.
+     */
+    private void promptReturn() {
+        System.out.println("\nPress Enter to return to the menu...");
+        scanner.nextLine();
+    }
 }
+
