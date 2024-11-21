@@ -61,6 +61,7 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("9", this::manageShippingOrders);
         invoker.register("10", this::manageCoupons);
         invoker.register("11", this::manageDiscounts);
+        invoker.register("12", this::generateLowStockRequest);
     }
 
     @Override
@@ -78,7 +79,8 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("9. Manage Shipping Orders");
         System.out.println("10. Manage Coupons");
         System.out.println("11. Manage Discounts");
-        System.out.println("12. Back to Main Menu");
+        System.out.println("12. Generate Low Stock Request");
+        System.out.println("13. Back to Main Menu");
     }
 
     @Override
@@ -553,6 +555,15 @@ public class ManagerMenu extends BaseMenu {
             System.out.println("Error creating item: " + e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Generates a low stock request by invoking the Inventory's method.
+     */
+    private void generateLowStockRequest() {
+        clearConsole();
+        inventory.generateLowStockRequest();
+        promptReturn();
     }
 
     // ==========================
