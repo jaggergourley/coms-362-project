@@ -41,13 +41,34 @@ public class Inventory {
      * @param quantityChange
      */
     // Updates the quantity of an item in the inventory
-    // public void updateQuantity(String itemName, int quantityChange) {
-    //     Item item = items.get(itemName);
-    //     if (item != null) {
-    //         item.setQuantity(item.getQuantity() + quantityChange);
-    //         saveItemsToFile(); // Save the updated inventory
-    //     }
-    // }
+    /**
+     public void updateQuantity(String itemName, int quantityChange) {
+         Item item = items.get(itemName);
+         if (item != null) {
+             item.setQuantity(item.getQuantity() + quantityChange);
+             saveItemsToFile(); // Save the updated inventory
+         }
+     } */
+
+    /**
+     * Updates the quantity of an item in the inventory. THIS IS FOR ARRAY LIST, solving merge conflict
+     * If the item is not found, it does nothing.
+     *
+     * @param itemName       The name of the item to update.
+     * @param quantityChange The change in quantity (can be positive or negative).
+     */
+    public void updateQuantity(String itemName, int quantityChange) {
+        for (Item item : items) {
+            if (item.getName().equalsIgnoreCase(itemName)) {
+                item.setQuantity(item.getQuantity() + quantityChange);
+                saveItemsToFile(); // Save the updated inventory
+                return;
+            }
+        }
+        System.out.println("Item not found: " + itemName);
+    }
+
+
 
     /**
      * adds a item to the inventory by either updating
