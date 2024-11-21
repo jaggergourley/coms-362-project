@@ -1018,7 +1018,7 @@ private static void handleAddDiscount() {
     }
     
         // Calculate total cost with dynamic effective prices
-        double totalCost = itemsToBuy.entrySet().stream()
+            totalCost = itemsToBuy.entrySet().stream()
             .mapToDouble(entry -> inventory.getEffectivePrice(entry.getKey().getName(), discountRepository) * entry.getValue())
             .sum();
     
