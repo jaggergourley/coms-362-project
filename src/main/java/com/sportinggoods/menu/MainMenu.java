@@ -28,7 +28,8 @@ public class MainMenu {
             System.out.println("2. Cashier");
             System.out.println("3. Employee");
             System.out.println("4. Customer");
-            System.out.println("5. Exit");
+            System.out.println("5. Maintenance Staff"); // Added Maintenance Staff
+            System.out.println("6. Exit");
             System.out.print("Enter your choice: ");
 
             String choice = initManager.getScanner().nextLine().trim();
@@ -46,7 +47,10 @@ public class MainMenu {
                 case "4":
                     new CustomerMenu(initManager, initManager.getScanner()).display();
                     break;
-                case "5":
+                case "5": // Handle Maintenance Staff
+                    new MaintenanceStaffMenu(initManager, initManager.getScanner()).display();
+                    break;
+                case "6":
                     exitSystem();
                     break;
                 default:

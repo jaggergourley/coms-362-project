@@ -4,6 +4,7 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -20,6 +21,8 @@ public class InitializationManager {
     private RegisterController registerController;
     private ShippingController shippingController;
     private SupplierController supplierController;
+    private UtilityController utilityController;
+    private MaintenanceRequestController maintenanceRequestController; // Added
 
     // Models
     private Cashier cashier;
@@ -40,6 +43,10 @@ public class InitializationManager {
     private Store store;
     private Supplier supplier;
     private SupplierOrder supplierOrder;
+    private Utility utility;
+
+    // Maintenance-related models
+    private MaintenanceRequest maintenanceRequest; // Added
 
     // Repositories
     private CashierRepository cashierRepo;
@@ -52,6 +59,8 @@ public class InitializationManager {
     private ShippingOrderRepository shippingOrderRepo;
     private SupplierOrderRepository supplierOrderRepo;
     private SupplierRepository supplierRepo;
+    private UtilityRepository utilityRepo;
+    private MaintenanceRequestRepository maintenanceRequestRepo; // Added
 
     // Scanner for user input
     private Scanner scanner;
@@ -65,6 +74,7 @@ public class InitializationManager {
         initializeModels();
         initializeControllers();
         fillInventory();
+        fillUtilities();
     }
 
     /**
@@ -80,6 +90,8 @@ public class InitializationManager {
         registerController = new RegisterController(register);
         shippingController = new ShippingController(shippingOrderRepo);
         supplierController = new SupplierController(supplierRepo, supplierOrderRepo);
+        utilityController = new UtilityController(utilityRepo);
+        maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo); // Added
     }
 
     /**
@@ -98,6 +110,7 @@ public class InitializationManager {
         store = new Store();
         supplier = new Supplier();
         supplierOrder = new SupplierOrder();
+        utility = new Utility();
     }
 
     /**
@@ -114,6 +127,8 @@ public class InitializationManager {
         shippingOrderRepo = new ShippingOrderRepository();
         supplierOrderRepo = new SupplierOrderRepository();
         supplierRepo = new SupplierRepository();
+        utilityRepo = new UtilityRepository();
+        maintenanceRequestRepo = new MaintenanceRequestRepository(); // Added
     }
 
     /**
@@ -127,7 +142,27 @@ public class InitializationManager {
         inventory.addItem(new Item("Shorts", 89.99, "Apparel", 5, 1));
     }
 
-    // Getters for controllers
+    /**
+     * Fills utilities with initial data.
+     */
+    private void fillUtilities() {
+        List<Utility> existingUtilities = utilityRepo.getAllUtilities();
+        if (!existingUtilities.isEmpty()) {
+            return;
+        }
+        utilityRepo.addUtility(new Utility("U001", 1, "HVAC", "Active", 750.5, "2024-11-18", "09:00-21:00"));
+        utilityRepo.addUtility(new Utility("U002", 1, "Lighting", "Active", 450.2, "2024-11-18", "09:00-21:00"));
+        utilityRepo.addUtility(new Utility("U003", 1, "Water", "Active", 150.0, "2024-11-18", "24/7"));
+    }
+
+    /**
+     * Fills maintenance requests with initial data.
+     */
+
+    public MaintenanceRequestController getMaintenanceRequestController() {
+        return maintenanceRequestController;
+    }
+
     public CashierController getCashierController() { return cashierController; }
     public CustomerController getCustomerController() { return customerController; }
     public DiscountController getDiscountController() { return discountController; }
@@ -137,6 +172,7 @@ public class InitializationManager {
     public RegisterController getRegisterController() { return registerController; }
     public ShippingController getShippingController() { return shippingController; }
     public SupplierController getSupplierController() { return supplierController; }
+    public UtilityController getUtilityController() { return utilityController; }
 
     // Getters for models
     public Cashier getCashier() { return cashier; }
@@ -169,6 +205,7 @@ public class InitializationManager {
     public ShippingOrderRepository getShippingOrderRepo() { return shippingOrderRepo; }
     public SupplierOrderRepository getSupplierOrderRepo() { return supplierOrderRepo; }
     public SupplierRepository getSupplierRepo() { return supplierRepo; }
+    public UtilityRepository getUtilityRepo() { return utilityRepo; }
 
     public Scanner getScanner() { return scanner; }
 

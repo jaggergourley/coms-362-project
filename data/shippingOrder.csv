@@ -1,0 +1,2 @@
+orderId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status
+45dc735d-87d8-4bbc-acec-cd075c978c31|adam|hisel|Tennis Racket,89.99,Sports,2;|179.98|shisis|ass|3|2024-11-18|Confirmed
