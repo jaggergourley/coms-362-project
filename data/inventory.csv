@@ -1,10 +1,10 @@
 name,price,department,quantity
-Tennis Racket,89.99,Sports,5,1
+Tennis Racket,89.99,Sports,10,1
 basketball,59.99,Basketball,9,1
-Shorts,89.99,Apparel,5,1
+Shorts,89.99,Apparel,10,1
 baseball,2.0,Baseball,10,1
 football,11.0,FootBall,9,1
 shoes,59.99,Shoes,9,1
-Football,24.99,Sports,5,1
-Bike,309.99,Sports,5,1
-Tennis Ball,29.99,Sports,10,1
+Football,24.99,Sports,10,1
+Bike,309.99,Sports,10,1
+Tennis Ball,29.99,Sports,20,1

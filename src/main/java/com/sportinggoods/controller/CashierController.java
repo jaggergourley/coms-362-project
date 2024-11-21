@@ -24,6 +24,13 @@ public class CashierController {
         this.couponRepo = couponRepo;
     }
 
+    public CashierController(Cashier cashier, Inventory inventory, RegisterController registerController, ReceiptRepository receiptRepo) {
+        this.cashier = cashier;
+        this.inventory = inventory;
+        this.registerController = registerController;
+        this.receiptRepo = receiptRepo;
+    }
+
     /**
      * Processes a multi-item sale.
      *

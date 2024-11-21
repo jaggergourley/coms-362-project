@@ -13,9 +13,16 @@ import java.util.*;
 public class ShippingController {
 
     private ShippingOrderRepository orderRepo;
+    private Inventory inventory;
 
     public ShippingController(ShippingOrderRepository orderRepo) {
         this.orderRepo = orderRepo;
+    }
+
+    // Updated constructor to include Inventory
+    public ShippingController(ShippingOrderRepository orderRepo, Inventory inventory) {
+        this.orderRepo = orderRepo;
+        this.inventory = inventory;
     }
 
     /**
@@ -115,6 +122,65 @@ public class ShippingController {
 
 
         return true;
+    }
+
+
+    /**
+     * Handles in-store order pickup by verifying customer details, retrieving items, and updating order status.
+     *
+     * @param orderId The ID of the order to be picked up.
+     * @param customerDetails Details provided by the customer (e.g., email or phone number).
+     * @return True if the order is successfully picked up, false otherwise.
+     */
+    public boolean handleOrderPickup(String orderId, String customerDetails) {
+        // Step 1: Retrieve the order by ID
+        ShippingOrder order = orderRepo.getOrderById(orderId);
+        if (order == null) {
+            System.out.println("Order not found for ID: " + orderId);
+            return false; // Order not found
+        }
+
+        // Step 2: Verify customer details (email or phone number)
+        if (!order.getCustomerEmail().equalsIgnoreCase(customerDetails) &&
+                !order.getCustomerPhoneNumber().equals(customerDetails)) {
+            System.out.println("Customer verification failed. Details do not match.");
+            return false; // Customer verification failed
+        }
+
+        // Step 3: Confirm item availability in inventory
+        boolean allItemsAvailable = true;
+        for (var entry : order.getItems().entrySet()) {
+            String itemName = entry.getKey().getName();
+            int quantity = entry.getValue();
+
+            if (!inventory.checkAvailability(itemName, quantity)) {
+                System.out.println("Item not available: " + itemName);
+                allItemsAvailable = false;
+            }
+        }
+
+        // Step 5a: If items are missing, notify the customer
+        if (!allItemsAvailable) {
+            System.out.println("Order cannot be picked up as some items are unavailable.");
+            return false; // Items missing or unavailable
+        }
+
+        // Step 4: Retrieve items and confirm with the customer
+        for (var entry : order.getItems().entrySet()) {
+            inventory.updateQuantity(entry.getKey().getName(), -entry.getValue());
+            System.out.println("Retrieved item: " + entry.getKey().getName() + " | Quantity: " + entry.getValue());
+        }
+
+        // Step 6: Update order status to 'Picked Up'
+        boolean statusUpdated = orderRepo.updateOrderStatus(orderId, "Picked Up");
+        if (!statusUpdated) {
+            System.out.println("Failed to update order status.");
+            return false; // Failed to update order status
+        }
+
+        // Step 7: Complete the transaction
+        System.out.println("Order successfully picked up by the customer.");
+        return true; // Order pickup successful
     }
 
 }

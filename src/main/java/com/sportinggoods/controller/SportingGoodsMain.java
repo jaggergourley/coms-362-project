@@ -723,7 +723,7 @@ public class SportingGoodsMain {
                     paymentMethod = "Cash";
             }
 
-            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod);
+            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod, null);
             if (receipt != null) {
                 System.out.println("Checkout completed successfully.");
             } else {
