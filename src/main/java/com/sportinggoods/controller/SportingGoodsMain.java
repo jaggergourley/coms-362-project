@@ -24,6 +24,8 @@ public class SportingGoodsMain {
     private static Inventory inventory;
     private static ReceiptRepository receiptRepo;
     private static RegisterController registerController;
+    private static CouponRepository couponRepo;
+    private static String appliedCouponCode = null;
 
     // Shipping-related repositories and controllers
     private static ShippingOrderRepository shippingRepo;
@@ -36,11 +38,31 @@ public class SportingGoodsMain {
     // Pricing-related controllers
     private static PricingController pricingController;
 
+    // Discount-related controllers
+    private static DiscountController discountController;
+    private static DiscountRepository discountRepository;
+
     public static void main(String[] args) {
         initializeRepositories();
         initializeCashierSystem();
         fillInventory(); // Initialize inventory with items
         mainMenu();
+    }
+
+    private static void clearConsole() {
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            // Fallback: Print multiple newlines if clearing fails
+            for (int i = 0; i < 50; i++) {
+                System.out.println();
+            }
+        }
     }
 
     /**
@@ -52,12 +74,14 @@ public class SportingGoodsMain {
         supplierController = new SupplierController(supplierRepo, orderRepo);
         giftCardRepository = new GiftCardRepository();
         giftCardController = new GiftCardController(giftCardRepository);
+        couponRepo = new CouponRepository();
 
         schedule = new Schedule();
         employee = new Employee("Mason", 1, schedule);
 
         shippingRepo = new ShippingOrderRepository();
         shippingController = new ShippingController(shippingRepo);
+
     }
 
     /**
@@ -69,9 +93,12 @@ public class SportingGoodsMain {
         Register register = new Register();
         receiptRepo = new ReceiptRepository();
         registerController = new RegisterController(register);
-        cashierController = new CashierController(cashier, inventory, registerController, receiptRepo);
+        cashierController = new CashierController(cashier, inventory, registerController, receiptRepo, couponRepo);
 
         pricingController = new PricingController(inventory); //Used by manager to adjust prices
+
+        discountRepository = new DiscountRepository();
+        discountController = new DiscountController(discountRepository, inventory);
     }
 
     /**
@@ -104,6 +131,7 @@ public class SportingGoodsMain {
      * Displays the main menu and handles user role selection.
      */
     private static void mainMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nWelcome to Sporting Goods Management System");
             System.out.println("Please select your role:");
@@ -142,6 +170,7 @@ public class SportingGoodsMain {
      * Displays the Manager menu and handles manager-specific actions.
      */
     private static void managerMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nManager Menu:");
             System.out.println("1. Coordinate Suppliers");
@@ -152,8 +181,10 @@ public class SportingGoodsMain {
             System.out.println("6. Update Inventory");
             System.out.println("7. Manage Gift Cards");
             System.out.println("8. Manage Work Schedule");
-            System.out.println("9. Manage Shipping Orders"); // New option
-            System.out.println("10. Back to Main Menu");
+            System.out.println("9. Manage Shipping Orders");
+            System.out.println("10. Manage Coupons");
+            System.out.println("11. Manage Discounts");
+            System.out.println("12. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine();
@@ -187,6 +218,13 @@ public class SportingGoodsMain {
                     manageShippingOrders(); // New method for shipping orders
                     break;
                 case "10":
+                    manageCoupons(); // New method for managing coupons
+                    break;
+                case "11":
+                    manageDiscounts(); // New method for managing discounts
+                    break;
+                case "12":
+                    clearConsole();
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -198,13 +236,15 @@ public class SportingGoodsMain {
      * Displays the Cashier menu and handles cashier-specific actions.
      */
     private static void cashierMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nCashier Menu:");
             System.out.println("1. Process Sale");
             System.out.println("2. Handle Return");
             System.out.println("3. Sell Gift Card");
             System.out.println("4. Redeem Gift Card");
-            System.out.println("5. Back to Main Menu");
+            System.out.println("5. Apply Coupon");
+            System.out.println("6. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine().trim();
@@ -223,6 +263,10 @@ public class SportingGoodsMain {
                     redeemGiftCardMenu();
                     break;
                 case "5":
+                    applyCouponMenu();
+                    break;
+                case "6":
+                    clearConsole();
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -234,6 +278,7 @@ public class SportingGoodsMain {
      * Displays the Employee menu with placeholder functionalities.
      */
     private static void employeeMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nEmployee Menu:");
             System.out.println("1. View Inventory");
@@ -262,6 +307,7 @@ public class SportingGoodsMain {
      * Displays the Customer menu with options for shopping or returning items.
      */
     private static void customerMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nCustomer Menu:");
             System.out.println("1. Shop for Items");
@@ -293,6 +339,7 @@ public class SportingGoodsMain {
      * Manager Functionality: Coordinate Suppliers
      */
     private static void coordinateSuppliers() {
+        clearConsole();
         while (true) {
             System.out.println("\nCoordinate Suppliers:");
             System.out.println("1. View Suppliers");
@@ -428,6 +475,7 @@ public class SportingGoodsMain {
      * Manager Functionality: Adjust Item Price
      */
     private static void adjustPriceMenu() {
+        clearConsole();
         while (true) {
             System.out.println("\nAdjust Item Price Menu:");
             System.out.println("1. Search by Name");
@@ -435,22 +483,29 @@ public class SportingGoodsMain {
             System.out.println("3. Search by Store ID");
             System.out.println("4. Back to Manager Menu");
             System.out.print("Enter your choice: ");
-            
+    
             String searchChoice = scanner.nextLine().trim();
-            String criteria = switch (searchChoice) {
-                case "1" -> "name";
-                case "2" -> "department";
-                case "3" -> "storeid";
-                case "4" -> {
+            String criteria = null;
+    
+            switch (searchChoice) {
+                case "1":
+                    criteria = "name";
+                    break;
+                case "2":
+                    criteria = "department";
+                    break;
+                case "3":
+                    criteria = "storeid";
+                    break;
+                case "4":
                     System.out.println("Returning to Manager Menu.");
-                    yield null;
-                }
-                default -> {
+                    clearConsole();
+                    return;
+                default:
                     System.out.println("Invalid choice. Please try again.");
-                    yield null;
-                }
-            };
-            if (criteria == null) continue;
+                    clearConsole();
+                    continue;
+            }
     
             System.out.print("Enter the search value: ");
             String value = scanner.nextLine().trim();
@@ -458,6 +513,7 @@ public class SportingGoodsMain {
             List<Item> foundItems = pricingController.searchItems(criteria, value);
     
             if (foundItems.isEmpty()) {
+                clearConsole();
                 System.out.println("No items found with the specified criteria. Please try another search.");
                 continue;
             }
@@ -471,12 +527,14 @@ public class SportingGoodsMain {
             int itemIndex;
             try {
                 itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
-                if (itemIndex == -1) continue;
+                if (itemIndex == -1) continue; // Return to search menu
                 if (itemIndex < 0 || itemIndex >= foundItems.size()) {
+                    clearConsole();
                     System.out.println("Invalid selection. Returning to search menu.");
                     continue;
                 }
             } catch (NumberFormatException e) {
+                clearConsole();
                 System.out.println("Error: Please enter a valid number.");
                 continue;
             }
@@ -496,8 +554,9 @@ public class SportingGoodsMain {
             }
     
             String result = pricingController.adjustPrice(selectedItem, newPrice);
+            clearConsole();
             System.out.println(result);
-            break;
+            break; // Break the loop after adjusting the price
         }
     }
 
@@ -505,6 +564,7 @@ public class SportingGoodsMain {
      * Manager Functionality: Manage Gift Cards
      */
     private static void manageGiftCards() {
+        clearConsole();
         while (true) {
             System.out.println("\nGift Card Management:");
             System.out.println("1. Sell New Gift Card");
@@ -535,6 +595,7 @@ public class SportingGoodsMain {
      * Sell a new gift card.
      */
     private static void sellGiftCardMenu() {
+        clearConsole();
         System.out.print("\nEnter the amount for the new gift card: ");
         double amount;
         try {
@@ -555,6 +616,7 @@ public class SportingGoodsMain {
      * Redeem an existing gift card.
      */
     private static void redeemGiftCardMenu() {
+        clearConsole();
         System.out.print("\nEnter the gift card code: ");
         String code = scanner.nextLine().trim();
 
@@ -575,6 +637,7 @@ public class SportingGoodsMain {
      * View details of a gift card.
      */
     private static void viewGiftCardDetailsMenu() {
+        clearConsole();
         System.out.print("\nEnter the gift card code to view details: ");
         String code = scanner.nextLine().trim();
     
@@ -582,6 +645,205 @@ public class SportingGoodsMain {
         System.out.println(details);
     }
 
+    /**
+     * Displays the Coupon Menu for the cashier.
+     */
+    private static void applyCouponMenu() {
+        clearConsole();
+        while (true) {
+            System.out.println("\nCoupon Menu:");
+            System.out.println("1. Enter Coupon Code");
+            System.out.println("2. Back to Cashier Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1":
+                    System.out.print("\nEnter the coupon code: ");
+                    String couponCode = scanner.nextLine().trim();
+                    double discount = cashierController.previewCoupon(couponCode);
+
+                    if (discount > 0) {
+                        appliedCouponCode = couponCode; // Set the applied coupon
+                        System.out.println("Coupon is valid. Discount: " +
+                                (cashierController.isPercentageCoupon(couponCode) ? discount + "%" : "$" + discount));
+                        return; // Exit the menu after applying a coupon
+                    } else {
+                        System.out.println("Invalid coupon. Please check the code and try again.");
+                    }
+                    break;
+                case "2":
+                    return; // Return to Cashier Menu
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private static void manageCoupons() {
+        clearConsole();
+        while (true) {
+            System.out.println("\nManage Coupon Codes:");
+            System.out.println("1. View All Coupons");
+            System.out.println("2. Add New Coupon");
+            System.out.println("3. Delete a Coupon");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+    
+            String choice = scanner.nextLine().trim();
+    
+            switch (choice) {
+                case "1":
+                    cashierController.viewAllCoupons();
+                    break;
+                case "2":
+                    cashierController.addNewCoupon();
+                    break;
+                case "3":
+                    cashierController.deleteCoupon();
+                    break;
+                case "4":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private static void manageDiscounts() {
+        while (true) {
+            clearConsole();
+            System.out.println("\nManage Discounts:");
+            System.out.println("1. Add Discount");
+            System.out.println("2. Remove Discount");
+            System.out.println("3. View All Discounts");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+        
+            String choice = scanner.nextLine().trim();
+        
+            switch (choice) {
+                case "1":
+                    handleAddDiscount();
+                    break;
+                case "2":
+                    handleRemoveDiscount();
+                    break;
+                case "3":
+                    viewAllDiscounts();
+                    break;
+                case "4":
+                    clearConsole();
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+    
+    private static void handleRemoveDiscount() {
+        clearConsole();
+        List<Discount> discounts = discountController.listDiscounts();
+        
+        if (discounts.isEmpty()) {
+            System.out.println("No active discounts to remove.");
+            System.out.println("\nPress Enter to return to the menu...");
+            scanner.nextLine();
+            return;
+        }
+        
+        System.out.println("Active Discounts:");
+        for (int i = 0; i < discounts.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, discounts.get(i));
+        }
+        
+        System.out.print("\nEnter the number of the discount to remove (or 0 to cancel): ");
+        int choice;
+        try {
+            choice = Integer.parseInt(scanner.nextLine().trim());
+            if (choice == 0) {
+                return; // Cancel removal
+            }
+            if (choice < 1 || choice > discounts.size()) {
+                System.out.println("Invalid choice. Returning to menu...");
+                System.out.println("\nPress Enter to return to the menu...");
+                scanner.nextLine();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            System.out.println("\nPress Enter to return to the menu...");
+            scanner.nextLine();
+            return;
+        }
+        
+        Discount selectedDiscount = discounts.get(choice - 1);
+        String result = discountController.removeDiscount(selectedDiscount.getTarget());
+        System.out.println(result);
+        System.out.println("\nPress Enter to return to the menu...");
+        scanner.nextLine();
+    }
+    
+    private static void viewAllDiscounts() {
+        clearConsole();
+        List<Discount> discounts = discountController.listDiscounts();
+        if (discounts.isEmpty()) {
+            System.out.println("No active discounts.");
+        } else {
+            System.out.println("Active Discounts:");
+            discounts.forEach(System.out::println);
+        }
+        System.out.println("\nPress Enter to return to the menu...");
+        scanner.nextLine();
+    }
+
+private static void handleAddDiscount() {
+    clearConsole();
+    System.out.println("\nSelect Discount Type:");
+    System.out.println("1. Apply Discount to Item");
+    System.out.println("2. Apply Discount to Department");
+    System.out.println("3. Apply Store-Wide Discount");
+    System.out.print("Enter your choice: ");
+    
+    String discountTypeChoice = scanner.nextLine().trim();
+    
+    clearConsole();
+    System.out.print("Enter discount value (numeric): ");
+    double value;
+    try {
+        value = Double.parseDouble(scanner.nextLine().trim());
+    } catch (NumberFormatException e) {
+        System.out.println("Invalid input. Discount value must be a number.");
+        System.out.println("Press Enter to return to the menu...");
+        scanner.nextLine();
+        return;
+    }
+    
+    System.out.print("Enter discount type (PERCENTAGE/FIXED): ");
+    String type = scanner.nextLine().trim();
+    
+    switch (discountTypeChoice) {
+        case "1":
+            System.out.print("Enter item name: ");
+            String itemName = scanner.nextLine().trim();
+            System.out.println(discountController.addDiscountToItem(itemName, value, type));
+            break;
+        case "2":
+            System.out.print("Enter department name: ");
+            String department = scanner.nextLine().trim();
+            System.out.println(discountController.addDiscountToDepartment(department, value, type));
+            break;
+        case "3":
+            System.out.println(discountController.addDiscountStoreWide(value, type));
+            break;
+        default:
+            System.out.println("Invalid choice. Returning to Manage Discounts menu.");
+    }
+    
+    System.out.println("\nPress Enter to return to the menu...");
+    scanner.nextLine();
+}
+    
     /**
      * Manager Functionality: Update Supplier Information
      */
@@ -655,27 +917,30 @@ public class SportingGoodsMain {
      * Cashier Functionality: Process Sale
      */
     private static void processSale() {
+        clearConsole();
         Customer customer = getCustomerDetails();
         Map<Item, Integer> itemsToBuy = new HashMap<>();
-
+        String couponCode = appliedCouponCode;
+        double discount = 0.0;
+    
         while (true) {
             List<Item> availableItems = inventory.getItems().values().stream()
                     .filter(item -> item.getStoreID() == 1) // Assuming store ID 1 for simplicity
                     .collect(Collectors.toList());
-
+    
             if (availableItems.isEmpty()) {
                 System.out.println("No items are available for sale at the moment.");
                 return;
             }
-
+    
             displayAvailableItems(availableItems);
             System.out.print("Enter the number of the item you want to add to the cart (or type 'checkout' to finish): ");
             String input = scanner.nextLine().trim();
-
+    
             if (input.equalsIgnoreCase("checkout")) {
                 break;
             }
-
+    
             int itemChoice;
             try {
                 itemChoice = Integer.parseInt(input) - 1;
@@ -683,34 +948,135 @@ public class SportingGoodsMain {
                 System.out.println("Invalid choice. Please enter a valid number or type 'checkout'.");
                 continue;
             }
-
+    
             if (itemChoice < 0 || itemChoice >= availableItems.size()) {
                 System.out.println("Invalid choice. Please try again.");
                 continue;
             }
-
+    
             Item selectedItem = availableItems.get(itemChoice);
             int quantity = promptForQuantity(selectedItem);
-
+    
             if (quantity == -1) {
                 continue; // Invalid quantity entered
             }
-
+    
             // Add to cart
             itemsToBuy.put(selectedItem, itemsToBuy.getOrDefault(selectedItem, 0) + quantity);
+            clearConsole();
             System.out.println(quantity + " of " + selectedItem.getName() + " added to cart.");
         }
 
+    // Calculate total cost
+    double totalCost = itemsToBuy.entrySet().stream()
+    .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
+    .sum();
+
+    System.out.println("Total before discounts: $" + totalCost);
+
+    // Coupon handling
+    if (couponCode != null && !couponCode.isEmpty()) {
+        discount = cashierController.previewCoupon(couponCode);
+        if (discount > 0) {
+            if (cashierController.isPercentageCoupon(couponCode)) {
+                System.out.printf("Coupon applied: %.2f%% off\n", discount);
+                discount = totalCost * (discount / 100);
+            } else {
+                System.out.printf("Coupon applied: $%.2f off\n", discount);
+            }
+            System.out.printf("Total after coupon: $%.2f\n", totalCost - discount);
+        } else {
+            System.out.println("Previously applied coupon is invalid. Proceeding without a discount.");
+            couponCode = ""; // Reset invalid coupon code
+            discount = 0.0;
+        }
+    } else {
+        System.out.print("Do you have a coupon code to apply? (yes/no): ");
+        String hasCoupon = scanner.nextLine().trim();
+
+        if (hasCoupon.equalsIgnoreCase("yes")) {
+            System.out.print("Enter the coupon code: ");
+            couponCode = scanner.nextLine().trim();
+
+            discount = cashierController.previewCoupon(couponCode);
+            if (discount > 0) {
+                if (cashierController.isPercentageCoupon(couponCode)) {
+                    System.out.printf("Coupon applied: %.2f%% off\n", discount);
+                    discount = totalCost * (discount / 100);
+                } else {
+                    System.out.printf("Coupon applied: $%.2f off\n", discount);
+                }
+                totalCost -= discount;
+                System.out.printf("Total after coupon: $%.2f\n", totalCost);
+                appliedCouponCode = couponCode; // Save the applied coupon
+            } else {
+                System.out.println("Invalid coupon. Proceeding without applying a discount.");
+                couponCode = ""; // Reset invalid coupon code
+                discount = 0.0;
+            }
+        }
+    }
+    
+        // Calculate total cost with dynamic effective prices
+            totalCost = itemsToBuy.entrySet().stream()
+            .mapToDouble(entry -> inventory.getEffectivePrice(entry.getKey().getName(), discountRepository) * entry.getValue())
+            .sum();
+    
+        System.out.println("Total before discounts: $" + totalCost);
+    
+        // Coupon handling
+        if (couponCode != null && !couponCode.isEmpty()) {
+            discount = cashierController.previewCoupon(couponCode);
+            if (discount > 0) {
+                if (cashierController.isPercentageCoupon(couponCode)) {
+                    System.out.printf("Coupon applied: %.2f%% off\n", discount);
+                    discount = totalCost * (discount / 100);
+                } else {
+                    System.out.printf("Coupon applied: $%.2f off\n", discount);
+                }
+                System.out.printf("Total after coupon: $%.2f\n", totalCost - discount);
+            } else {
+                System.out.println("Previously applied coupon is invalid. Proceeding without a discount.");
+                couponCode = ""; // Reset invalid coupon code
+                discount = 0.0;
+            }
+        } else {
+            System.out.print("Do you have a coupon code to apply? (yes/no): ");
+            String hasCoupon = scanner.nextLine().trim();
+    
+            if (hasCoupon.equalsIgnoreCase("yes")) {
+                System.out.print("Enter the coupon code: ");
+                couponCode = scanner.nextLine().trim();
+    
+                discount = cashierController.previewCoupon(couponCode);
+                if (discount > 0) {
+                    if (cashierController.isPercentageCoupon(couponCode)) {
+                        System.out.printf("Coupon applied: %.2f%% off\n", discount);
+                        discount = totalCost * (discount / 100);
+                    } else {
+                        System.out.printf("Coupon applied: $%.2f off\n", discount);
+                    }
+                    totalCost -= discount;
+                    System.out.printf("Total after coupon: $%.2f\n", totalCost);
+                    appliedCouponCode = couponCode; // Save the applied coupon
+                } else {
+                    System.out.println("Invalid coupon. Proceeding without applying a discount.");
+                    couponCode = ""; // Reset invalid coupon code
+                    discount = 0.0;
+                }
+            }
+        }
+    
         // Checkout
         if (!itemsToBuy.isEmpty()) {
             System.out.println("\nSelect Payment Method:");
             System.out.println("1. Cash");
             System.out.println("2. Card");
             System.out.print("Enter your choice (1 or 2): ");
-
+    
             String paymentChoice = scanner.nextLine().trim();
             String paymentMethod;
-
+    
             switch (paymentChoice) {
                 case "1":
                     paymentMethod = "Cash";
@@ -722,8 +1088,8 @@ public class SportingGoodsMain {
                     System.out.println("Invalid choice. Defaulting to Cash.");
                     paymentMethod = "Cash";
             }
-
-            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod);
+    
+            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod, couponCode);
             if (receipt != null) {
                 System.out.println("Checkout completed successfully.");
             } else {
@@ -733,6 +1099,7 @@ public class SportingGoodsMain {
             System.out.println("No items to purchase.");
         }
     }
+
 
     /**
      * Cashier Functionality: Handle Return
@@ -814,8 +1181,25 @@ public class SportingGoodsMain {
         System.out.println("\nAvailable Items:");
         for (int i = 0; i < availableItems.size(); i++) {
             Item item = availableItems.get(i);
-            System.out.printf("%d. %s (Price: $%.2f, Quantity: %d)\n",
-                    i + 1, item.getName(), item.getPrice(), item.getQuantity());
+            String discountInfo = "";
+    
+            // Check if the item has a discount
+            Discount discount = discountRepository.getDiscounts().stream()
+                    .filter(d -> d.getTarget().equalsIgnoreCase(item.getName()))
+                    .findFirst()
+                    .orElse(null);
+    
+            if (discount != null) {
+                // Format the discount information
+                if (discount.getType().equalsIgnoreCase("PERCENTAGE")) {
+                    discountInfo = String.format(" (+ %.2f%% discount)", discount.getValue());
+                } else {
+                    discountInfo = String.format(" (+ $%.2f discount)", discount.getValue());
+                }
+            }
+    
+            System.out.printf("%d. %s (Price: $%.2f%s, Quantity: %d)\n",
+                    i + 1, item.getName(), item.getPrice(), discountInfo, item.getQuantity());
         }
     }
 

@@ -1,5 +1,6 @@
 package com.sportinggoods.model;
 
+import com.sportinggoods.repository.DiscountRepository;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -119,6 +120,27 @@ public class Inventory {
                 System.out.println("Item: " + temp1.getName() + " is not in the inventory");
             }
         }
+    }
+
+    public double getEffectivePrice(String itemName, DiscountRepository discountRepository) {
+        Item item = getItem(itemName);
+        if (item == null) {
+            throw new IllegalArgumentException("Item not found: " + itemName);
+        }
+    
+        // Check if there is an active discount for this item
+        List<Discount> activeDiscounts = discountRepository.getDiscounts();
+        for (Discount discount : activeDiscounts) {
+            if (discount.getTarget().equalsIgnoreCase(itemName)) {
+                double originalPrice = item.getPrice();
+                return discount.getType().equalsIgnoreCase("PERCENTAGE") 
+                       ? originalPrice * (1 - discount.getValue() / 100) 
+                       : originalPrice - discount.getValue();
+            }
+        }
+    
+        // No active discount; return the original price
+        return item.getPrice();
     }
 
 

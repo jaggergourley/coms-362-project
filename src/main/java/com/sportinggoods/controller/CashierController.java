@@ -125,7 +125,7 @@ public class CashierController {
 
     public double applyCoupon(String couponCode, double totalCost, StringBuilder receiptDetails) {
         double discount = 0.0;
-
+    
         if (couponCode != null && !couponCode.isEmpty()) {
             Optional<Coupon> optionalCoupon = couponRepo.findByCode(couponCode);
             if (optionalCoupon.isPresent()) {
@@ -137,7 +137,7 @@ public class CashierController {
                         discount = coupon.getDiscountValue();
                     }
                     receiptDetails.append("Coupon applied: ").append(couponCode)
-                            .append(" (-$").append(discount).append("), ");
+                        .append(" (-$").append(discount).append("), ");
                 } else {
                     System.out.println("The coupon has expired.");
                 }
@@ -145,7 +145,7 @@ public class CashierController {
                 System.out.println("Invalid coupon code.");
             }
         }
-
+    
         return discount;
     }
 
