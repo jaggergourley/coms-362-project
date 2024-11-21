@@ -12,6 +12,9 @@ public class Inventory {
     //private Map<String, Item> items = new HashMap<>();
     private ArrayList<Item> items = new ArrayList<>();
     private static final String FILE_PATH = "data/inventory.csv";
+    private static final String LOW_STOCK_FILE = "data/lowStock.csv";
+    private static final int LOW_STOCK_THRESHOLD = 5;
+    private static final int RESTOCK_LEVEL = 10;
 
     //Constructor
     public Inventory(int storeID) {
@@ -291,5 +294,97 @@ public class Inventory {
             System.out.println(item);
         }
         System.out.println();
+    }
+
+    // ==========================
+    // Low Stock Management
+    // ==========================
+
+    /**
+     * Generates a low stock request by identifying items with stock below a predefined threshold.
+     * Writes the low-stock items to 'lowStock.csv'.
+     */
+    public void generateLowStockRequest() {
+        List<Item> lowStockItems = new ArrayList<>();
+
+        // Identify items with stock below the threshold
+        for (Item item : items) {
+            if (item.getQuantity() < LOW_STOCK_THRESHOLD) {
+                lowStockItems.add(item);
+            }
+        }
+
+        if (lowStockItems.isEmpty()) {
+            System.out.println("All items are sufficiently stocked. No low stock request generated.");
+            return;
+        }
+
+        // Write low stock items to 'lowStock.csv'
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOW_STOCK_FILE))) {
+            writer.write("name,price,department,quantity,storeID\n");
+            for (Item item : lowStockItems) {
+                writer.write(item.toCSV());
+                writer.newLine();
+            }
+            System.out.println("Low stock request generated successfully. See 'lowStock.csv' for details.");
+        } catch (IOException e) {
+            System.out.println("Error writing low stock request to file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Restocks items by reading from 'lowStock.csv' and updating their quantities to a predefined level.
+     * Sets the stock level of each low-stock item to RESTOCK_LEVEL (e.g., 10).
+     * After restocking, the 'lowStock.csv' file is cleared to indicate processing.
+     */
+    public void restockDepartmentItems() {
+        File lowStockFile = new File(LOW_STOCK_FILE);
+        if (!lowStockFile.exists()) {
+            System.out.println("'lowStock.csv' does not exist. No items to restock.");
+            return;
+        }
+
+        List<Item> lowStockItems = new ArrayList<>();
+
+        // Read low stock items from 'lowStock.csv'
+        try (BufferedReader reader = new BufferedReader(new FileReader(lowStockFile))) {
+            String line = reader.readLine(); // Skip header
+            while ((line = reader.readLine()) != null) {
+                Item item = Item.fromCSV(line);
+                if (item != null) {
+                    lowStockItems.add(item);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading low stock request from file: " + e.getMessage());
+            return;
+        }
+
+        if (lowStockItems.isEmpty()) {
+            System.out.println("No low stock items found in 'lowStock.csv'.");
+            return;
+        }
+
+        // Update inventory to restock items to RESTOCK_LEVEL
+        for (Item lowStockItem : lowStockItems) {
+            Item inventoryItem = getItem(lowStockItem.getName());
+            if (inventoryItem != null) {
+                inventoryItem.setQuantity(RESTOCK_LEVEL);
+                System.out.println("Restocked '" + inventoryItem.getName() + "' to quantity " + RESTOCK_LEVEL + ".");
+            } else {
+                System.out.println("Item '" + lowStockItem.getName() + "' not found in inventory. Skipping restock.");
+            }
+        }
+
+        // Save updated inventory to file
+        saveItemsToFile();
+        System.out.println("Inventory updated successfully.");
+
+        // Clear the 'lowStock.csv' file after restocking
+        if (lowStockFile.delete()) {
+            System.out.println("'lowStock.csv' has been cleared after restocking.");
+        } else {
+            System.out.println("Failed to clear 'lowStock.csv'. Please check manually.");
+        }
     }
 }
