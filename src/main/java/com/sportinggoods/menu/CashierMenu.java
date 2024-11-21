@@ -4,7 +4,6 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +20,12 @@ public class CashierMenu extends BaseMenu {
     private CashierController cashierController;
     private GiftCardController giftCardController;
     private RegisterController registerController;
+    private DiscountController discountController;
 
     // Repositories
     private CouponRepository couponRepository;
     private ReceiptRepository receiptRepository;
+    private DiscountRepository discountRepository;
 
     // Models
     private Inventory inventory;
@@ -47,6 +48,8 @@ public class CashierMenu extends BaseMenu {
         this.couponRepository = initManager.getCouponRepo();
         this.receiptRepository = initManager.getReceiptRepo();
         this.inventory = initManager.getInventory();
+        this.discountController = initManager.getDiscountController();
+        this.discountRepository = initManager.getDiscountRepo();
     }
 
     @Override
@@ -93,25 +96,25 @@ public class CashierMenu extends BaseMenu {
         Map<Item, Integer> itemsToBuy = new HashMap<>();
         String couponCode = appliedCouponCode;
         double discount = 0.0;
-
+    
         while (true) {
             List<Item> availableItems = inventory.getItems().values().stream()
                     .filter(item -> item.getStoreID() == 1) // Assuming store ID 1
                     .collect(Collectors.toList());
-
+    
             if (availableItems.isEmpty()) {
                 System.out.println("No items are available for sale at the moment.");
                 return;
             }
-
-            displayAvailableItems(availableItems);
+    
+            displayAvailableItemsWithDiscounts(availableItems);
             System.out.print("Enter the number of the item to add to the cart (or type 'checkout' to finish): ");
             String input = scanner.nextLine().trim();
-
+    
             if (input.equalsIgnoreCase("checkout")) {
                 break;
             }
-
+    
             int itemChoice;
             try {
                 itemChoice = Integer.parseInt(input) - 1;
@@ -119,33 +122,100 @@ public class CashierMenu extends BaseMenu {
                 System.out.println("Invalid input. Please enter a valid number or 'checkout'.");
                 continue;
             }
-
+    
             if (itemChoice < 0 || itemChoice >= availableItems.size()) {
                 System.out.println("Invalid choice. Please try again.");
                 continue;
             }
-
+    
             Item selectedItem = availableItems.get(itemChoice);
             int quantity = promptForQuantity(selectedItem);
-
+    
             if (quantity == -1) {
                 continue; // Invalid quantity entered
             }
-
+    
             // Add to cart
             itemsToBuy.put(selectedItem, itemsToBuy.getOrDefault(selectedItem, 0) + quantity);
             clearConsole();
             System.out.println(quantity + " of " + selectedItem.getName() + " added to cart.");
         }
-
+    
         // Calculate total cost
         double totalCost = itemsToBuy.entrySet().stream()
-                .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
+                .mapToDouble(entry -> inventory.getEffectivePrice(entry.getKey().getName(), discountRepository) * entry.getValue())
                 .sum();
-
-        System.out.println("Total before discounts: $" + totalCost);
-
-        // Handle coupon if applied
+    
+        System.out.println("Total before coupons: $" + totalCost);
+    
+        // Handle coupon logic (unchanged)
+        handleCouponLogic(totalCost, couponCode);
+    
+        // Proceed to checkout
+        if (!itemsToBuy.isEmpty()) {
+            System.out.println("\nSelect Payment Method:");
+            System.out.println("1. Cash");
+            System.out.println("2. Card");
+            System.out.print("Enter your choice (1 or 2): ");
+    
+            String paymentChoice = scanner.nextLine().trim();
+            String paymentMethod;
+    
+            switch (paymentChoice) {
+                case "1":
+                    paymentMethod = "Cash";
+                    break;
+                case "2":
+                    paymentMethod = "Card";
+                    break;
+                default:
+                    System.out.println("Invalid choice. Defaulting to Cash.");
+                    paymentMethod = "Cash";
+            }
+    
+            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod, couponCode);
+            if (receipt != null) {
+                System.out.println("Checkout completed successfully.");
+            } else {
+                System.out.println("Checkout failed.");
+            }
+        } else {
+            System.out.println("No items to purchase.");
+        }
+    }
+    
+    /**
+     * Displays available items along with discount information.
+     */
+    private void displayAvailableItemsWithDiscounts(List<Item> availableItems) {
+        System.out.println("\nAvailable Items:");
+        for (int i = 0; i < availableItems.size(); i++) {
+            Item item = availableItems.get(i);
+            double originalPrice = item.getPrice();
+            double discountedPrice = inventory.getEffectivePrice(item.getName(), discountRepository);
+    
+            if (discountedPrice < originalPrice) {
+                double discountValue = originalPrice - discountedPrice;
+                String discountType = discountValue == originalPrice * (discountValue / 100) ? "percentage" : "fixed";
+                String discountDisplay = discountType.equals("percentage")
+                        ? String.format("(-%.2f%%)", (discountValue / originalPrice) * 100)
+                        : String.format("(-$%.2f)", discountValue);
+    
+                System.out.printf("%d. %s (Price: $%.2f %s, Quantity: %d)\n",
+                        i + 1, item.getName(), discountedPrice, discountDisplay, item.getQuantity());
+            } else {
+                System.out.printf("%d. %s (Price: $%.2f, Quantity: %d)\n",
+                        i + 1, item.getName(), originalPrice, item.getQuantity());
+            }
+        }
+    }
+    
+    /**
+     * Handles coupon logic for the sale.
+     */
+    private void handleCouponLogic(double totalCost, String couponCode) {
+        double discount = 0.0;
+    
         if (couponCode != null && !couponCode.isEmpty()) {
             discount = cashierController.previewCoupon(couponCode);
             if (discount > 0) {
@@ -158,17 +228,16 @@ public class CashierMenu extends BaseMenu {
                 System.out.printf("Total after coupon: $%.2f%n", totalCost - discount);
             } else {
                 System.out.println("Previously applied coupon is invalid. Proceeding without a discount.");
-                couponCode = ""; // Reset invalid coupon code
-                discount = 0.0;
+                appliedCouponCode = ""; // Reset invalid coupon code
             }
         } else {
             System.out.print("Do you have a coupon code to apply? (yes/no): ");
             String hasCoupon = scanner.nextLine().trim();
-
+    
             if (hasCoupon.equalsIgnoreCase("yes")) {
                 System.out.print("Enter the coupon code: ");
                 couponCode = scanner.nextLine().trim();
-
+    
                 discount = cashierController.previewCoupon(couponCode);
                 if (discount > 0) {
                     if (cashierController.isPercentageCoupon(couponCode)) {
@@ -182,45 +251,11 @@ public class CashierMenu extends BaseMenu {
                     appliedCouponCode = couponCode; // Save the applied coupon
                 } else {
                     System.out.println("Invalid coupon. Proceeding without applying a discount.");
-                    couponCode = ""; // Reset invalid coupon code
-                    discount = 0.0;
+                    appliedCouponCode = ""; // Reset invalid coupon code
                 }
             }
         }
-
-        // Proceed to checkout
-        if (!itemsToBuy.isEmpty()) {
-            System.out.println("\nSelect Payment Method:");
-            System.out.println("1. Cash");
-            System.out.println("2. Card");
-            System.out.print("Enter your choice (1 or 2): ");
-
-            String paymentChoice = scanner.nextLine().trim();
-            String paymentMethod;
-
-            switch (paymentChoice) {
-                case "1":
-                    paymentMethod = "Cash";
-                    break;
-                case "2":
-                    paymentMethod = "Card";
-                    break;
-                default:
-                    System.out.println("Invalid choice. Defaulting to Cash.");
-                    paymentMethod = "Cash";
-            }
-
-            Receipt receipt = cashierController.processSale(customer, itemsToBuy, paymentMethod, couponCode);
-            if (receipt != null) {
-                System.out.println("Checkout completed successfully.");
-            } else {
-                System.out.println("Checkout failed.");
-            }
-        } else {
-            System.out.println("No items to purchase.");
-        }
     }
-
     /**
      * Handles the return of items by a customer.
      */
