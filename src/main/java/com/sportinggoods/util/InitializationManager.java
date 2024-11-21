@@ -89,13 +89,13 @@ public class InitializationManager {
         cashier = new Cashier("John Doe", 101, null);
         cart = new Cart();
         employee = new Employee("Mason", 1, new Schedule());
-        inventory = new Inventory();
+        inventory = new Inventory(1);
         receipt = new Receipt();
         register = new Register();
         schedule = new Schedule();
         shipper = new Shipper();
         shippingOrder = new ShippingOrder();
-        store = new Store();
+        store = new Store(1, "123 lane");
         supplier = new Supplier();
         supplierOrder = new SupplierOrder();
     }
