@@ -118,7 +118,7 @@ public class CustomerMenu extends BaseMenu {
 
         while (true) {
             // Display inventory with numbered options
-            List<Item> availableItems = new ArrayList<>(inventory.getItems().values());
+            List<Item> availableItems = new ArrayList<>(inventory.getItems());
             System.out.println("Select an item to add to the order (type 'done' to finish):");
             for (int i = 0; i < availableItems.size(); i++) {
                 System.out.println((i + 1) + ". " + availableItems.get(i).getName() + " - $" + availableItems.get(i).getPrice());
@@ -204,7 +204,7 @@ public class CustomerMenu extends BaseMenu {
         double discount = 0.0;
 
         while (true) {
-            List<Item> availableItems = inventory.getItems().values().stream()
+            List<Item> availableItems = inventory.getItems().stream()
                     .filter(item -> item.getStoreID() == 1) // Assuming store ID 1 for simplicity
                     .collect(Collectors.toList());
 

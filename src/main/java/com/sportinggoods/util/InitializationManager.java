@@ -73,7 +73,6 @@ public class InitializationManager {
         initializeRepositories();
         initializeModels();
         initializeControllers();
-        fillInventory();
         fillUtilities();
     }
 
@@ -129,17 +128,6 @@ public class InitializationManager {
         supplierRepo = new SupplierRepository();
         utilityRepo = new UtilityRepository();
         maintenanceRequestRepo = new MaintenanceRequestRepository(); // Added
-    }
-
-    /**
-     * Fills inventory with initial items.
-     */
-    private void fillInventory() {
-        inventory.addItem(new Item("Tennis Ball", 29.99, "Sports", 10, 1));
-        inventory.addItem(new Item("Tennis Racket", 89.99, "Sports", 5, 1));
-        inventory.addItem(new Item("Football", 24.99, "Sports", 5, 1));
-        inventory.addItem(new Item("Bike", 309.99, "Sports", 5, 1));
-        inventory.addItem(new Item("Shorts", 89.99, "Apparel", 5, 1));
     }
 
     /**

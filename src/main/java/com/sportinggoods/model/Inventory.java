@@ -90,23 +90,23 @@ public class Inventory {
 
     public void addItem(Item item) {
         boolean itemFound = false;
-        // Check if the item already exists in the list
         for (Item temp : items) {
             if (temp.getName().equalsIgnoreCase(item.getName()) && temp.getStoreID() == item.getStoreID()) {
-                // Item is in the inventory, update quantity
-                int newQuantity = temp.getQuantity() + item.getQuantity();
-                temp.setQuantity(newQuantity);
+                temp.setQuantity(temp.getQuantity() + item.getQuantity());
                 itemFound = true;
                 break;
             }
         }
         if (!itemFound) {
-            // Item is not in the inventory, add it
             items.add(item);
         }
-        // Save updated list to file
-        saveItemsToFile();
+        try {
+            saveItemsToFile(); // Save updated list to file
+        } catch (Exception e) {
+            System.err.println("Error saving items to file: " + e.getMessage());
+        }
     }
+
 
     // public void addItems(ArrayList<Item> itemList){
     //     for(int i = 0; i < itemList.size(); i++){
@@ -270,44 +270,50 @@ public class Inventory {
     // }
 
     public void saveItemsToFile() {
-    Map<String, Item> inventoryMap = new HashMap<>();
+        Map<String, Item> inventoryMap = new HashMap<>();
 
-    // Read existing data from the file
-    try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
-        String line = reader.readLine(); // Skip header
-        while ((line = reader.readLine()) != null) {
-            String[] parts = line.split(",");
-            String name = parts[0];
-            double price = Double.parseDouble(parts[1]);
-            String department = parts[2];
-            int quantity = Integer.parseInt(parts[3]);
-            int storeID = Integer.parseInt(parts[4]);
+        // Read existing data from the file
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+            String line = reader.readLine(); // Skip header
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) continue; // Skip empty lines
+                String[] parts = line.split(",");
+                if (parts.length < 5) { // Validate structure
+                    System.err.println("Error parsing inventory line: " + line);
+                    continue;
+                }
 
-            inventoryMap.put(name, new Item(name, price, department, quantity, storeID));
+                String name = parts[0];
+                double price = Double.parseDouble(parts[1]);
+                String department = parts[2];
+                int quantity = Integer.parseInt(parts[3]);
+                int storeID = Integer.parseInt(parts[4]);
+
+                inventoryMap.put(name, new Item(name, price, department, quantity, storeID));
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading inventory file: " + e.getMessage());
         }
-    } catch (IOException e) {
-        System.out.println("Error reading inventory file: " + e.getMessage());
-    }
 
-    // Add current store's items to the map (merge quantities)
-    for (Item item : items) {
-        inventoryMap.merge(item.getName(), item, (existing, newItem) -> {
-            existing.setQuantity(existing.getQuantity() + newItem.getQuantity());
-            return existing;
-        });
-    }
-
-    // Write merged inventory back to the file
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-        writer.write("name,price,department,quantity\n"); // Write CSV header
-        for (Item item : inventoryMap.values()) {
-            writer.write(item.toCSV());
-            writer.newLine();
+        // Add current store's items to the map (merge quantities)
+        for (Item item : items) {
+            inventoryMap.merge(item.getName(), item, (existing, newItem) -> {
+                existing.setQuantity(existing.getQuantity() + newItem.getQuantity());
+                return existing;
+            });
         }
-    } catch (IOException e) {
-        System.out.println("Error saving inventory to file: " + e.getMessage());
+
+        // Write merged inventory back to the file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
+            writer.write("name,price,department,quantity,storeID\n"); // Write CSV header
+            for (Item item : inventoryMap.values()) {
+                writer.write(item.toCSV());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving inventory to file: " + e.getMessage());
+        }
     }
-}
 
     public void printInventory(){
         System.out.println("Inventory:");

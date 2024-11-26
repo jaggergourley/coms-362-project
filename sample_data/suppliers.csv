@@ -1,0 +1,5 @@
+supplierId,name,contactInfo,relationshipStatus,followUpAction
+123,Sports Supply Co.,sports@supplyco.com,Active,None
+124,Fitness Wholesale Inc.,fitness@wholesale.com,Active,Renew Contract
+125,Outdoor Gear Suppliers,outdoor@gear.com,Pending,None
+126,ProSports Inc.,support@prosports.com,Inactive,Return

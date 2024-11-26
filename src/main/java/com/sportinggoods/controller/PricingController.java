@@ -19,13 +19,13 @@ public class PricingController {
                 Item itemByName = inventory.getItem(value);
                 yield itemByName != null ? List.of(itemByName) : List.of();
             }
-            case "department" -> inventory.getItems().values().stream()
+            case "department" -> inventory.getItems().stream()
                     .filter(item -> item.getDepartment().equalsIgnoreCase(value))
                     .collect(Collectors.toList());
             case "storeid" -> {
                 try {
                     int storeID = Integer.parseInt(value);
-                    yield inventory.getItems().values().stream()
+                    yield inventory.getItems().stream()
                             .filter(item -> item.getStoreID() == storeID)
                             .collect(Collectors.toList());
                 } catch (NumberFormatException e) {

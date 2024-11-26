@@ -1,0 +1,5 @@
+orderId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status
+45dc735d-87d8-4bbc-acec-cd075c978c31,Adam,Hisel,"Tennis Racket: 2 x $89.99 each",179.98,123 Main St,adam.hisel@example.com,555-1234,2024-11-18,Confirmed
+12ab34cd-56ef-78gh-90ij-klmnopqrstuv,Jane,Doe,"Basketball: 1 x $25.00 each",25.00,456 Elm St,jane.doe@example.com,555-5678,2024-11-19,Pending
+89lm01no-23pq-45rs-67tu-vwxyzabcdef12,John,Smith,"Soccer Ball: 3 x $20.00 each",60.00,789 Oak Ave,john.smith@example.com,555-9012,2024-11-20,Shipped
+34kl56mn-78op-90qr-12st-uvwxyzabcdef34,Emily,Davis,"Golf Club: 1 x $150.00 each;Yoga Mat: 2 x $30.00 each",210.00,321 Pine Rd,emily.davis@example.com,555-3456,2024-11-21,Confirmed

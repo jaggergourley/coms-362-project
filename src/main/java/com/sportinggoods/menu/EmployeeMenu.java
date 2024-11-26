@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 /**
  * Represents the Employee Menu in the Sporting Goods Management System.
  * Allows employees to perform various operational tasks.
@@ -23,6 +26,8 @@ public class EmployeeMenu extends BaseMenu {
     private Employee employee;
     private Inventory inventory;
     private ShippingOrderRepository shippingRepo;
+
+    private static final String LOW_STOCK_FILE = "data/lowStock.csv";
 
     /**
      * Constructs an EmployeeMenu with the provided InitializationManager and Scanner.
@@ -45,6 +50,7 @@ public class EmployeeMenu extends BaseMenu {
         invoker.register("1", this::viewInventory);
         invoker.register("2", this::processAndSendShipment);
         invoker.register("3", this::restockDepartmentItems);
+        invoker.register("4", this::viewLowStockRequests);
 
     }
 
@@ -55,12 +61,13 @@ public class EmployeeMenu extends BaseMenu {
         System.out.println("1. View Inventory");
         System.out.println("2. Process Shipping Orders");
         System.out.println("3. Restock Department Items");
-        System.out.println("4. Back to Main Menu");
+        System.out.println("4. View Low Stock Requests");
+        System.out.println("5. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("3");
+        return choice.equals("5");
     }
 
     @Override
@@ -86,6 +93,34 @@ public class EmployeeMenu extends BaseMenu {
     private void restockDepartmentItems() {
         clearConsole();
         inventory.restockDepartmentItems();
+        promptReturn();
+    }
+
+    private void viewLowStockRequests() {
+        clearConsole();
+        File lowStockFile = new File(LOW_STOCK_FILE);
+
+        if (!lowStockFile.exists()) {
+            System.out.println("No low stock requests found.");
+            promptReturn();
+            return;
+        }
+
+        System.out.println("Low Stock Requests:");
+        try (BufferedReader reader = new BufferedReader(new FileReader(lowStockFile))) {
+            String header = reader.readLine(); // Skip header
+            String line;
+            boolean hasItems = false;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                hasItems = true;
+            }
+            if (!hasItems) {
+                System.out.println("No items currently flagged for low stock.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error reading low stock requests: " + e.getMessage());
+        }
         promptReturn();
     }
 

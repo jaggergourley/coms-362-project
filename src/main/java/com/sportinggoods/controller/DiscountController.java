@@ -48,7 +48,7 @@ public class DiscountController {
     }
 
     public String addDiscountStoreWide(double value, String type) {
-        List<Item> allItems = inventory.getAllItems();
+        List<Item> allItems = inventory.getItems();
         for (Item item : allItems) {
             discountRepository.addDiscount(new Discount("Store-Wide", value, type), item.getPrice());
 
@@ -64,7 +64,7 @@ public class DiscountController {
         List<Item> itemsToUpdate;
 
         if (target.equalsIgnoreCase("store-wide")) {
-            itemsToUpdate = inventory.getAllItems();
+            itemsToUpdate = inventory.getItems();
         } else if (!inventory.getItemsByDepartment(target).isEmpty()) {
             itemsToUpdate = inventory.getItemsByDepartment(target);
         } else {

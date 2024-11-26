@@ -1,0 +1,13 @@
+itemName,price,department,quantity,storeID
+Basketball,25.00,Sports,50,1
+Soccer Ball,20.00,Sports,30,1
+Tennis Racket,100.00,Sports,20,1
+Golf Club,150.00,Sports,10,1
+Baseball Glove,45.00,Sports,25,1
+Yoga Mat,30.00,Fitness,40,2
+Dumbbells,60.00,Fitness,15,2
+Jump Rope,10.00,Fitness,3,2
+Weight Plate,25.00,Fitness,2,2
+Badminton Shuttlecock,5.00,Sports,1,1
+Resistance Band,15.00,Fitness,4,2
+Hiking Backpack,80.00,Outdoor,2,3

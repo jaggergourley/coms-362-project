@@ -98,7 +98,7 @@ public class CashierMenu extends BaseMenu {
         double discount = 0.0;
     
         while (true) {
-            List<Item> availableItems = inventory.getItems().values().stream()
+            List<Item> availableItems = inventory.getItems().stream()
                     .filter(item -> item.getStoreID() == 1) // Assuming store ID 1
                     .collect(Collectors.toList());
     

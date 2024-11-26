@@ -1,0 +1,6 @@
+receiptId,customerId,itemsDetails,totalCost,date
+1,1,"Basketball: 1 x $25.00 each",25.00,2024-11-20
+2,2,"Soccer Ball: 2 x $20.00 each",40.00,2024-11-21
+3,-1,"Tennis Racket: 1 x $100.00 each",100.00,2024-11-22
+4,3,"Golf Club: 1 x $150.00 each;Baseball Glove: 2 x $45.00 each",240.00,2024-11-23
+5,-1,"Yoga Mat: 1 x $30.00 each;Dumbbells: 1 x $60.00 each",90.00,2024-11-24
