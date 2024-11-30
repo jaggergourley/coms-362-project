@@ -36,7 +36,7 @@ public class ManagerMenu extends BaseMenu {
      * @param initManager The InitializationManager instance for dependency injection.
      * @param scanner     The shared Scanner instance for user input.
      */
-    public ManagerMenu(InitializationManager initManager, Scanner scanner) {
+    public ManagerMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
         // Initialize controllers and models
         this.cashierController = initManager.getCashierController();

@@ -34,7 +34,7 @@ public class CustomerMenu extends BaseMenu {
      * @param initManager The InitializationManager instance for dependency injection.
      * @param scanner     The shared Scanner instance for user input.
      */
-    public CustomerMenu(InitializationManager initManager, Scanner scanner) {
+    public CustomerMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
         // Initialize controllers and repositories
         this.shippingController = initManager.getShippingController();

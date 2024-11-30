@@ -36,6 +36,7 @@ public class InitializationManager {
     private Item item;
     private Manager manager;
     private Receipt receipt;
+    private RegionalManger regionalManager;
     private Register register;
     private Schedule schedule;
     private Shipper shipper;
@@ -100,7 +101,7 @@ public class InitializationManager {
         cashier = new Cashier("John Doe", 101, null);
         cart = new Cart();
         employee = new Employee("Mason", 1, new Schedule());
-        inventory = new Inventory(1);
+        regionalManager = new RegionalManger(1, "Regional Manager", true, true, true, new Schedule()); // Initialize RegionalManager        inventory = new Inventory(1);
         receipt = new Receipt();
         register = new Register();
         schedule = new Schedule();
@@ -110,6 +111,11 @@ public class InitializationManager {
         supplier = new Supplier();
         supplierOrder = new SupplierOrder();
         utility = new Utility();
+
+        // Add some initial stores
+        regionalManager.addStore("123 Main Street");
+        regionalManager.addStore("456 Elm Street");
+        regionalManager.addStore("789 Maple Avenue");
     }
 
     /**
@@ -174,6 +180,7 @@ public class InitializationManager {
     public Item getItem() { return item; }
     public Manager getManager() { return manager; }
     public Receipt getReceipt() { return receipt; }
+    public RegionalManger getRegionalManager() { return regionalManager; }
     public Register getRegister() { return register; }
     public Schedule getSchedule() { return schedule; }
     public Shipper getShipper() { return shipper; }

@@ -7,14 +7,16 @@ import com.sportinggoods.util.InitializationManager;
  */
 public class MainMenu {
     private InitializationManager initManager;
+    private int storeId;
 
     /**
      * Initializes MainMenu with dependencies.
      *
      * @param initManager Dependency injection manager.
      */
-    public MainMenu(InitializationManager initManager) {
+    public MainMenu(InitializationManager initManager, int storeId) {
         this.initManager = initManager;
+        this.storeId = storeId;
     }
 
     /**
@@ -23,36 +25,35 @@ public class MainMenu {
     public void display() {
         while (true) {
             clearConsole();
-            System.out.println("\n=== Sporting Goods Management System ===");
+            System.out.println("\n=== Sporting Goods Management System (Store ID: " + storeId + ") ===");
             System.out.println("1. Manager");
             System.out.println("2. Cashier");
             System.out.println("3. Employee");
             System.out.println("4. Customer");
-            System.out.println("5. Maintenance Staff"); // Added Maintenance Staff
-            System.out.println("6. Exit");
+            System.out.println("5. Maintenance Staff");
+            System.out.println("6. Back to Regional Manager Menu");
             System.out.print("Enter your choice: ");
 
             String choice = initManager.getScanner().nextLine().trim();
 
             switch (choice) {
                 case "1":
-                    new ManagerMenu(initManager, initManager.getScanner()).display();
+                    new ManagerMenu(initManager, initManager.getScanner(), storeId).display();
                     break;
                 case "2":
-                    new CashierMenu(initManager, initManager.getScanner()).display();
+                    new CashierMenu(initManager, initManager.getScanner(), storeId).display();
                     break;
                 case "3":
-                    new EmployeeMenu(initManager, initManager.getScanner()).display();
+                    new EmployeeMenu(initManager, initManager.getScanner(), storeId).display();
                     break;
                 case "4":
-                    new CustomerMenu(initManager, initManager.getScanner()).display();
+                    new CustomerMenu(initManager, initManager.getScanner(), storeId).display();
                     break;
-                case "5": // Handle Maintenance Staff
-                    new MaintenanceStaffMenu(initManager, initManager.getScanner()).display();
+                case "5":
+                    new MaintenanceStaffMenu(initManager, initManager.getScanner(), storeId).display();
                     break;
                 case "6":
-                    exitSystem();
-                    break;
+                    return; // Exit to Regional Manager Menu
                 default:
                     System.out.println("Invalid choice. Please try again.");
                     pause();

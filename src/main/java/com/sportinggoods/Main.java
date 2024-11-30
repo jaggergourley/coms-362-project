@@ -1,6 +1,6 @@
 package com.sportinggoods;
 
-import com.sportinggoods.menu.MainMenu;
+import com.sportinggoods.menu.RegionalManagerMenu;
 import com.sportinggoods.util.InitializationManager;
 
 /**
@@ -12,9 +12,9 @@ public class Main {
         // Initialize the system components
         InitializationManager initManager = new InitializationManager();
 
-        // Instantiate and display the main menu
-        MainMenu mainMenu = new MainMenu(initManager);
-        mainMenu.display();
+        // Instantiate and display the regional manager menu
+        RegionalManagerMenu regionalManagerMenu = new RegionalManagerMenu(initManager, initManager.getScanner());
+        regionalManagerMenu.display();
     }
 
 }

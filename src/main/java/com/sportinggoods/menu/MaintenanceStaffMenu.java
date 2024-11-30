@@ -16,7 +16,7 @@ public class MaintenanceStaffMenu extends BaseMenu {
 
     private final MaintenanceRequestController maintenanceRequestController;
 
-    public MaintenanceStaffMenu(InitializationManager initManager, Scanner scanner) {
+    public MaintenanceStaffMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
         this.maintenanceRequestController = initManager.getMaintenanceRequestController();
     }
