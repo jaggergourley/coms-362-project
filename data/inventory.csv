@@ -1,13 +1,13 @@
 name,price,department,quantity,storeID
-Tennis Racket,100.0,Sports,90,1
-Baseball Glove,45.0,Sports,87,1
+Tennis Racket,100.0,Sports,270,1
+Baseball Glove,45.0,Sports,261,1
 Jump Rope,10.0,Fitness,13,2
 Resistance Band,15.0,Fitness,14,2
 Yoga Mat,30.0,Fitness,14,2
-Badminton Shuttlecock,5.0,Sports,144,1
+Badminton Shuttlecock,5.0,Sports,432,1
 Dumbbells,60.0,Fitness,10,2
 Hiking Backpack,80.0,Outdoor,12,3
-Golf Club,150.0,Sports,2880,1
-Basketball,25.0,Sports,14352,1
+Golf Club,150.0,Sports,8640,1
+Basketball,25.0,Sports,43056,1
 Weight Plate,25.0,Fitness,12,2
-Soccer Ball,20.0,Sports,8640,1
+Soccer Ball,20.0,Sports,25920,1

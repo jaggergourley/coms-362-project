@@ -85,7 +85,7 @@ public class InitializationManager {
     private void initializeControllers() {
         cashierController = new CashierController(cashier, inventory, registerController, receiptRepo, couponRepo);
         customerController = new CustomerController(customerRepo);
-        discountController = initializeDiscountController(); // Update for DiscountController
+        discountController = new DiscountController(discountRepo, inventory);
         giftCardController = new GiftCardController(giftCardRepo);
         pricingController = new PricingController(inventory);
         receiptController = new ReceiptController(receiptRepo);
@@ -95,16 +95,6 @@ public class InitializationManager {
         utilityController = new UtilityController(utilityRepo);
         maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo);
         feedbackController = new FeedbackController(feedbackRepo);// Added
-    }
-
-    /**
-     * Initializes the DiscountController with the current inventory.
-     */
-    private DiscountController initializeDiscountController() {
-        if (inventory == null) {
-            throw new IllegalStateException("Inventory must be initialized before DiscountController.");
-        }
-        return new DiscountController(discountRepo, inventory);
     }
 
     /**
