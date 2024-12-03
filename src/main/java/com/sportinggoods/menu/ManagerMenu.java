@@ -33,6 +33,8 @@ public class ManagerMenu extends BaseMenu {
     private Inventory inventory;
     private ShippingOrderRepository shippingRepo;
 
+    private int storeId;
+
     /**
      * Constructs a ManagerMenu with the provided InitializationManager and Scanner.
      *
@@ -41,6 +43,7 @@ public class ManagerMenu extends BaseMenu {
      */
     public ManagerMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
+        this.storeId = storeId;
         // Initialize controllers and models
         this.cashierController = initManager.getCashierController();
         this.discountController = initManager.getDiscountController();
@@ -803,7 +806,7 @@ public class ManagerMenu extends BaseMenu {
      */
     private void generateLowStockRequest() {
         clearConsole();
-        inventory.generateLowStockRequest();
+        inventory.generateLowStockRequest(this.storeId);
         promptReturn();
     }
 
