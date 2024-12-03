@@ -27,7 +27,9 @@ public class MaintenanceRequestRepository {
         List<String> lines = FileUtils.readAllLines(filePath);
         for (String line : lines) {
             try {
-                requests.add(MaintenanceRequest.fromCSV(line));
+                MaintenanceRequest request = MaintenanceRequest.fromCSV(line);
+                request.updateTimeRemaining();
+                requests.add(request);
             } catch (IllegalArgumentException e) {
                 System.err.println("Error reading request: " + e.getMessage());
             }
@@ -35,11 +37,13 @@ public class MaintenanceRequestRepository {
         return requests;
     }
 
+
     public boolean saveRequestsToFile(List<MaintenanceRequest> requests) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             writer.write("requestId,location,issueType,urgency,timeRemaining,status,lastUpdated");
             writer.newLine();
             for (MaintenanceRequest request : requests) {
+                request.updateTimeRemaining();
                 writer.write(request.toCSV());
                 writer.newLine();
             }

@@ -1,2 +1,6 @@
 requestId,location,issueType,urgency,timeRemaining,status,lastUpdated
-50e214e4-6b5f-42f3-b217-1792bde5a57f,Restroom First Floor,Broken Faucet,Medium Priority,259200,Open,2024-11-20T17:43:52.355416900
+5e032475-5acc-4ddf-8567-c6db6d5a58e5,South Entryway,Broken Door,Medium Priority,257295,Delayed (Parts Shortage),2024-12-03T00:39:24.325134600
+4a55bc69-0be0-4c55-8d23-c5ff2d2b4bc0,Downed Rack,Downed Rack,Low Priority,602938,Open,2024-12-03T00:39:24.325134600
+48f8cd88-76b6-4abb-abd9-c64c0096d112,East Entryway,Fire,Emergency,0,Resolved,2024-12-03T00:39:24.325134600
+2ddf531a-6bdf-424b-a7a2-9218d9baac0f,Storefront,Spilled Milk,High Priority,0,Resolved,2024-12-03T00:39:24.326133300
+76e2bdc6-caae-4616-90b5-c7d393ac816b,HVAC,Air is too hot,High Priority,0,Resolved,2024-12-03T00:39:24.326133300

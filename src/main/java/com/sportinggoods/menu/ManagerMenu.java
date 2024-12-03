@@ -4,6 +4,8 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -292,13 +294,17 @@ public class ManagerMenu extends BaseMenu {
             return;
         }
 
-        System.out.print("Enter maintenance date (YYYY-MM-DD): ");
-        String date = scanner.nextLine();
+        System.out.print("Enter Issue: ");
+        String issue = scanner.nextLine();
 
-        utilityController.updateUtilityStatus(utilityId, "Maintenance Requested: " + date);
+        utilityController.updateUtilityStatus(utilityId, "Maintenance Requested On: " + LocalDateTime.now());
+        boolean success = initManager.getMaintenanceRequestController().createRequest(utility.getName(), issue, "High Priority");
 
-        // Simulate maintenance scheduling
-        System.out.println("Maintenance scheduled for " + utility.getName() + " on " + date);
+        if (success) {
+            System.out.println("Maintenance request created successfully.");
+        } else {
+            System.out.println("Failed to create maintenance request.");
+        }
         promptReturn();
     }
 

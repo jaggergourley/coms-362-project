@@ -40,9 +40,15 @@ public class MaintenanceRequestController {
 
         for (MaintenanceRequest request : requests) {
             if (request.getRequestId().equals(requestId)) {
+                if(newStatus.equals("Open")){
+                    request.updateTimeRemaining();
+                }
+                else{
+                    request.setTimeRemaining(0);
+                }
                 request.setStatus(newStatus);
-                request.setLastUpdated(LocalDateTime.now()); // Update timestamp
-                return repository.saveRequestsToFile(requests); // Save updated list to CSV
+                request.setLastUpdated(LocalDateTime.now());
+                return repository.saveRequestsToFile(requests);
             }
         }
 
