@@ -225,4 +225,70 @@ public class CashierController {
             System.out.println("Coupon not found. No changes made.");
         }
     }
+
+    /**
+     * Handles an order pickup by verifying customer details,
+     * retrieving the order, and updating the order status.
+     *
+     * @param customer      The customer picking up the order.
+     * @param items         A map of items and their quantities to be picked up.
+     * @param confirmationDetails The details provided by the customer (e.g., order ID or receipt number).
+     * @return The receipt if the pickup was successful, null otherwise.
+     */
+    public Receipt handleOrderPickup(Customer customer, Map<Item, Integer> items, String confirmationDetails) {
+        System.out.println("Handling order pickup for Customer: " + customer.getName());
+
+        // Step 1: Verify customer details
+        if (confirmationDetails == null || confirmationDetails.isEmpty()) {
+            System.out.println("Order confirmation details are missing.");
+            return null;
+        }
+        System.out.println("Order confirmed with details: " + confirmationDetails);
+
+        // Step 2: Verify item availability in inventory
+        for (Map.Entry<Item, Integer> entry : items.entrySet()) {
+            Item item = entry.getKey();
+            int quantity = entry.getValue();
+
+            if (!inventory.checkAvailability(item.getName(), quantity)) {
+                System.out.println("Item " + item.getName() + " is out of stock or insufficient quantity for pickup.");
+                return null;
+            }
+        }
+
+        // Step 3: Update inventory and prepare the receipt details
+        double totalCost = 0.0;
+        StringBuilder receiptDetails = new StringBuilder();
+        for (Map.Entry<Item, Integer> entry : items.entrySet()) {
+            Item item = entry.getKey();
+            int quantity = entry.getValue();
+
+            // Update inventory
+            inventory.updateQuantity(item.getName(), -quantity);
+
+            // Build receipt details
+            double itemCost = item.getPrice() * quantity;
+            totalCost += itemCost;
+            receiptDetails.append(item.getName())
+                    .append(": ")
+                    .append(quantity)
+                    .append(" x $")
+                    .append(item.getPrice())
+                    .append(", ");
+        }
+
+        // Remove trailing comma and space
+        if (receiptDetails.length() > 0) {
+            receiptDetails.setLength(receiptDetails.length() - 2);
+        }
+
+        // Step 4: Log the pickup as a transaction and generate a receipt
+        Receipt receipt = new Receipt(customer, cashier, receiptDetails.toString(), totalCost, LocalDate.now());
+        receiptRepo.logReceipt(receipt);
+
+        // Step 5: Confirm order pickup completion
+        System.out.println("Order pickup completed successfully. Receipt: " + receipt);
+        return receipt;
+    }
+
 }

@@ -22,7 +22,8 @@ public class InitializationManager {
     private ShippingController shippingController;
     private SupplierController supplierController;
     private UtilityController utilityController;
-    private MaintenanceRequestController maintenanceRequestController; // Added
+    private MaintenanceRequestController maintenanceRequestController;
+    private FeedbackController feedbackController;// Added
 
     // Models
     private Cashier cashier;
@@ -61,7 +62,9 @@ public class InitializationManager {
     private SupplierOrderRepository supplierOrderRepo;
     private SupplierRepository supplierRepo;
     private UtilityRepository utilityRepo;
-    private MaintenanceRequestRepository maintenanceRequestRepo; // Added
+    private MaintenanceRequestRepository maintenanceRequestRepo;
+    private FeedbackRepository feedbackRepo;// Added
+    private PickupOrderRepository pickupOrderRepo;
 
     // Scanner for user input
     private Scanner scanner;
@@ -91,7 +94,8 @@ public class InitializationManager {
         shippingController = new ShippingController(shippingOrderRepo);
         supplierController = new SupplierController(supplierRepo, supplierOrderRepo);
         utilityController = new UtilityController(utilityRepo);
-        maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo); // Added
+        maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo);
+        feedbackController = new FeedbackController(feedbackRepo);// Added
     }
 
     /**
@@ -133,7 +137,9 @@ public class InitializationManager {
         supplierOrderRepo = new SupplierOrderRepository();
         supplierRepo = new SupplierRepository();
         utilityRepo = new UtilityRepository();
-        maintenanceRequestRepo = new MaintenanceRequestRepository(); // Added
+        maintenanceRequestRepo = new MaintenanceRequestRepository();
+        feedbackRepo = new FeedbackRepository();// Added
+        pickupOrderRepo = new PickupOrderRepository(getInventory(1));
     }
 
     /**
@@ -167,6 +173,7 @@ public class InitializationManager {
     public ShippingController getShippingController() { return shippingController; }
     public SupplierController getSupplierController() { return supplierController; }
     public UtilityController getUtilityController() { return utilityController; }
+    public FeedbackController getFeedbackController() { return feedbackController; }
 
     // Getters for models
     public Cashier getCashier() { return cashier; }
@@ -176,7 +183,7 @@ public class InitializationManager {
     public Discount getDiscount() { return discount; }
     public Employee getEmployee() { return employee; }
     public GiftCard getGiftCard() { return giftCard; }
-    public Inventory getInventory() { return inventory; }
+    public Inventory getInventory(int storeId) { return new Inventory(storeId); }
     public Item getItem() { return item; }
     public Manager getManager() { return manager; }
     public Receipt getReceipt() { return receipt; }
@@ -188,6 +195,7 @@ public class InitializationManager {
     public Store getStore() { return store; }
     public Supplier getSupplier() { return supplier; }
     public SupplierOrder getSupplierOrder() { return supplierOrder; }
+
 
     // Getters for repositories
     public CashierRepository getCashierRepo() { return cashierRepo; }
@@ -201,6 +209,8 @@ public class InitializationManager {
     public SupplierOrderRepository getSupplierOrderRepo() { return supplierOrderRepo; }
     public SupplierRepository getSupplierRepo() { return supplierRepo; }
     public UtilityRepository getUtilityRepo() { return utilityRepo; }
+    public FeedbackRepository getFeedbackRepo() { return feedbackRepo; }
+    public PickupOrderRepository getPickupOrderRepository() { return pickupOrderRepo; }
 
     public Scanner getScanner() { return scanner; }
 

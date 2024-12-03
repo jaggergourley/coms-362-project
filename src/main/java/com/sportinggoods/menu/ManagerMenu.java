@@ -23,6 +23,7 @@ public class ManagerMenu extends BaseMenu {
     private ShippingController shippingController;
     private SupplierController supplierController;
     private UtilityController utilityController;
+    private FeedbackController feedbackController;
 
 
     // Repositories and Models
@@ -47,8 +48,9 @@ public class ManagerMenu extends BaseMenu {
         this.supplierController = initManager.getSupplierController();
         this.utilityController = initManager.getUtilityController();
         this.shippingRepo = initManager.getShippingOrderRepo();
-        this.inventory = initManager.getInventory();
+        this.inventory = initManager.getInventory(storeId);
         this.employee = initManager.getEmployee();
+        this.feedbackController = initManager.getFeedbackController();
     }
 
     @Override
@@ -67,6 +69,7 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("12", this::manageBuildingUtilities);
         invoker.register("13", this::manageMaintenanceRequests);
         invoker.register("14", this::generateLowStockRequest);
+        invoker.register("15", this::manageFeedback);
 
     }
 
@@ -88,12 +91,13 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("12. Manage Building Utilities");
         System.out.println("13. Manage Maintenance Requests");
         System.out.println("14. Generate Low Stock Request");
-        System.out.println("15. Back to Main Menu");
+        System.out.println("15. Manage Feedback");
+        System.out.println("16. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("15");
+        return choice.equals("16");
     }
 
     @Override
@@ -1304,5 +1308,109 @@ private void adjustPriceMenu() {
     private void promptReturn() {
         System.out.println("\nPress Enter to return to the menu...");
         scanner.nextLine();
+    }
+
+
+    /**
+     * prompts the user to select a feedback option
+     */
+    private void manageFeedback() {
+        while (true) {
+            clearConsole();
+            System.out.println("\nFeedback Management:");
+            System.out.println("1. View All Feedback");
+            System.out.println("2. Escalate Feedback");
+            System.out.println("3. Respond to Feedback");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    viewAllFeedback();
+                    break;
+                case "2":
+                    escalateFeedback();
+                    break;
+                case "3":
+                    respondToFeedback();
+                    break;
+                case "4":
+                    return; // Exit feedback management
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private void viewAllFeedback() {
+        clearConsole();
+        List<Feedback> feedbackList = feedbackController.getAllFeedback();
+        if (feedbackList.isEmpty()) {
+            System.out.println("No feedback available.");
+        } else {
+            System.out.println("Feedback List:");
+            feedbackList.forEach(feedback -> System.out.println(
+                    "ID: " + feedback.getFeedbackId() +
+                            " | Customer ID: " + feedback.getCustomerId() +
+                            " | Content: " + feedback.getContent() +
+                            " | Status: " + feedback.getStatus() +
+                            " | Date: " + feedback.getDate()
+            ));
+        }
+        promptReturn();
+    }
+
+    private void escalateFeedback() {
+        clearConsole();
+
+        // Display all feedback for reference
+        List<Feedback> feedbackList = feedbackController.getAllFeedback();
+        if (feedbackList.isEmpty()) {
+            System.out.println("No feedback to escalate.");
+            promptReturn();
+            return;
+        }
+
+        System.out.println("Available Feedback:");
+        for (Feedback feedback : feedbackList) {
+            System.out.println("ID: " + feedback.getFeedbackId() +
+                    " | Customer ID: " + feedback.getCustomerId() +
+                    " | Content: " + feedback.getContent() +
+                    " | Status: " + (feedback.getStatus() != null ? feedback.getStatus() : "No response yet") +
+                    " | Date: " + feedback.getDate());
+        }
+
+        // Prompt for Feedback ID
+        System.out.print("\nEnter Feedback ID to escalate: ");
+        String feedbackId = scanner.nextLine().trim();
+
+        // Escalate feedback
+        boolean success = feedbackController.escalateFeedback(-1, feedbackId); // Customer ID not used here
+        if (success) {
+            System.out.println("Feedback successfully escalated.");
+        } else {
+            System.out.println("Failed to escalate feedback. Please check the ID and try again.");
+        }
+
+        promptReturn();
+    }
+
+    private void respondToFeedback() {
+        clearConsole();
+        System.out.print("Enter Feedback ID to respond to: ");
+        String feedbackId = scanner.nextLine().trim();
+
+        System.out.print("Enter your response: ");
+        String response = scanner.nextLine().trim();
+
+        boolean success = feedbackController.respondToFeedback(feedbackId, response);
+        if (success) {
+            System.out.println("Feedback response recorded successfully.");
+        } else {
+            System.out.println("Failed to respond to feedback. Please check the ID and try again.");
+        }
+        promptReturn();
     }
 }

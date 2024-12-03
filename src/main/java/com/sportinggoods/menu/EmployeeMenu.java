@@ -41,7 +41,7 @@ public class EmployeeMenu extends BaseMenu {
         this.cashierController = initManager.getCashierController();
         this.shippingController = initManager.getShippingController();
         this.shippingRepo = initManager.getShippingOrderRepo();
-        this.inventory = initManager.getInventory();
+        this.inventory = initManager.getInventory(storeId);
         this.employee = initManager.getEmployee();
     }
 
