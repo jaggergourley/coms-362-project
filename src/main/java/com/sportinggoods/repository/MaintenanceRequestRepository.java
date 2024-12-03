@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MaintenanceRequestRepository {
-    private final String filePath = "data/maintenanceRequests.csv.csv";
+    private final String filePath = "data/maintenanceRequests.csv";
 
     public MaintenanceRequestRepository() {
         FileUtils.initializeFile(filePath, "requestId,location,issueType,urgency,timeRemaining,status,lastUpdated");
