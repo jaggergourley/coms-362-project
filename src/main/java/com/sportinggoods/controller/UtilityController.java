@@ -39,7 +39,7 @@ public class UtilityController {
     public boolean updateUtilityStatus(String utilityId, String status) {
         Utility utility = utilityRepository.getUtilityById(utilityId);
         if (utility == null) {
-            return false; // Utility not found
+            return false;
         }
 
         utility.setStatus(status);

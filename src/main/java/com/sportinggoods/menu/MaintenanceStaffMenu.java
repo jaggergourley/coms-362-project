@@ -7,6 +7,7 @@ import com.sportinggoods.util.InitializationManager;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 /**
  * Represents the Maintenance Staff Menu in the Sporting Goods Management System.
@@ -77,10 +78,20 @@ public class MaintenanceStaffMenu extends BaseMenu {
             return;
         }
 
-        // Sort issues by urgency and time remaining
-        requests.sort(Comparator.comparing(MaintenanceRequest::getTimeRemaining));
+        // Filter out resolved issues and those with timeRemaining == 0
+        List<MaintenanceRequest> pendingRequests = requests.stream()
+                .filter(request -> request.getTimeRemaining() > 0 && !"Resolved".equalsIgnoreCase(request.getStatus()))
+                .collect(Collectors.toList());
 
-        MaintenanceRequest urgentRequest = requests.get(0);
+        if (pendingRequests.isEmpty()) {
+            System.out.println("No pending maintenance issues.");
+            return;
+        }
+
+        // Sort by timeRemaining
+        pendingRequests.sort(Comparator.comparing(MaintenanceRequest::getTimeRemaining));
+
+        MaintenanceRequest urgentRequest = pendingRequests.get(0);
         System.out.println("\nMost Urgent Maintenance Issue:");
         System.out.println(urgentRequest);
 
@@ -89,12 +100,33 @@ public class MaintenanceStaffMenu extends BaseMenu {
 
         if ("yes".equals(resolved)) {
             maintenanceRequestController.updateRequestStatus(urgentRequest.getRequestId(), "Resolved");
+            if(urgentRequest.getLocation().equals("HVAC") || urgentRequest.getLocation().equals("Lighting") || urgentRequest.getLocation().equals("Water")){
+                String reqLoc = urgentRequest.getLocation();
+                String utilityId;
+                if(reqLoc.equals("HVAC")){
+                    utilityId = "U001";
+                }
+                else if(reqLoc.equals("Lighting")){
+                    utilityId = "U002";
+                }
+                else{
+                    utilityId = "U003";
+                }
+                boolean success = initManager.getUtilityController().updateUtilityStatus(utilityId, "Active");
+
+                if (success) {
+                    System.out.println("Utility updated.");
+                } else {
+                    System.out.println("Failed to create maintenance request.");
+                }
+            }
             System.out.println("Issue marked as resolved.");
         } else {
             handleAlternateFlows(urgentRequest);
         }
         promptReturn();
     }
+
 
     /**
      * Handles alternate flows based on the issue's situation.

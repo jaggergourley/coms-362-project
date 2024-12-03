@@ -89,6 +89,20 @@ public class MaintenanceRequest {
         lastUpdated = now;
     }
 
+    @Override
+    public String toString() {
+        return "MaintenanceRequest{" +
+                "Request ID='" + requestId + '\'' +
+                ", Location='" + location + '\'' +
+                ", Issue Type='" + issueType + '\'' +
+                ", Urgency='" + urgency + '\'' +
+                ", Time Remaining=" + timeRemaining +
+                ", Status='" + status + '\'' +
+                ", Last Updated At=" + lastUpdated +
+                '}';
+    }
+
+
     public String toCSV() {
         return requestId + "," + location + "," + issueType + "," + urgency + "," + timeRemaining + "," + status + "," + lastUpdated;
     }
