@@ -203,29 +203,35 @@ public class CashierMenu extends BaseMenu {
         for (int i = 0; i < availableItems.size(); i++) {
             Item item = availableItems.get(i);
     
-            // Get the effective price (final price after all applicable discounts)
-            double originalPrice = item.getPrice();
+            // Get the original price and effective price
+            double originalPrice = discountRepository.getOriginalPrices()
+                    .getOrDefault(item.getName().toLowerCase(), item.getPrice()); // Default to current price if no original
             double effectivePrice = inventory.getEffectivePrice(item.getName(), discountRepository);
     
-            // Calculate the total discount
+            // Calculate the discount value and type
             double totalDiscount = originalPrice - effectivePrice;
+            String discountType = "";
     
-            // Determine discount type for display (fixed or percentage)
-            String discountDisplay;
+            // Determine the type of discount applied (Store-Wide, Department, or Item-Specific)
             if (totalDiscount > 0) {
-                double percentage = (totalDiscount / originalPrice) * 100;
-                if (Math.abs(percentage - (int) percentage) < 0.01) {
-                    discountDisplay = String.format("%.0f%%", percentage);
-                } else {
-                    discountDisplay = String.format("$%.2f", totalDiscount);
+                for (Discount discount : discountRepository.getDiscounts()) {
+                    if (discount.getTarget().equalsIgnoreCase(item.getName())) {
+                        discountType = discount.getType().equalsIgnoreCase("PERCENTAGE")
+                                ? String.format("%.0f%%", discount.getValue())
+                                : String.format("$%.2f", discount.getValue());
+                        break;
+                    } else if (discount.getTarget().equalsIgnoreCase("Store-Wide")) {
+                        discountType = discount.getType().equalsIgnoreCase("PERCENTAGE")
+                                ? String.format("%.0f%%", discount.getValue())
+                                : String.format("$%.2f", discount.getValue());
+                    }
                 }
-            } else {
-                discountDisplay = "No Discount";
             }
-
+    
             // Display the item
             System.out.printf("%d. %s (Original: $%.2f, Discount: %s, Final: $%.2f, Quantity: %d)%n",
-                    i + 1, item.getName(), originalPrice, discountDisplay, effectivePrice, item.getQuantity());
+                    i + 1, item.getName(), originalPrice, discountType.isEmpty() ? "None" : discountType,
+                    effectivePrice, item.getQuantity());
         }
     }
     

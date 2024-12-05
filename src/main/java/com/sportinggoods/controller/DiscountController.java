@@ -62,8 +62,11 @@ public class DiscountController {
 
     public String removeDiscount(String target) {
         List<Item> itemsToUpdate;
-
-        if (target.equalsIgnoreCase("store-wide")) {
+    
+        // Identify the target type
+        boolean isStoreWide = target.equalsIgnoreCase("store-wide");
+    
+        if (isStoreWide) {
             itemsToUpdate = inventory.getItems();
         } else if (!inventory.getItemsByDepartment(target).isEmpty()) {
             itemsToUpdate = inventory.getItemsByDepartment(target);
@@ -74,16 +77,20 @@ public class DiscountController {
             }
             itemsToUpdate = List.of(item);
         }
-
+    
         for (Item item : itemsToUpdate) {
             try {
+                // Use the item's name as the target for restoring original prices
                 double originalPrice = discountRepository.restoreOriginalPrice(item.getName());
                 item.setPrice(originalPrice); // Restore the original price
             } catch (IllegalArgumentException e) {
-                return e.getMessage(); // Handle cases where original price is missing
+                // Suppress error messages for store-wide discounts
+                if (!isStoreWide) {
+                    System.out.println("Error: " + e.getMessage());
+                }
             }
         }
-
+    
         discountRepository.removeDiscount(target);
         inventory.saveItemsToFile(); // Save updated inventory
         return "Discount removed for target: " + target;

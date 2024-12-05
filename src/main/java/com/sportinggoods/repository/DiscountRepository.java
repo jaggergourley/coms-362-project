@@ -50,8 +50,9 @@ public class DiscountRepository {
     }
 
     public double restoreOriginalPrice(String target) {
-        if (originalPrices.containsKey(target)) {
-            return originalPrices.get(target);
+        String normalizedTarget = target.toLowerCase(); // Normalize key to lowercase
+        if (originalPrices.containsKey(normalizedTarget)) {
+            return originalPrices.get(normalizedTarget);
         } else {
             throw new IllegalArgumentException("No original price found for target: " + target);
         }
