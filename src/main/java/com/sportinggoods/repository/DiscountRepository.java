@@ -28,10 +28,18 @@ public class DiscountRepository {
             return; // Skip adding duplicate store-wide discount
         }
     
+        // Avoid duplicate department-wide discounts
+        if (!discount.getTarget().equalsIgnoreCase("Store-Wide") &&
+            discounts.stream().anyMatch(d -> d.getTarget().equalsIgnoreCase(discount.getTarget()) &&
+                                             d.getType().equalsIgnoreCase(discount.getType()) &&
+                                             d.getValue() == discount.getValue())) {
+            return; // Skip adding duplicate department-wide discount
+        }
+    
         // For item-specific discounts, store original prices
         if (!discount.getTarget().equalsIgnoreCase("Store-Wide") &&
             !discount.getTarget().equalsIgnoreCase("Department")) {
-            originalPrices.putIfAbsent(discount.getTarget(), originalPrice); // Avoid overwriting
+            originalPrices.putIfAbsent(discount.getTarget().toLowerCase(), originalPrice); // Normalize key to lowercase
         }
     
         discounts.add(discount);

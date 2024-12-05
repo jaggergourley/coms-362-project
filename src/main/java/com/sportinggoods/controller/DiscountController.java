@@ -34,15 +34,17 @@ public class DiscountController {
 
     public String addDiscountToDepartment(String departmentName, double value, String type) {
         List<Item> departmentItems = inventory.getItemsByDepartment(departmentName);
-        if (departmentItems.isEmpty()) return "No items found in department.";
-
+        if (departmentItems.isEmpty()) {
+            return "No items found in department: " + departmentName;
+        }
+    
         for (Item item : departmentItems) {
             discountRepository.addDiscount(new Discount(departmentName, value, type), item.getPrice());
-
+    
             double discountedPrice = calculateDiscountedPrice(item.getPrice(), value, type);
             item.setPrice(discountedPrice);
         }
-
+    
         inventory.saveItemsToFile(); // Save updated inventory
         return "Discount applied to department: " + departmentName;
     }
@@ -63,12 +65,13 @@ public class DiscountController {
     public String removeDiscount(String target) {
         List<Item> itemsToUpdate;
     
-        // Identify the target type
+        // Check if the target is store-wide or department-wide
         boolean isStoreWide = target.equalsIgnoreCase("store-wide");
+        boolean isDepartmentWide = !isStoreWide && inventory.getItemsByDepartment(target).size() > 0;
     
         if (isStoreWide) {
             itemsToUpdate = inventory.getItems();
-        } else if (!inventory.getItemsByDepartment(target).isEmpty()) {
+        } else if (isDepartmentWide) {
             itemsToUpdate = inventory.getItemsByDepartment(target);
         } else {
             Item item = inventory.getItem(target);
@@ -80,12 +83,12 @@ public class DiscountController {
     
         for (Item item : itemsToUpdate) {
             try {
-                // Use the item's name as the target for restoring original prices
-                double originalPrice = discountRepository.restoreOriginalPrice(item.getName());
+                // Normalize the target key for department-wide discounts
+                double originalPrice = discountRepository.restoreOriginalPrice(item.getName().toLowerCase());
                 item.setPrice(originalPrice); // Restore the original price
             } catch (IllegalArgumentException e) {
-                // Suppress error messages for store-wide discounts
-                if (!isStoreWide) {
+                // Suppress error messages for store-wide and department-wide discounts
+                if (!isStoreWide && !isDepartmentWide) {
                     System.out.println("Error: " + e.getMessage());
                 }
             }

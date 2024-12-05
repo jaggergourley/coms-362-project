@@ -154,12 +154,15 @@ public class Inventory {
     // }
 
     public List<Item> getItemsByDepartment(String department) {
+        String normalizedDepartment = department.trim().toLowerCase(); // Normalize user input
         List<Item> itemsInDepartment = new ArrayList<>();
+    
         for (Item item : items) {
-            if (item.getDepartment().equalsIgnoreCase(department)) {
+            if (item.getDepartment().trim().toLowerCase().equals(normalizedDepartment)) {
                 itemsInDepartment.add(item);
             }
         }
+    
         return itemsInDepartment;
     }
 

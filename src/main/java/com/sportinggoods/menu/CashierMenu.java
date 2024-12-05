@@ -220,10 +220,14 @@ public class CashierMenu extends BaseMenu {
                                 ? String.format("%.0f%%", discount.getValue())
                                 : String.format("$%.2f", discount.getValue());
                         break;
+                    } else if (discount.getTarget().equalsIgnoreCase(item.getDepartment())) {
+                        discountType = discount.getType().equalsIgnoreCase("PERCENTAGE")
+                                ? String.format("%.0f%% (Dept)", discount.getValue())
+                                : String.format("$%.2f (Dept)", discount.getValue());
                     } else if (discount.getTarget().equalsIgnoreCase("Store-Wide")) {
                         discountType = discount.getType().equalsIgnoreCase("PERCENTAGE")
-                                ? String.format("%.0f%%", discount.getValue())
-                                : String.format("$%.2f", discount.getValue());
+                                ? String.format("%.0f%% (Store)", discount.getValue())
+                                : String.format("$%.2f (Store)", discount.getValue());
                     }
                 }
             }
