@@ -203,19 +203,49 @@ public class Inventory {
             throw new IllegalArgumentException("Item not found: " + itemName);
         }
     
-        // Check if there is an active discount for this item
-        List<Discount> activeDiscounts = discountRepository.getDiscounts();
-        for (Discount discount : activeDiscounts) {
-            if (discount.getTarget().equalsIgnoreCase(itemName)) {
-                double originalPrice = item.getPrice();
-                return discount.getType().equalsIgnoreCase("PERCENTAGE") 
-                       ? originalPrice * (1 - discount.getValue() / 100) 
-                       : originalPrice - discount.getValue();
-            }
+        double originalPrice = item.getPrice();
+        double totalDiscount = 0;
+    
+        // Check for item-specific discount
+        double itemDiscount = discountRepository.getDiscounts().stream()
+                .filter(d -> d.getTarget().equalsIgnoreCase(itemName))
+                .mapToDouble(d -> d.getType().equalsIgnoreCase("PERCENTAGE")
+                                 ? originalPrice * (d.getValue() / 100)
+                                 : d.getValue())
+                .max()
+                .orElse(0);
+    
+        // Check for department-wide discount
+        double departmentDiscount = discountRepository.getDepartmentDiscount(item.getDepartment());
+        if (departmentDiscount > 0) {
+            departmentDiscount = discountRepository.getDiscounts().stream()
+                    .filter(d -> d.getTarget().equalsIgnoreCase(item.getDepartment()))
+                    .mapToDouble(d -> d.getType().equalsIgnoreCase("PERCENTAGE")
+                                     ? originalPrice * (d.getValue() / 100)
+                                     : d.getValue())
+                    .max()
+                    .orElse(0);
         }
     
-        // No active discount; return the original price
-        return item.getPrice();
+        // Check for store-wide discount
+        double storeWideDiscount = discountRepository.getStoreWideDiscount();
+        if (storeWideDiscount > 0) {
+            storeWideDiscount = discountRepository.getDiscounts().stream()
+                    .filter(d -> d.getTarget().equalsIgnoreCase("Store-Wide"))
+                    .mapToDouble(d -> d.getType().equalsIgnoreCase("PERCENTAGE")
+                                     ? originalPrice * (d.getValue() / 100)
+                                     : d.getValue())
+                    .max()
+                    .orElse(0);
+        }
+    
+        // Apply the highest priority discount
+        totalDiscount = Math.max(itemDiscount, Math.max(departmentDiscount, storeWideDiscount));
+    
+        // Ensure the discount does not exceed the price
+        totalDiscount = Math.min(totalDiscount, originalPrice);
+    
+        return originalPrice - totalDiscount;
     }
 
 

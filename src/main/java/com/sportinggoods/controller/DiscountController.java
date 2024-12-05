@@ -100,4 +100,11 @@ public class DiscountController {
     private void loadOriginalPrices() {
         discountRepository.loadOriginalPricesFromFile();
     }
+
+    public boolean hasStoreWideDiscount(double value, String type) {
+        return discountRepository.getDiscounts().stream()
+                .anyMatch(d -> d.getTarget().equalsIgnoreCase("Store-Wide") &&
+                               d.getValue() == value &&
+                               d.getType().equalsIgnoreCase(type));
+    }
 }

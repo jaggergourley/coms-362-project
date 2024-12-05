@@ -4,7 +4,6 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -203,22 +202,30 @@ public class CashierMenu extends BaseMenu {
         System.out.println("\nAvailable Items:");
         for (int i = 0; i < availableItems.size(); i++) {
             Item item = availableItems.get(i);
+    
+            // Get the effective price (final price after all applicable discounts)
             double originalPrice = item.getPrice();
-            double discountedPrice = inventory.getEffectivePrice(item.getName(), discountRepository);
+            double effectivePrice = inventory.getEffectivePrice(item.getName(), discountRepository);
     
-            if (discountedPrice < originalPrice) {
-                double discountValue = originalPrice - discountedPrice;
-                String discountType = discountValue == originalPrice * (discountValue / 100) ? "percentage" : "fixed";
-                String discountDisplay = discountType.equals("percentage")
-                        ? String.format("(-%.2f%%)", (discountValue / originalPrice) * 100)
-                        : String.format("(-$%.2f)", discountValue);
+            // Calculate the total discount
+            double totalDiscount = originalPrice - effectivePrice;
     
-                System.out.printf("%d. %s (Price: $%.2f %s, Quantity: %d)\n",
-                        i + 1, item.getName(), discountedPrice, discountDisplay, item.getQuantity());
+            // Determine discount type for display (fixed or percentage)
+            String discountDisplay;
+            if (totalDiscount > 0) {
+                double percentage = (totalDiscount / originalPrice) * 100;
+                if (Math.abs(percentage - (int) percentage) < 0.01) {
+                    discountDisplay = String.format("%.0f%%", percentage);
+                } else {
+                    discountDisplay = String.format("$%.2f", totalDiscount);
+                }
             } else {
-                System.out.printf("%d. %s (Price: $%.2f, Quantity: %d)\n",
-                        i + 1, item.getName(), originalPrice, item.getQuantity());
+                discountDisplay = "No Discount";
             }
+
+            // Display the item
+            System.out.printf("%d. %s (Original: $%.2f, Discount: %s, Final: $%.2f, Quantity: %d)%n",
+                    i + 1, item.getName(), originalPrice, discountDisplay, effectivePrice, item.getQuantity());
         }
     }
     
