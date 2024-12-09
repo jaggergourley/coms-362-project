@@ -1,5 +1,8 @@
 package com.sportinggoods.model;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Store {
@@ -12,11 +15,13 @@ public class Store {
 
     private Inventory storeInventory;
 
+    private String employeeFile = "data/employee.csv";
+
 
     public Store(int ID, String address){
         this.ID = ID;
         this.address = address;
-        Employees = new ArrayList<>();
+        Employees = loadEmployeeFromFile();
         storeInventory = new Inventory(ID);
     }
 
@@ -76,6 +81,39 @@ public class Store {
                 temp.setWorkSchedule(employee.getWorkSchedule());
             }
         }
+    }
+
+    public ArrayList<Employee> loadEmployeeFromFile() {
+        ArrayList<Employee> loadedEmplyees = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(employeeFile))) {
+            String line;
+            reader.readLine(); // Skip header
+            while ((line = reader.readLine()) != null) {
+                Employee employee = Employee.fromCSV(line);
+                if (employee != null && employee.getId() == ID) {
+                    loadedEmplyees.add(employee);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading inventory from file: " + e.getMessage());
+        }
+        return loadedEmplyees;
+    }
+
+
+    public String toCSV() {
+        return ID + "," + address;
+    }
+
+    public static Store fromCSV(String csvLine) {
+        String[] tokens = csvLine.split(",");
+        if (tokens.length != 2) {
+            return null;  // Invalid format
+        }
+        int id = Integer.parseInt(tokens[0]);
+        String address = tokens[1];
+      
+        return new Store(id, address);
     }
     
 }

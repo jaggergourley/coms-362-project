@@ -1,8 +1,8 @@
 package com.sportinggoods.model;
 
 public class MaintenanceStaff extends Employee {
-    public MaintenanceStaff(String name, int id, Schedule workSchedule) {
-        super(name, id, workSchedule);
+    public MaintenanceStaff(String name, int id, Schedule workSchedule,int storeID) {
+        super(name, id, workSchedule, storeID);
     }
 
     public void performMaintenance(MaintenanceRequest request) {
