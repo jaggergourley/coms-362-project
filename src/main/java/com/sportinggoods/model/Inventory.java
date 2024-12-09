@@ -329,31 +329,37 @@ public class Inventory {
 
     /**
      * Generates a low stock request by identifying items with stock below a predefined threshold.
-     * Writes the low-stock items to 'lowStock.csv'.
+     * Writes the low-stock items to 'lowStock.csv' with the storeID.
+     *
+     * @param storeID The ID of the store generating the low stock request.
      */
-    public void generateLowStockRequest() {
+    public void generateLowStockRequest(int storeID) {
         List<Item> lowStockItems = new ArrayList<>();
 
-        // Identify items with stock below the threshold
+        // Identify items with stock below the threshold for the given storeID
         for (Item item : items) {
-            if (item.getQuantity() < LOW_STOCK_THRESHOLD) {
+            if (item.getQuantity() <= LOW_STOCK_THRESHOLD && item.getStoreID() == storeID) {
                 lowStockItems.add(item);
             }
         }
 
         if (lowStockItems.isEmpty()) {
-            System.out.println("All items are sufficiently stocked. No low stock request generated.");
+            System.out.println("All items are sufficiently stocked. No low stock request generated for Store ID: " + storeID);
             return;
         }
 
-        // Write low stock items to 'lowStock.csv'
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOW_STOCK_FILE))) {
-            writer.write("name,price,department,quantity,storeID\n");
+        // Write low stock items to 'lowStock.csv' with storeID
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOW_STOCK_FILE, true))) { // Append mode
+            // Check if the file is empty to write headers
+            File file = new File(LOW_STOCK_FILE);
+            if (file.length() == 0) {
+                writer.write("storeID,name,price,department,quantity\n");
+            }
             for (Item item : lowStockItems) {
-                writer.write(item.toCSV());
+                writer.write(storeID + "," + item.toCSV());
                 writer.newLine();
             }
-            System.out.println("Low stock request generated successfully. See 'lowStock.csv' for details.");
+            System.out.println("Low stock request generated successfully for Store ID: " + storeID + ". See 'lowStock.csv' for details.");
         } catch (IOException e) {
             System.out.println("Error writing low stock request to file: " + e.getMessage());
         }
@@ -361,57 +367,85 @@ public class Inventory {
 
     /**
      * Restocks items by reading from 'lowStock.csv' and updating their quantities to a predefined level.
-     * Sets the stock level of each low-stock item to RESTOCK_LEVEL (e.g., 10).
-     * After restocking, the 'lowStock.csv' file is cleared to indicate processing.
+     * Processes only items matching the provided storeID.
+     * After restocking, removes the processed items from 'lowStock.csv'.
+     *
+     * @param storeID The ID of the store to restock items for.
      */
-    public void restockDepartmentItems() {
-        File lowStockFile = new File(LOW_STOCK_FILE);
-        if (!lowStockFile.exists()) {
+    public void restockDepartmentItems(int storeID) {
+        File lowStockFileObj = new File(LOW_STOCK_FILE);
+        if (!lowStockFileObj.exists()) {
             System.out.println("'lowStock.csv' does not exist. No items to restock.");
             return;
         }
 
         List<Item> lowStockItems = new ArrayList<>();
+        List<String> remainingEntries = new ArrayList<>();
 
         // Read low stock items from 'lowStock.csv'
-        try (BufferedReader reader = new BufferedReader(new FileReader(lowStockFile))) {
-            String line = reader.readLine(); // Skip header
+        try (BufferedReader reader = new BufferedReader(new FileReader(lowStockFileObj))) {
+            String line;
+            boolean isFirstLine = true;
             while ((line = reader.readLine()) != null) {
-                Item item = Item.fromCSV(line);
-                if (item != null) {
-                    lowStockItems.add(item);
+                if (isFirstLine) {
+                    isFirstLine = false; // Skip header
+                    continue;
+                }
+                if (line.trim().isEmpty()) continue; // Skip empty lines
+                String[] parts = line.split(",");
+                if (parts.length < 5) { // Validate structure
+                    System.err.println("Error parsing low stock line: " + line);
+                    continue;
+                }
+
+                int fileStoreID = Integer.parseInt(parts[0]);
+                if (fileStoreID == storeID) {
+                    // Parse item details
+                    String name = parts[1];
+                    double price = Double.parseDouble(parts[2]);
+                    String department = parts[3];
+                    int quantity = Integer.parseInt(parts[4]);
+
+                    lowStockItems.add(new Item(name, price, department, quantity, storeID));
+                } else {
+                    remainingEntries.add(line); // Keep entries for other stores
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error reading low stock request from file: " + e.getMessage());
+            System.out.println("Error reading low stock requests: " + e.getMessage());
             return;
         }
 
         if (lowStockItems.isEmpty()) {
-            System.out.println("No low stock items found in 'lowStock.csv'.");
+            System.out.println("No low stock items found for Store ID: " + storeID);
             return;
         }
 
-        // Update inventory to restock items to RESTOCK_LEVEL
+        // Restock items
         for (Item lowStockItem : lowStockItems) {
             Item inventoryItem = getItem(lowStockItem.getName());
-            if (inventoryItem != null) {
+            if (inventoryItem != null && inventoryItem.getStoreID() == storeID) {
                 inventoryItem.setQuantity(RESTOCK_LEVEL);
                 System.out.println("Restocked '" + inventoryItem.getName() + "' to quantity " + RESTOCK_LEVEL + ".");
             } else {
-                System.out.println("Item '" + lowStockItem.getName() + "' not found in inventory. Skipping restock.");
+                System.out.println("Item '" + lowStockItem.getName() + "' not found in inventory for Store ID: " + storeID + ". Skipping restock.");
             }
         }
 
         // Save updated inventory to file
         saveItemsToFile();
-        System.out.println("Inventory updated successfully.");
+        System.out.println("Inventory updated successfully for Store ID: " + storeID + ".");
 
-        // Clear the 'lowStock.csv' file after restocking
-        if (lowStockFile.delete()) {
-            System.out.println("'lowStock.csv' has been cleared after restocking.");
-        } else {
-            System.out.println("Failed to clear 'lowStock.csv'. Please check manually.");
+        // Rewrite 'lowStock.csv' with remaining entries
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOW_STOCK_FILE))) {
+            writer.write("storeID,name,price,department,quantity\n"); // Write header
+            for (String entry : remainingEntries) {
+                writer.write(entry);
+                writer.newLine();
+            }
+            System.out.println("'lowStock.csv' has been updated after restocking.");
+        } catch (IOException e) {
+            System.out.println("Error updating 'lowStock.csv': " + e.getMessage());
         }
     }
 }

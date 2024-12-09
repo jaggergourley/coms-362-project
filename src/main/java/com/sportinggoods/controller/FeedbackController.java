@@ -1,6 +1,9 @@
 package com.sportinggoods.controller;
 
+import com.sportinggoods.model.Feedback;
 import com.sportinggoods.repository.FeedbackRepository;
+
+import java.util.List;
 
 public class FeedbackController {
     private final FeedbackRepository feedbackRepo;
@@ -9,25 +12,21 @@ public class FeedbackController {
         this.feedbackRepo = feedbackRepo;
     }
 
-    // HandleCustomerFeedback: Handles feedback from customers and escalates if needed
     public void handleCustomerFeedback(int customerId, String feedback, boolean escalate) {
-        System.out.println("Received feedback from Customer " + customerId + ": " + feedback);
 
-        // Step 4: Record feedback
-        feedbackRepo.logFeedback(customerId, feedback);
+        String status = escalate ? "Needs Escalation" : "Pending";
+        feedbackRepo.logFeedback(customerId, feedback, status);
+    }
 
-        if (escalate) {
-            // Escalate feedback to management
-            System.out.println("Escalating feedback to management for further investigation.");
-            feedbackRepo.escalateFeedback(customerId, feedback);
-        } else {
-            System.out.println("Acknowledging feedback without escalation.");
-        }
+    public List<Feedback> getAllFeedback() {
+        return feedbackRepo.getAllFeedback();
+    }
 
-        // Follow-up with customer
-        if (escalate) {
-            System.out.println("Ensuring customer follow-up for escalated feedback.");
-            feedbackRepo.recordFollowUp(customerId, feedback);
-        }
+    public boolean escalateFeedback(int customerId, String feedbackId) {
+        return feedbackRepo.escalateFeedback(feedbackId);
+    }
+
+    public boolean respondToFeedback(String feedbackId, String response) {
+        return feedbackRepo.recordResponse(feedbackId, response);
     }
 }

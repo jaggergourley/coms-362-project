@@ -28,6 +28,7 @@ public class EmployeeMenu extends BaseMenu {
     private ShippingOrderRepository shippingRepo;
 
     private static final String LOW_STOCK_FILE = "data/lowStock.csv";
+    private int storeId;
 
     /**
      * Constructs an EmployeeMenu with the provided InitializationManager and Scanner.
@@ -37,11 +38,12 @@ public class EmployeeMenu extends BaseMenu {
      */
     public EmployeeMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
+        this.storeId = storeId;
         // Initialize controllers and repositories
         this.cashierController = initManager.getCashierController();
         this.shippingController = initManager.getShippingController();
         this.shippingRepo = initManager.getShippingOrderRepo();
-        this.inventory = initManager.getInventory();
+        this.inventory = initManager.getInventory(storeId);
         this.employee = initManager.getEmployee();
     }
 
@@ -92,7 +94,7 @@ public class EmployeeMenu extends BaseMenu {
      */
     private void restockDepartmentItems() {
         clearConsole();
-        inventory.restockDepartmentItems();
+        inventory.restockDepartmentItems(this.storeId);
         promptReturn();
     }
 

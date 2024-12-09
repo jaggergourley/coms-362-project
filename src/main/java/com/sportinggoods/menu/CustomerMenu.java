@@ -5,11 +5,8 @@ import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -21,12 +18,15 @@ public class CustomerMenu extends BaseMenu {
     // Controllers
     private CashierController cashierController;
     private ShippingController shippingController;
+    private FeedbackController feedbackController;
 
     // Repositories and Models
     private Inventory inventory;
     private ReceiptRepository receiptRepo;
     private static String appliedCouponCode = null;
     private Employee employee;
+    private FeedbackRepository feedbackRepository;
+    private PickupOrderRepository orderRepository;
 
     /**
      * Constructs a CustomerMenu with the provided InitializationManager and Scanner.
@@ -37,10 +37,15 @@ public class CustomerMenu extends BaseMenu {
     public CustomerMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
         // Initialize controllers and repositories
+        this.cashierController = new CashierController(
+                initManager.getCashier(), initManager.getInventory(storeId), initManager.getRegisterController(),
+                initManager.getReceiptRepo(), initManager.getCouponRepo()
+        );
         this.shippingController = initManager.getShippingController();
-        this.inventory = initManager.getInventory();
-        this.cashierController = initManager.getCashierController();
+        this.inventory = initManager.getInventory(storeId);
         this.receiptRepo = initManager.getReceiptRepo();
+        this.feedbackController = initManager.getFeedbackController();
+        this.orderRepository = initManager.getPickupOrderRepository();
     }
 
     @Override
@@ -48,6 +53,9 @@ public class CustomerMenu extends BaseMenu {
         invoker.register("1", this::purchaseItemAsCustomer);
         invoker.register("2", this::returnItemAsCustomer);
         invoker.register("3", this::makeShippingOrderInput);
+        invoker.register("4", this::placePickupOrder); // Placing a pickup order
+        invoker.register("5", this::orderPickup);
+        invoker.register("6", this::provideFeedback);
     }
 
     @Override
@@ -57,12 +65,15 @@ public class CustomerMenu extends BaseMenu {
         System.out.println("1. Shop for Items");
         System.out.println("2. Return Items");
         System.out.println("3. Place Shipping Order");
-        System.out.println("4. Back to Main Menu");
+        System.out.println("4. Place Order for Pickup");
+        System.out.println("5. Pickup Order");
+        System.out.println("6. Provide Feedback");
+        System.out.println("7. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("4");
+        return choice.equals("7");
     }
 
     @Override
@@ -502,5 +513,111 @@ public class CustomerMenu extends BaseMenu {
                 System.out.println("Invalid input. Please enter a valid number or type 'cancel' to abort.");
             }
         }
+    }
+
+    private void orderPickup() {
+        clearConsole();
+        System.out.println("Pick Up an Existing Order:");
+
+        // Step 1: Get confirmation details from the customer
+        System.out.print("Enter Order Confirmation Number: ");
+        String confirmationDetails = scanner.nextLine().trim();
+
+        // Step 2: Fetch the order from the repository
+        Optional<PickupOrder> optionalOrder = orderRepository.getOrderByConfirmation(confirmationDetails);
+        if (optionalOrder.isEmpty()) {
+            System.out.println("No order found with the provided confirmation number.");
+            return;
+        }
+
+        PickupOrder order = optionalOrder.get();
+
+        // Step 3: Generate receipt and complete the pickup
+        Receipt receipt = cashierController.handleOrderPickup(
+                new Customer(order.getCustomerName(), -1),
+                order.getItems(),
+                confirmationDetails
+        );
+
+        if (receipt != null) {
+            orderRepository.updateOrderStatus(order.getOrderId(), "Completed");
+            System.out.println("Order pickup completed successfully. Receipt Details:");
+            System.out.println(receipt);
+        } else {
+            System.out.println("Order pickup failed. Please verify the details and try again.");
+        }
+    }
+
+    private void placePickupOrder() {
+        clearConsole();
+        System.out.println("Place Pickup Order:");
+
+        // Step 1: Collect customer name
+        System.out.print("Enter Customer Name: ");
+        String customerName = scanner.nextLine().trim();
+
+        // Step 2: Collect items for the pickup order
+        Map<Item, Integer> itemsToPickup = new HashMap<>();
+        while (true) {
+            System.out.print("Enter item name for pickup (or type 'done' to finish): ");
+            String itemName = scanner.nextLine().trim();
+
+            if (itemName.equalsIgnoreCase("done")) {
+                break;
+            }
+
+            System.out.print("Enter quantity for pickup: ");
+            String quantityInput = scanner.nextLine().trim();
+
+            if (!quantityInput.matches("\\d+")) {
+                System.out.println("Invalid quantity. Please enter a valid number.");
+                continue;
+            }
+
+            int quantity = Integer.parseInt(quantityInput);
+            Item item = inventory.getItem(itemName);
+
+            if (item == null) {
+                System.out.println("Item not found in inventory. Please try again.");
+                continue;
+            }
+
+            itemsToPickup.put(item, quantity);
+        }
+
+        if (itemsToPickup.isEmpty()) {
+            System.out.println("No items added to the order. Aborting.");
+            return;
+        }
+
+        // Step 3: Create the pickup order
+        PickupOrder order = new PickupOrder(customerName, itemsToPickup, LocalDate.now());
+
+        PickupOrder confirmedOrder = orderRepository.addOrder(order);
+        if (confirmedOrder != null) {
+            System.out.println("Pickup order created successfully!");
+            System.out.println("Confirmation Number: " + confirmedOrder.getConfirmationDetails());
+            System.out.println("Order Date: " + confirmedOrder.getDate());
+            System.out.println("Order Status: " + confirmedOrder.getStatus());
+        } else {
+            System.out.println("Failed to create the pickup order. Please try again.");
+        }
+    }
+
+    private void provideFeedback() {
+        clearConsole();
+        System.out.println("Provide Feedback:");
+
+        Customer customer = getCustomerDetails();
+
+        System.out.print("Enter your feedback: ");
+        String feedbackContent = scanner.nextLine().trim();
+
+        System.out.print("Do you want this feedback to be escalated? (yes/no): ");
+        boolean escalate = scanner.nextLine().trim().equalsIgnoreCase("yes");
+
+
+        feedbackController.handleCustomerFeedback(customer.getCustomerId(), feedbackContent, escalate);
+        System.out.println("Thank you for your feedback! It has been recorded.");
     }
 }

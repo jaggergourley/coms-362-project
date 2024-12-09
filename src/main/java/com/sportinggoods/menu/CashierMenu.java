@@ -4,10 +4,8 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -21,11 +19,14 @@ public class CashierMenu extends BaseMenu {
     private GiftCardController giftCardController;
     private RegisterController registerController;
     private DiscountController discountController;
+    private FeedbackController feedbackController;
 
     // Repositories
     private CouponRepository couponRepository;
     private ReceiptRepository receiptRepository;
     private DiscountRepository discountRepository;
+    private FeedbackRepository feedbackRepository;
+    private PickupOrderRepository orderRepository;
 
     // Models
     private Inventory inventory;
@@ -42,14 +43,20 @@ public class CashierMenu extends BaseMenu {
     public CashierMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
         // Initialize controllers and repositories
-        this.cashierController = initManager.getCashierController();
+        this.cashierController = new CashierController(
+                initManager.getCashier(), initManager.getInventory(storeId), initManager.getRegisterController(),
+                initManager.getReceiptRepo(), initManager.getCouponRepo()
+        );
         this.giftCardController = initManager.getGiftCardController();
         this.registerController = initManager.getRegisterController();
         this.couponRepository = initManager.getCouponRepo();
         this.receiptRepository = initManager.getReceiptRepo();
-        this.inventory = initManager.getInventory();
+        this.inventory = initManager.getInventory(storeId);
         this.discountController = initManager.getDiscountController();
         this.discountRepository = initManager.getDiscountRepo();
+        this.feedbackController = initManager.getFeedbackController();
+        this.feedbackRepository = initManager.getFeedbackRepo();
+        this.orderRepository = initManager.getPickupOrderRepository();
     }
 
     @Override
@@ -59,6 +66,9 @@ public class CashierMenu extends BaseMenu {
         invoker.register("3", this::sellGiftCardMenu);
         invoker.register("4", this::redeemGiftCardMenu);
         invoker.register("5", this::applyCouponMenu);
+        invoker.register("6", this::handleOrderPickup);
+        invoker.register("7", this::handleFeedback);
+
     }
 
     @Override
@@ -70,12 +80,14 @@ public class CashierMenu extends BaseMenu {
         System.out.println("3. Sell Gift Card");
         System.out.println("4. Redeem Gift Card");
         System.out.println("5. Apply Coupon");
-        System.out.println("6. Back to Main Menu");
+        System.out.println("6. Handle Order Pickup");
+        System.out.println("7. Handle Feedback");
+        System.out.println("8. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("6");
+        return choice.equals("8");
     }
 
     @Override
@@ -309,6 +321,137 @@ public class CashierMenu extends BaseMenu {
         } else {
             System.out.println("No items to return.");
         }
+    }
+
+    private void handleOrderPickup() {
+        clearConsole();
+        System.out.println("Handle Pickup Order:");
+
+        System.out.print("Enter Order Confirmation Details: ");
+        String confirmationDetails = scanner.nextLine().trim();
+
+        PickupOrderRepository orderRepo = initManager.getPickupOrderRepository();
+        Optional<PickupOrder> optionalOrder = orderRepo.getOrderByConfirmation(confirmationDetails);
+
+        if (optionalOrder.isEmpty()) {
+            System.out.println("No order found with the given confirmation details.");
+            return;
+        }
+
+        PickupOrder order = optionalOrder.get();
+
+        Receipt receipt = cashierController.handleOrderPickup(
+                new Customer(order.getCustomerName(), -1),
+                order.getItems(),
+                confirmationDetails
+        );
+
+        if (receipt != null) {
+            orderRepo.updateOrderStatus(order.getOrderId(), "Completed");
+            System.out.println("Order pickup processed successfully. Receipt Details:");
+            System.out.println(receipt);
+        } else {
+            System.out.println("Order pickup failed. Please verify the details and try again.");
+        }
+    }
+
+    private void handleFeedback() {
+        while (true) {
+            clearConsole();
+            System.out.println("\nFeedback Menu:");
+            System.out.println("1. View All Feedback");
+            System.out.println("2. Respond to Feedback");
+            System.out.println("3. Log New Feedback");
+            System.out.println("4. Back to Cashier Menu");
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    viewAllFeedback();
+                    break;
+                case "2":
+                    respondToFeedback();
+                    break;
+                case "3":
+                    logNewFeedback();
+                    break;
+                case "4":
+                    return; // Exit feedback menu
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private void viewAllFeedback() {
+        clearConsole();
+        List<Feedback> feedbackList = feedbackController.getAllFeedback();
+
+        if (feedbackList.isEmpty()) {
+            System.out.println("No feedback available.");
+        } else {
+            System.out.println("All Feedback:");
+            for (Feedback feedback : feedbackList) {
+                System.out.println("ID: " + feedback.getFeedbackId() +
+                        " | Customer ID: " + feedback.getCustomerId() +
+                        " | Content: " + feedback.getContent() +
+                        " | Status: " + (feedback.getStatus() != null ? feedback.getStatus() : "No status") +
+                        " | Date: " + feedback.getDate());
+            }
+        }
+
+        promptReturn();
+    }
+
+    private void respondToFeedback() {
+        clearConsole();
+        System.out.println("Respond to Feedback:");
+
+        System.out.print("Enter Feedback ID: ");
+        String feedbackId = scanner.nextLine().trim();
+
+        System.out.print("Enter Response: ");
+        String response = scanner.nextLine().trim();
+
+        boolean success = feedbackController.respondToFeedback(feedbackId, response);
+        if (success) {
+            System.out.println("Response recorded successfully.");
+        } else {
+            System.out.println("Failed to record response. Please check the Feedback ID.");
+        }
+
+        promptReturn();
+    }
+
+    private void logNewFeedback() {
+        clearConsole();
+        System.out.println("Log New Feedback:");
+
+        System.out.print("Enter Customer ID: ");
+        String customerIdInput = scanner.nextLine().trim();
+        int customerId;
+
+        try {
+            customerId = Integer.parseInt(customerIdInput);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid Customer ID. Please try again.");
+            return;
+        }
+
+        System.out.print("Enter Feedback Content: ");
+        String content = scanner.nextLine().trim();
+
+        feedbackController.handleCustomerFeedback(customerId, content, false);
+        System.out.println("Feedback logged successfully.");
+
+        promptReturn();
+    }
+
+    private void promptReturn() {
+        System.out.println("\nPress Enter to return...");
+        scanner.nextLine();
     }
 
     /**
