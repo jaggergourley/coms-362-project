@@ -68,6 +68,4 @@ public class Schedule {
             System.out.println(temp.getDate() + "-" + temp.getStartTime() + " " + temp.getEndTime());
         }
     }
-
-    
 }

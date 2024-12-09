@@ -1,19 +1,16 @@
 package com.sportinggoods.model;
 
-
-public class Employee{
+public class Employee {
     protected int id;
     protected String name;
-    private boolean placeOrder;
-    private boolean addingItems;
-    private boolean makeSchedule;
     private Schedule workSchedule;
+    private String position;
+    private String department;
     private int storeID;
 
+    public Employee() {}
 
-    public Employee(){}
-
-    //Constructor
+    // Constructor
     public Employee(String name, int id, Schedule workSchedule, int storeID) {
         this.name = name;
         this.id = id;
@@ -21,18 +18,21 @@ public class Employee{
         this.storeID = storeID;
     }
 
-    //getters and setters
+    // Getters and setters
     public int getId() {
         return id;
     }
+
     public void setId(int id) {
         this.id = id;
     }
+
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
-    }
-    public String getName(){
-        return name;
     }
 
     public Schedule getWorkSchedule() {
@@ -46,44 +46,45 @@ public class Employee{
     public int getStoreId() {
         return storeID;
     }
+
     public void setStoreId(int newID) {
         this.storeID = newID;
     }
 
-
-    //Functions that all objects that are employees have
-    public Boolean canPlaceOrder() {
-        //Insert logic here
-
-        return placeOrder;
+    public String getPosition() {
+        return position;
     }
 
-    public Boolean canAddItems() {
-        //insert logic here
-
-        return addingItems;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
-    public Boolean canMakeSchedule() {
-        // insert logic here
+    public String getDepartment() {
+        return department;
+    }
 
-        return makeSchedule;
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String toCSV() {
+        return id + "," + name + "," + storeID + "," + position + "," + department;
     }
 
     public static Employee fromCSV(String csvLine) {
-        String[] tokens = csvLine.split(",");
-        if (tokens.length != 3) {
-            return null;  // Invalid format
+        String[] tokens = csvLine.split(",", -1); // Allow empty tokens for missing values
+        if (tokens.length < 5) {
+            return null; // Invalid format
         }
         int id = Integer.parseInt(tokens[0]);
         String name = tokens[1];
         int storeID = Integer.parseInt(tokens[2]);
-        return new Employee(name, id, null, storeID);
+        String position = tokens[3];
+        String department = tokens[4];
+
+        Employee employee = new Employee(name, id, null, storeID);
+        employee.setPosition(position);
+        employee.setDepartment(department);
+        return employee;
     }
-
-    public String toCSV() {
-        return id + "," + name + "," + storeID;
-    }
-
-
 }

@@ -36,8 +36,6 @@ public class ManagerMenu extends BaseMenu {
 
     private int storeId;
 
-    private int storeId;
-
     /**
      * Constructs a ManagerMenu with the provided InitializationManager and Scanner.
      *
@@ -115,6 +113,64 @@ public class ManagerMenu extends BaseMenu {
     @Override
     protected void handleExit() {
         System.out.println("Returning to Main Menu...");
+    }
+
+    // ==========================
+    // Employee Management
+    // ==========================
+
+    private void manageEmployees() {
+        employeeList = new EmployeeList(storeId);
+
+        while (true) {
+            System.out.println("\nCurrent Employee List:");
+            employeeList.printEmployeeList();
+            System.out.println("------------------");
+            System.out.println("Select Employee List Operation:");
+            System.out.println("1. Add employee");
+            System.out.println("2. Remove employee");
+            System.out.println("3. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    System.out.print("Enter name of employee to add: ");
+                    String name = scanner.nextLine();
+                    System.out.print("Enter ID of employee to add: ");
+                    int id = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Enter position: ");
+                    String position = scanner.nextLine();
+                    System.out.print("Enter start date (yyyy-mm-dd): ");
+                    LocalDate startDate = LocalDate.parse(scanner.nextLine());
+                    System.out.print("Enter department: ");
+                    String department = scanner.nextLine();
+
+                    Employee newEmployee = new Employee(name, id, new Schedule(), storeId);
+                    newEmployee.setPosition(position);
+                    newEmployee.setStartDate(startDate);
+                    newEmployee.setDepartment(department);
+
+                    employeeList.addEmployee(newEmployee);
+                    break;
+
+                case "2":
+                    System.out.print("Enter name of employee to remove: ");
+                    String removeName = scanner.nextLine();
+                    System.out.print("Enter ID of employee to remove: ");
+                    int removeId = Integer.parseInt(scanner.nextLine());
+
+                    employeeList.removeEmployee(removeName, removeId);
+                    break;
+
+                case "3":
+                    return;
+
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
     }
 
     // ==========================
@@ -1240,46 +1296,6 @@ private void adjustPriceMenu() {
         }
         System.out.println("\nSupplier Orders:");
         orders.forEach(System.out::println);
-    }
-
-    private void manageEmployees(){
-        employeeList = new EmployeeList(storeId);
-
-        System.out.println("\nCurrent Employee List:");
-        employeeList.printEmployeeList();
-        System.out.println("------------------");
-        System.out.println("Select Employee list Operation");
-        System.out.println("------------------");
-        System.out.println("1. Add employee");
-        System.out.println("2. Delete employee");
-        System.out.print("Enter choice: ");
-
-        String choice = scanner.nextLine();
-
-        switch (choice) {
-            case "1":
-                clearConsole();
-                employeeList.printEmployeeList();
-                System.out.print("Enter name of employee to add:");
-                String name = scanner.nextLine();
-                System.out.print("Enter ID of employee to add:");
-                int id = scanner.nextInt();
-                Employee temp = new Employee(name, id, new Schedule(), storeId);
-                employeeList.addEmployee(temp);
-                break;
-            case "2":
-                clearConsole();
-                employeeList.printEmployeeList();
-                System.out.print("Enter name of employee to remove:");
-                name = scanner.nextLine();
-                System.out.print("Enter ID of employee to remove:");
-                id = scanner.nextInt();
-                employeeList.removeEmployee(name, id);
-                break;
-            default:
-                System.out.println("Not an option");
-                break;
-        }
     }
 
     // ==========================
