@@ -1,6 +1,13 @@
 package com.sportinggoods.model;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RegionalManger extends Employee {
 
@@ -11,7 +18,10 @@ public class RegionalManger extends Employee {
     private boolean makeSchedule;
     private Schedule workSchedule;
     private int numStores;
-    private ArrayList<Store> stores;
+    private StoreList storeList;
+    
+
+
 
     public RegionalManger(int id, String name, boolean placeOrder,
     boolean addingItems, boolean makeschedual, Schedule workSchedule){
@@ -21,8 +31,10 @@ public class RegionalManger extends Employee {
         this.addingItems = addingItems;
         this.makeSchedule = makeschedual;
         this.workSchedule = workSchedule;
-        this.numStores = 0;
-        this.stores = new ArrayList<Store>();
+        this.storeList = new StoreList();
+        this.numStores = this.storeList.getStoreCount();
+        
+        
     }
 
     public int getId() {
@@ -81,49 +93,7 @@ public class RegionalManger extends Employee {
         this.numStores = numStores;
     }
 
-    public ArrayList<Store> getStores() {
-        return stores;
+    public StoreList getStoreList(){
+        return storeList;
     }
-
-    public void setStores(ArrayList<Store> stores) {
-        this.stores = stores;
-    }
-
-    public void addStore(String address){
-        int id = getNumStores();
-        id = id + 1;
-        Store s = new Store(id, address);
-        stores.add(s);
-        setNumStores(id);
-    }
-
-    public void removeStore(String address){
-        for(Store temp : stores){ //removes store
-            if(temp.getAddress() == address){
-                stores.remove(temp);
-            }
-        }
-
-        int count = 1;
-        for(Store temp : stores){ // resets ids 
-            temp.setID(count);
-            count++;
-        }
-    }
-
-    public void updateStoreAddress(String newAddress){
-        for(Store s : stores){
-            if(s.getAddress() == newAddress){
-                s.setAddress(newAddress);
-                break;
-            }
-        }
-    }
-
-    public void printStores(){
-        for(Store s : stores){
-            System.out.println("Store " + s.getID() + " is at location: " + s.getAddress());
-        }
-    }
-    
 }

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class Manager extends Employee{
 
-    public Manager(String name, int id, Schedule workSchedule){
-        super(name, id, workSchedule);
+    public Manager(String name, int id, Schedule workSchedule,int storeID){
+        super(name, id, workSchedule, storeID);
     }
   
     public void addItemToInventory(Inventory inventory, Item item) {

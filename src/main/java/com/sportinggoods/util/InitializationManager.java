@@ -7,6 +7,8 @@ import com.sportinggoods.repository.*;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.border.StrokeBorder;
+
 /**
  * Manages initialization of controllers, repositories, and models.
  */
@@ -45,6 +47,7 @@ public class InitializationManager {
     private Store store;
     private Supplier supplier;
     private SupplierOrder supplierOrder;
+    private EmployeeList employeeList;
     private Utility utility;
 
     // Maintenance-related models
@@ -102,9 +105,9 @@ public class InitializationManager {
      * Initializes models.
      */
     private void initializeModels() {
-        cashier = new Cashier("John Doe", 101, null);
+        cashier = new Cashier("John Doe", 101, null, 1);
         cart = new Cart();
-        employee = new Employee("Mason", 1, new Schedule());
+        employee = new Employee("Mason", 1, new Schedule(), 1);
         regionalManager = new RegionalManger(1, "Regional Manager", true, true, true, new Schedule()); // Initialize RegionalManager        inventory = new Inventory(1);
         receipt = new Receipt();
         register = new Register();
@@ -115,11 +118,16 @@ public class InitializationManager {
         supplier = new Supplier();
         supplierOrder = new SupplierOrder();
         utility = new Utility();
+        employeeList = new EmployeeList(1);
+        
 
         // Add some initial stores
-        regionalManager.addStore("123 Main Street");
-        regionalManager.addStore("456 Elm Street");
-        regionalManager.addStore("789 Maple Avenue");
+        // regionalManager.addStore(1, "123 Main Street");
+        // regionalManager.addStore(2, "456 Elm Street");
+        // regionalManager.addStore(3, "789 Maple Avenue");
+        // regionalManager.getStoreList().addStore(new Store(1, "123 Main Street"));
+        // regionalManager.getStoreList().addStore(new Store(2, "456 Elm Street"));
+        // regionalManager.getStoreList().addStore(new Store(3, "789 Maple Avenue"));
     }
 
     /**
@@ -195,6 +203,7 @@ public class InitializationManager {
     public Store getStore() { return store; }
     public Supplier getSupplier() { return supplier; }
     public SupplierOrder getSupplierOrder() { return supplierOrder; }
+    public EmployeeList getEmployeeList() { return employeeList; }
 
 
     // Getters for repositories

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class Schedule {
    private ArrayList<Shift> workSchedual = new ArrayList<Shift>();
-   private static final String FILE_PATH = "data/WorkSchedual.csv";
+   private static final String FILE_PATH = "data/workSchedual.csv";
 
     public Schedule() {
         workSchedual = loadShiftsFromFile();

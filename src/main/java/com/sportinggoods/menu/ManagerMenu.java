@@ -32,6 +32,9 @@ public class ManagerMenu extends BaseMenu {
     private Employee employee;
     private Inventory inventory;
     private ShippingOrderRepository shippingRepo;
+    private EmployeeList employeeList;
+
+    private int storeId;
 
     private int storeId;
 
@@ -55,6 +58,8 @@ public class ManagerMenu extends BaseMenu {
         this.shippingRepo = initManager.getShippingOrderRepo();
         this.inventory = initManager.getInventory(storeId);
         this.employee = initManager.getEmployee();
+        this.employeeList = initManager.getEmployeeList();
+        this.storeId = storeId;
         this.feedbackController = initManager.getFeedbackController();
     }
 
@@ -75,6 +80,7 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("13", this::manageMaintenanceRequests);
         invoker.register("14", this::generateLowStockRequest);
         invoker.register("15", this::manageFeedback);
+        invoker.register("16", this::manageEmployees);
 
     }
 
@@ -97,12 +103,13 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("13. Manage Maintenance Requests");
         System.out.println("14. Generate Low Stock Request");
         System.out.println("15. Manage Feedback");
-        System.out.println("16. Back to Main Menu");
+        System.out.println("16. Manage Employees");
+        System.out.println("17. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("16");
+        return choice.equals("17");
     }
 
     @Override
@@ -978,7 +985,7 @@ private void adjustPriceMenu() {
             ShippingOrder selectedOrder = confirmedOrders.get(orderNumber - 1);
             System.out.println("You selected Order ID: " + selectedOrder.getOrderId());
 
-            Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController);
+            Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController, 1);
             shipper.shipOrder(selectedOrder, inventory);
             System.out.println("Order shipped successfully.");
         }
@@ -1233,6 +1240,46 @@ private void adjustPriceMenu() {
         }
         System.out.println("\nSupplier Orders:");
         orders.forEach(System.out::println);
+    }
+
+    private void manageEmployees(){
+        employeeList = new EmployeeList(storeId);
+
+        System.out.println("\nCurrent Employee List:");
+        employeeList.printEmployeeList();
+        System.out.println("------------------");
+        System.out.println("Select Employee list Operation");
+        System.out.println("------------------");
+        System.out.println("1. Add employee");
+        System.out.println("2. Delete employee");
+        System.out.print("Enter choice: ");
+
+        String choice = scanner.nextLine();
+
+        switch (choice) {
+            case "1":
+                clearConsole();
+                employeeList.printEmployeeList();
+                System.out.print("Enter name of employee to add:");
+                String name = scanner.nextLine();
+                System.out.print("Enter ID of employee to add:");
+                int id = scanner.nextInt();
+                Employee temp = new Employee(name, id, new Schedule(), storeId);
+                employeeList.addEmployee(temp);
+                break;
+            case "2":
+                clearConsole();
+                employeeList.printEmployeeList();
+                System.out.print("Enter name of employee to remove:");
+                name = scanner.nextLine();
+                System.out.print("Enter ID of employee to remove:");
+                id = scanner.nextInt();
+                employeeList.removeEmployee(name, id);
+                break;
+            default:
+                System.out.println("Not an option");
+                break;
+        }
     }
 
     // ==========================

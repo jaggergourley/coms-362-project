@@ -163,7 +163,7 @@ public class EmployeeMenu extends BaseMenu {
         ShippingOrder selectedOrder = confirmedOrders.get(orderNumber - 1);
         System.out.println("You selected Order ID: " + selectedOrder.getOrderId());
 
-        Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController);
+        Shipper shipper = new Shipper("Ben Jackson", 1, true, null, shippingController, 1);
         shipper.shipOrder(selectedOrder, inventory);
         System.out.println("Order shipped successfully.");
     }

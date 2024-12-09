@@ -52,11 +52,11 @@ public class RegionalManagerMenu extends BaseMenu {
      */
     private void viewStores() {
         clearConsole();
-        var stores = initManager.getRegionalManager().getStores(); // Use getRegionalManager
-        if (stores.isEmpty()) {
+        var stores = initManager.getRegionalManager().getStoreList(); // Use getRegionalManager
+        if (stores.getStores().isEmpty()) {
             System.out.println("No stores available.");
         } else {
-            for (Store store : stores) {
+            for (Store store : stores.getStores()) {
                 System.out.println("Store ID: " + store.getID() + ", Address: " + store.getAddress());
             }
         }
@@ -68,9 +68,13 @@ public class RegionalManagerMenu extends BaseMenu {
      */
     private void addStore() {
         clearConsole();
+        initManager.getRegionalManager().getStoreList().printStores();
         System.out.print("Enter the new store address: ");
         String address = scanner.nextLine().trim();
-        initManager.getRegionalManager().addStore(address);
+        System.out.print("Enter the new store id: ");
+        int id = scanner.nextInt();
+        Store s = new Store(id, address);
+        initManager.getRegionalManager().getStoreList().addStore(s);
         System.out.println("Store added successfully.");
         pause();
     }
@@ -80,9 +84,14 @@ public class RegionalManagerMenu extends BaseMenu {
      */
     private void deleteStore() {
         clearConsole();
+        var list = initManager.getRegionalManager().getStoreList();
+        list.printStores();
         System.out.print("Enter the store address to delete: ");
         String address = scanner.nextLine().trim();
-        initManager.getRegionalManager().removeStore(address);
+        System.out.print("Enter the store id: ");
+        int id = scanner.nextInt();
+        Store s = new Store(id, address);
+        list.removeStore(s);
         System.out.println("Store deleted successfully.");
         pause();
     }
@@ -96,7 +105,7 @@ public class RegionalManagerMenu extends BaseMenu {
         String storeIdInput = scanner.nextLine().trim();
         try {
             int storeId = Integer.parseInt(storeIdInput);
-            var stores = initManager.getRegionalManager().getStores();
+            var stores = initManager.getRegionalManager().getStoreList().getStores();
             Store selectedStore = stores.stream()
                     .filter(store -> store.getID() == storeId)
                     .findFirst()
