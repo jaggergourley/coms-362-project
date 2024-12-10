@@ -146,7 +146,7 @@ public class ManagerMenu extends BaseMenu {
 
     private void viewMaintenanceRequests() {
         clearConsole();
-        List<MaintenanceRequest> requests = initManager.getMaintenanceRequestController().getAllRequests();
+        List<MaintenanceRequest> requests = initManager.getMaintenanceRequestController().getAllRequests(storeId);
 
         if (requests.isEmpty()) {
             System.out.println("\nNo maintenance requests found.");
@@ -180,40 +180,43 @@ public class ManagerMenu extends BaseMenu {
     }
 
     // ==========================
-    // Utility Management
-    // ==========================
-
-    private void manageBuildingUtilities() { //adam added
+// Utility Management
+// ==========================
+    private void manageBuildingUtilities() {
         while (true) {
             clearConsole();
             System.out.println("\nManage Building Utilities:");
-            System.out.println("1. Run Status Check");
-            System.out.println("2. Adjust Utility Settings");
-            System.out.println("3. Set Automated Schedules");
-            System.out.println("4. Schedule Maintenance");
-            System.out.println("5. Apply Seasonal Preset");
-            System.out.println("6. Back to Manager Menu");
+            System.out.println("1. View All Utilities");
+            System.out.println("2. Run Status Check");
+            System.out.println("3. Adjust Utility Settings");
+            System.out.println("4. Set Automated Schedules");
+            System.out.println("5. Schedule Maintenance");
+            System.out.println("6. Apply Seasonal Preset");
+            System.out.println("7. Back to Manager Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine().trim();
 
             switch (choice) {
                 case "1":
-                    runStatusCheck();
+                    viewAllUtilities();
                     break;
                 case "2":
-                    adjustUtilitySettings();
+                    runStatusCheck();
                     break;
                 case "3":
-                    setAutomatedSchedules();
+                    adjustUtilitySettings();
                     break;
                 case "4":
-                    scheduleMaintenance();
+                    setAutomatedSchedules();
                     break;
                 case "5":
-                    applySeasonalPreset();
+                    scheduleUtilityMaintenance();
                     break;
                 case "6":
+                    applySeasonalPreset();
+                    break;
+                case "7":
                     return; // Exit to Manager Menu
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -221,46 +224,59 @@ public class ManagerMenu extends BaseMenu {
         }
     }
 
-    private void runStatusCheck() {
-        List<Utility> utilities = utilityController.getAllUtilities();
+    private void viewAllUtilities() {
+        clearConsole();
+        List<Utility> utilities = utilityController.getUtilitiesByStoreId(storeId);
 
         if (utilities.isEmpty()) {
-            System.out.println("\nNo utilities found.");
+            System.out.println("\nNo utilities found for this store.");
         } else {
-            System.out.println("\nBuilding Utilities Status Report:");
-            utilities.forEach(utility -> {
-                System.out.println(utility);
-
-                // Simulate abnormality detection
-                if ("Outage".equalsIgnoreCase(utility.getStatus())) {
-                    System.out.println("Alert: Outage reported for " + utility.getName());
-                }
-                if (utility.getEnergyConsumption() > 1000) { // Example threshold
-                    System.out.println("Alert: High energy consumption for " + utility.getName());
-                }
-            });
+            System.out.println("\nBuilding Utilities:");
+            utilities.forEach(System.out::println);
         }
+        promptReturn();
+    }
+
+    private void runStatusCheck() {
+        List<Utility> utilities = utilityController.getUtilitiesByStoreId(storeId);
+
+        if (utilities.isEmpty()) {
+            System.out.println("\nNo utilities found for this store.");
+            return;
+        }
+
+        System.out.println("\nBuilding Utilities Status Report:");
+        utilities.forEach(utility -> {
+            System.out.println(utility);
+            if ("Outage".equalsIgnoreCase(utility.getStatus())) {
+                System.out.println("Alert: Outage reported for " + utility.getName());
+            }
+            if (utility.getEnergyConsumption() > 1000) { // Example threshold
+                System.out.println("Alert: High energy consumption for " + utility.getName());
+            }
+        });
         promptReturn();
     }
 
     private void adjustUtilitySettings() {
         System.out.print("Enter Utility ID to adjust: ");
-        String utilityId = scanner.nextLine();
+        String utilityId = scanner.nextLine().trim();
 
-        Utility utility = utilityController.getUtilityById(utilityId);
+        Utility utility = utilityController.getUtilityByIdAndStoreId(utilityId, storeId);
 
         if (utility == null) {
-            System.out.println("Utility not found.");
+            System.out.println("Utility not found for this store.");
+            promptReturn();
             return;
         }
 
         System.out.print("Enter new status (Active/Inactive/Outage): ");
-        String status = scanner.nextLine();
+        String status = scanner.nextLine().trim();
 
         double energyConsumption = promptForDouble("Enter new energy consumption (kWh): ", 0.0, Double.MAX_VALUE);
 
-        boolean statusUpdated = utilityController.updateUtilityStatus(utilityId, status);
-        boolean energyUpdated = utilityController.updateEnergyConsumption(utilityId, energyConsumption);
+        boolean statusUpdated = utilityController.updateUtilityStatus(utilityId, storeId, status);
+        boolean energyUpdated = utilityController.updateEnergyConsumption(utilityId, storeId, energyConsumption);
 
         if (statusUpdated && energyUpdated) {
             System.out.println("Utility settings updated successfully.");
@@ -272,42 +288,47 @@ public class ManagerMenu extends BaseMenu {
 
     private void setAutomatedSchedules() {
         System.out.print("Enter Utility ID to set schedule: ");
-        String utilityId = scanner.nextLine();
+        String utilityId = scanner.nextLine().trim();
 
-        Utility utility = utilityController.getUtilityById(utilityId);
+        Utility utility = utilityController.getUtilityByIdAndStoreId(utilityId, storeId);
 
         if (utility == null) {
-            System.out.println("Utility not found.");
+            System.out.println("Utility not found for this store.");
+            promptReturn();
             return;
         }
 
         System.out.print("Enter store hours (e.g., 09:00-21:00): ");
-        String schedule = scanner.nextLine();
-        utilityController.updateSchedule(utilityId, schedule);
+        String schedule = scanner.nextLine().trim();
 
-        // Simulate storing the schedule (extend Utility model for actual storage)
-        System.out.println("Schedule set for " + utility.getName() + ": " + schedule);
+        boolean scheduleUpdated = utilityController.updateSchedule(utilityId, storeId, schedule);
+
+        if (scheduleUpdated) {
+            System.out.println("Schedule set for " + utility.getName() + ": " + schedule);
+        } else {
+            System.out.println("Failed to update the schedule.");
+        }
         promptReturn();
     }
 
-    private void scheduleMaintenance() {
+    private void scheduleUtilityMaintenance() {
         System.out.print("Enter Utility ID to schedule maintenance: ");
-        String utilityId = scanner.nextLine();
+        String utilityId = scanner.nextLine().trim();
 
-        Utility utility = utilityController.getUtilityById(utilityId);
+        Utility utility = utilityController.getUtilityByIdAndStoreId(utilityId, storeId);
 
         if (utility == null) {
-            System.out.println("Utility not found.");
+            System.out.println("Utility not found for this store.");
+            promptReturn();
             return;
         }
 
         System.out.print("Enter Issue: ");
-        String issue = scanner.nextLine();
+        String issue = scanner.nextLine().trim();
 
-        utilityController.updateUtilityStatus(utilityId, "Maintenance Requested On: " + LocalDateTime.now());
-        boolean success = initManager.getMaintenanceRequestController().createRequest(storeId, utility.getName(), issue, "High Priority");
+        boolean maintenanceRequested = utilityController.scheduleMaintenance(utilityId, storeId, issue);
 
-        if (success) {
+        if (maintenanceRequested) {
             System.out.println("Maintenance request created successfully.");
         } else {
             System.out.println("Failed to create maintenance request.");
@@ -319,26 +340,12 @@ public class ManagerMenu extends BaseMenu {
         System.out.print("Enter season (Winter/Summer): ");
         String season = scanner.nextLine().trim();
 
-        List<Utility> utilities = utilityController.getAllUtilities();
-
-        if (utilities.isEmpty()) {
-            System.out.println("No utilities found.");
-            return;
-        }
-
-        utilities.forEach(utility -> {
-            if ("Winter".equalsIgnoreCase(season)) {
-                utilityController.updateUtilityStatus(utility.getUtilityId(), "Active");
-                utilityController.updateEnergyConsumption(utility.getUtilityId(), 750); // Example preset
-            } else if ("Summer".equalsIgnoreCase(season)) {
-                utilityController.updateUtilityStatus(utility.getUtilityId(), "Active");
-                utilityController.updateEnergyConsumption(utility.getUtilityId(), 650); // Example preset
-            }
-        });
+        utilityController.applySeasonalPreset(season);
 
         System.out.println("Seasonal preset applied for " + season + ".");
         promptReturn();
     }
+
 
 
     // ==========================

@@ -1,8 +1,13 @@
 package com.sportinggoods.menu;
 
+import com.sportinggoods.model.Inventory;
+import com.sportinggoods.model.Item;
 import com.sportinggoods.model.Store;
+import com.sportinggoods.model.Utility;
 import com.sportinggoods.util.InitializationManager;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -75,9 +80,39 @@ public class RegionalManagerMenu extends BaseMenu {
         int id = scanner.nextInt();
         Store s = new Store(id, address);
         initManager.getRegionalManager().getStoreList().addStore(s);
+        initializeBaseInventory(id);
+        initManager.getUtilityRepo().addUtility(new Utility("U001", id, "HVAC", "Active", 750.5, LocalDateTime.now(), "09:00-21:00"));
+        initManager.getUtilityRepo().addUtility(new Utility("U002", id, "Lighting", "Active", 450.2, LocalDateTime.now(), "09:00-21:00"));
+        initManager.getUtilityRepo().addUtility(new Utility("U003", id, "Water", "Active", 150.0, LocalDateTime.now(), "24/7"));
         System.out.println("Store added successfully.");
         pause();
     }
+
+    private void initializeBaseInventory(int storeId) {
+        Inventory inventory = new Inventory(storeId); // Create an inventory for the new store
+
+        // Define the base inventory items
+        List<Item> baseItems = List.of(
+                new Item("Tennis Racket", 100.0, "Sports", 10, storeId),
+                new Item("Baseball Glove", 45.0, "Sports", 10, storeId),
+                new Item("Jump Rope", 10.0, "Fitness", 10, storeId),
+                new Item("Resistance Band", 15.0, "Fitness", 10, storeId),
+                new Item("Yoga Mat", 30.0, "Fitness", 10, storeId),
+                new Item("Dumbbells", 60.0, "Fitness", 10, storeId),
+                new Item("Hiking Backpack", 80.0, "Outdoor", 10, storeId),
+                new Item("Golf Club", 150.0, "Sports", 10, storeId),
+                new Item("Basketball", 25.0, "Sports", 10, storeId),
+                new Item("Soccer Ball", 20.0, "Sports", 10, storeId)
+        );
+
+        // Add base items to the inventory
+        for (Item item : baseItems) {
+            inventory.addItem(item);
+        }
+
+        System.out.println("Base inventory initialized for Store ID: " + storeId);
+    }
+
 
     /**
      * Deletes an existing store.

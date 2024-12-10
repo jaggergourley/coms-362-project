@@ -1,13 +1,31 @@
 name,price,department,quantity,storeID
-Tennis Racket,100.0,Sports,15,1
-Baseball Glove,45.0,Sports,15,1
-Jump Rope,10.0,Fitness,13,2
-Resistance Band,15.0,Fitness,14,2
-Yoga Mat,30.0,Fitness,14,2
-Badminton Shuttlecock,5.0,Sports,24,1
+Jump Rope,10.0,Fitness,10,1
+Jump Rope,10.0,Fitness,8,2
+Dumbbells,60.0,Fitness,10,3
 Dumbbells,60.0,Fitness,10,2
-Hiking Backpack,80.0,Outdoor,12,3
-Golf Club,150.0,Sports,480,1
-Basketball,25.0,Sports,2392,1
-Weight Plate,25.0,Fitness,12,2
-Soccer Ball,20.0,Sports,1440,1
+Jump Rope,10.0,Fitness,10,3
+Dumbbells,60.0,Fitness,10,1
+Hiking Backpack,80.0,Outdoor,10,1
+Golf Club,150.0,Sports,10,1
+Golf Club,150.0,Sports,0,2
+Golf Club,150.0,Sports,10,3
+Soccer Ball,20.0,Sports,10,1
+Soccer Ball,20.0,Sports,10,2
+Soccer Ball,20.0,Sports,10,3
+Basketball,25.0,Sports,10,3
+Basketball,25.0,Sports,10,1
+Yoga Mat,30.0,Fitness,10,3
+Yoga Mat,30.0,Fitness,0,2
+Basketball,25.0,Sports,10,2
+Yoga Mat,30.0,Fitness,9,1
+Baseball Glove,45.0,Sports,10,3
+Baseball Glove,45.0,Sports,10,2
+Baseball Glove,45.0,Sports,0,1
+Hiking Backpack,80.0,Outdoor,10,2
+Hiking Backpack,80.0,Outdoor,10,3
+Tennis Racket,100.0,Sports,10,1
+Tennis Racket,100.0,Sports,10,2
+Resistance Band,15.0,Fitness,10,2
+Resistance Band,15.0,Fitness,10,3
+Resistance Band,15.0,Fitness,10,1
+Tennis Racket,100.0,Sports,10,3

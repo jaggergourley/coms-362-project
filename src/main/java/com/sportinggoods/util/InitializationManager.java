@@ -4,10 +4,8 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Scanner;
-
-import javax.swing.border.StrokeBorder;
 
 /**
  * Manages initialization of controllers, repositories, and models.
@@ -25,7 +23,8 @@ public class InitializationManager {
     private SupplierController supplierController;
     private UtilityController utilityController;
     private MaintenanceRequestController maintenanceRequestController;
-    private FeedbackController feedbackController;// Added
+    private FeedbackController feedbackController; // Added
+    private AppointmentController appointmentController; // Added
 
     // Models
     private Cashier cashier;
@@ -34,7 +33,6 @@ public class InitializationManager {
     private Customer customer;
     private Discount discount;
     private Employee employee;
-    private GiftCard giftCard;
     private Inventory inventory;
     private Item item;
     private Manager manager;
@@ -49,6 +47,7 @@ public class InitializationManager {
     private SupplierOrder supplierOrder;
     private EmployeeList employeeList;
     private Utility utility;
+    private Appointment appointment; // Added
 
     // Maintenance-related models
     private MaintenanceRequest maintenanceRequest; // Added
@@ -66,8 +65,9 @@ public class InitializationManager {
     private SupplierRepository supplierRepo;
     private UtilityRepository utilityRepo;
     private MaintenanceRequestRepository maintenanceRequestRepo;
-    private FeedbackRepository feedbackRepo;// Added
+    private FeedbackRepository feedbackRepo;
     private PickupOrderRepository pickupOrderRepo;
+    private AppointmentRepository appointmentRepo;
 
     // Scanner for user input
     private Scanner scanner;
@@ -80,7 +80,6 @@ public class InitializationManager {
         initializeRepositories();
         initializeModels();
         initializeControllers();
-        fillUtilities();
     }
 
     /**
@@ -98,7 +97,8 @@ public class InitializationManager {
         supplierController = new SupplierController(supplierRepo, supplierOrderRepo);
         utilityController = new UtilityController(utilityRepo);
         maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo);
-        feedbackController = new FeedbackController(feedbackRepo);// Added
+        feedbackController = new FeedbackController(feedbackRepo);
+        appointmentController = new AppointmentController(appointmentRepo);
     }
 
     /**
@@ -108,26 +108,19 @@ public class InitializationManager {
         cashier = new Cashier("John Doe", 101, null, 1);
         cart = new Cart();
         employee = new Employee("Mason", 1, new Schedule(), 1);
-        regionalManager = new RegionalManger(1, "Regional Manager", true, true, true, new Schedule()); // Initialize RegionalManager        inventory = new Inventory(1);
+        regionalManager = new RegionalManger(1, "Regional Manager", true, true, true, new Schedule());
+        inventory = new Inventory(1);
         receipt = new Receipt();
         register = new Register();
         schedule = new Schedule();
         shipper = new Shipper();
         shippingOrder = new ShippingOrder();
-        store = new Store(1, "123 lane");
+        store = new Store(1, "123 Lane");
         supplier = new Supplier();
         supplierOrder = new SupplierOrder();
         utility = new Utility();
         employeeList = new EmployeeList(1);
-        
-
-        // Add some initial stores
-        // regionalManager.addStore(1, "123 Main Street");
-        // regionalManager.addStore(2, "456 Elm Street");
-        // regionalManager.addStore(3, "789 Maple Avenue");
-        // regionalManager.getStoreList().addStore(new Store(1, "123 Main Street"));
-        // regionalManager.getStoreList().addStore(new Store(2, "456 Elm Street"));
-        // regionalManager.getStoreList().addStore(new Store(3, "789 Maple Avenue"));
+        appointment = new Appointment();
     }
 
     /**
@@ -146,31 +139,14 @@ public class InitializationManager {
         supplierRepo = new SupplierRepository();
         utilityRepo = new UtilityRepository();
         maintenanceRequestRepo = new MaintenanceRequestRepository();
-        feedbackRepo = new FeedbackRepository();// Added
+        feedbackRepo = new FeedbackRepository(); // Added
         pickupOrderRepo = new PickupOrderRepository(getInventory(1));
+        appointmentRepo = new AppointmentRepository(); // Added
     }
 
-    /**
-     * Fills utilities with initial data.
-     */
-    private void fillUtilities() {
-        List<Utility> existingUtilities = utilityRepo.getAllUtilities();
-        if (!existingUtilities.isEmpty()) {
-            return;
-        }
-        utilityRepo.addUtility(new Utility("U001", 1, "HVAC", "Active", 750.5, "2024-11-18", "09:00-21:00"));
-        utilityRepo.addUtility(new Utility("U002", 1, "Lighting", "Active", 450.2, "2024-11-18", "09:00-21:00"));
-        utilityRepo.addUtility(new Utility("U003", 1, "Water", "Active", 150.0, "2024-11-18", "24/7"));
-    }
+    // Getters for Controllers
 
-    /**
-     * Fills maintenance requests with initial data.
-     */
-
-    public MaintenanceRequestController getMaintenanceRequestController() {
-        return maintenanceRequestController;
-    }
-
+    public MaintenanceRequestController getMaintenanceRequestController() {return maintenanceRequestController;}
     public CashierController getCashierController() { return cashierController; }
     public CustomerController getCustomerController() { return customerController; }
     public DiscountController getDiscountController() { return discountController; }
@@ -181,16 +157,16 @@ public class InitializationManager {
     public ShippingController getShippingController() { return shippingController; }
     public SupplierController getSupplierController() { return supplierController; }
     public UtilityController getUtilityController() { return utilityController; }
-    public FeedbackController getFeedbackController() { return feedbackController; }
+    public FeedbackController getFeedbackController() { return feedbackController; } // Added
+    public AppointmentController getAppointmentController() { return appointmentController; } // Added
 
-    // Getters for models
+    // Getters for Models
     public Cashier getCashier() { return cashier; }
     public Cart getCart() { return cart; }
     public Coupon getCoupon() { return coupon; }
     public Customer getCustomer() { return customer; }
     public Discount getDiscount() { return discount; }
     public Employee getEmployee() { return employee; }
-    public GiftCard getGiftCard() { return giftCard; }
     public Inventory getInventory(int storeId) { return new Inventory(storeId); }
     public Item getItem() { return item; }
     public Manager getManager() { return manager; }
@@ -205,8 +181,7 @@ public class InitializationManager {
     public SupplierOrder getSupplierOrder() { return supplierOrder; }
     public EmployeeList getEmployeeList() { return employeeList; }
 
-
-    // Getters for repositories
+    // Getters for Repositories
     public CashierRepository getCashierRepo() { return cashierRepo; }
     public CouponRepository getCouponRepo() { return couponRepo; }
     public CustomerRepository getCustomerRepo() { return customerRepo; }
@@ -220,6 +195,7 @@ public class InitializationManager {
     public UtilityRepository getUtilityRepo() { return utilityRepo; }
     public FeedbackRepository getFeedbackRepo() { return feedbackRepo; }
     public PickupOrderRepository getPickupOrderRepository() { return pickupOrderRepo; }
+    public AppointmentRepository getAppointmentRepo() { return appointmentRepo; } // Added
 
     public Scanner getScanner() { return scanner; }
 

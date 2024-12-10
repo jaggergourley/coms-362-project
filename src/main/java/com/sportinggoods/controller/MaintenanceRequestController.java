@@ -21,8 +21,8 @@ public class MaintenanceRequestController {
         return repository.addRequest(request);
     }
 
-    public List<MaintenanceRequest> getAllRequests() {
-        return repository.getAllRequests();
+    public List<MaintenanceRequest> getAllRequests(int storeId) {
+        return repository.getAllRequestsByStoreId(storeId);
     }
 
     private long calculateTimeRemaining(String urgency) {

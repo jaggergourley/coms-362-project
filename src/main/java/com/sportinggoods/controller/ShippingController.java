@@ -64,66 +64,73 @@ public class ShippingController {
     /**
      * Ensures shipping order is available in a stores inventory
      * @param order
-     * @param i
+     * @param inventory
      * @return True if Shipping Order Repository is updated with the correct status
      */
-    public boolean processShippingOrder(ShippingOrder order, Inventory i, int storeId){
-
-        boolean available = false;
+    public boolean processShippingOrder(ShippingOrder order, Inventory inventory, int storeId) {
         Map<Item, Integer> shippedItems = new HashMap<>();
-        Map<Item, Integer> unfinishedShippingOrder = new HashMap<>();
+        Map<Item, Integer> unshippedItems = new HashMap<>();
+        double shippedPrice = 0.0;
 
-        for(Map.Entry<Item, Integer> entry : order.getItems().entrySet()){
+        // Process each item in the order
+        for (Map.Entry<Item, Integer> entry : order.getItems().entrySet()) {
             Item item = entry.getKey();
-            int quantity = entry.getValue();
+            int requiredQuantity = entry.getValue();
 
-
-            if(i.checkAvailability(item.getName(), quantity)){
-                i.updateQuantity(item.getName(), -quantity);
-                shippedItems.put(item, quantity);
-                System.out.println("Shipped " + item.getName() + ", Items Left: " + i.getItem(item.getName()).getQuantity());
-            }
-            else{
-                int amountSendable = i.getItem(item.getName()).getQuantity();
-                i.updateQuantity(item.getName(), -i.getItem(item.getName()).getQuantity());
-                unfinishedShippingOrder.put(item, quantity - amountSendable);
-                shippedItems.put(item, amountSendable);
-                System.out.println(item.getName() + " only shipped " + amountSendable + "/" + quantity + ". The rest will be sent in another order from another store");
-
-            }
-        }
-
-
-        if(shippedItems.isEmpty()){
-            return false;
-        }
-
-
-        for(Map.Entry<Item, Integer> entry : order.getItems().entrySet()){
-            for(Map.Entry<Item, Integer> shippedEntry : order.getItems().entrySet()){
-                if(entry.getKey().equals(shippedEntry.getKey()) && entry.getValue() == shippedEntry.getValue()){
-                    return orderRepo.updateOrderStatus(order.getOrderId(), "Shipped");
-                }
-                else{
-
-                    double newPrice = 0;
-
-
-
-                    for(Map.Entry<Item, Integer> price : unfinishedShippingOrder.entrySet()) {
-                        Item item = entry.getKey();
-
-                        newPrice += Math.round(item.getPrice() * item.getQuantity() * 100.0) / 100.0;  //might need to change
-                    }
-                    handleShippingOrder(order.getCustomerFirstName(), storeId, order.getCustomerLastName(), unfinishedShippingOrder, newPrice, order.getShippingAddress(), order.getCustomerEmail(), order.getCustomerPhoneNumber());
-                    return orderRepo.updateOrderStatus(order.getOrderId(), "Partially Shipped") && orderRepo.updateOrderQuantity(order.getOrderId(), shippedItems) && orderRepo.updateOrderPrice(order.getOrderId(), shippedItems);
+            // Check availability in inventory
+            if (inventory.checkAvailability(item.getName(), requiredQuantity)) {
+                inventory.updateQuantity(item.getName(), -requiredQuantity);
+                shippedItems.put(item, requiredQuantity);
+                shippedPrice += item.getPrice() * requiredQuantity;
+            } else {
+                int availableQuantity = inventory.getItem(item.getName()).getQuantity();
+                if (availableQuantity > 0) {
+                    inventory.updateQuantity(item.getName(), -availableQuantity);
+                    shippedItems.put(item, availableQuantity);
+                    unshippedItems.put(item, requiredQuantity - availableQuantity);
+                    shippedPrice += item.getPrice() * availableQuantity;
+                } else {
+                    unshippedItems.put(item, requiredQuantity);
                 }
             }
         }
 
+        if (!shippedItems.isEmpty()) {
+            // Update the order's quantity and price for shipped items
+            orderRepo.updateOrderQuantity(order.getOrderId(), shippedItems);
+            orderRepo.updateOrderPrice(order.getOrderId(), shippedItems);
 
-        return true;
+            // Handle completely shipped orders
+            if (unshippedItems.isEmpty()) {
+                return orderRepo.updateOrderStatus(order.getOrderId(), "Shipped");
+            } else {
+                // Adjust the original order's price and quantity
+                double adjustedPrice = shippedPrice;
+                order.setTotalPrice(adjustedPrice);
+                orderRepo.updateOrderPrice(order.getOrderId(), shippedItems);
+                orderRepo.updateOrderQuantity(order.getOrderId(), shippedItems);
+
+                // Create a new order for unshipped items
+                double newOrderPrice = unshippedItems.entrySet()
+                        .stream()
+                        .mapToDouble(e -> e.getKey().getPrice() * e.getValue())
+                        .sum();
+                handleShippingOrder(
+                        order.getCustomerFirstName(), storeId, order.getCustomerLastName(),
+                        unshippedItems, newOrderPrice, order.getShippingAddress(),
+                        order.getCustomerEmail(), order.getCustomerPhoneNumber()
+                );
+
+                // Mark the original order as partially shipped
+                return orderRepo.updateOrderStatus(order.getOrderId(), "Partially Shipped");
+            }
+        }
+
+        System.out.println("No items could be shipped for order ID: " + order.getOrderId());
+        return false;
     }
+
+
 
 
     /**
