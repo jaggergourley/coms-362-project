@@ -36,7 +36,6 @@ public class ManagerMenu extends BaseMenu {
 
     private int storeId;
 
-    private int storeId;
 
     /**
      * Constructs a ManagerMenu with the provided InitializationManager and Scanner.

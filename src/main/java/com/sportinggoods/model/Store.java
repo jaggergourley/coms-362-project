@@ -11,7 +11,7 @@ public class Store {
 
     private String address;
 
-    private ArrayList<Employee> Employees;
+    private EmployeeList Employees;
 
     private Inventory storeInventory;
 
@@ -21,7 +21,7 @@ public class Store {
     public Store(int ID, String address){
         this.ID = ID;
         this.address = address;
-        Employees = loadEmployeeFromFile();
+        Employees = new EmployeeList(ID);
         storeInventory = new Inventory(ID);
     }
 
@@ -46,12 +46,12 @@ public class Store {
     }
 
 
-    public ArrayList<Employee> getEmployees() {
+    public EmployeeList getEmployees() {
         return Employees;
     }
 
 
-    public void setEmployees(ArrayList<Employee> employees) {
+    public void setEmployees(EmployeeList employees) {
         Employees = employees;
     }
 
@@ -66,15 +66,15 @@ public class Store {
     }
 
     public void addEmployee(Employee employee){
-        Employees.add(employee);
+        Employees.getEmployees().add(employee);
     }
 
     public void removeEmployee(Employee employee){
-        Employees.remove(employee);
+        Employees.getEmployees().remove(employee);
     }
 
     public void updateEmployee(int id, Employee employee){
-        for(Employee temp : Employees){
+        for(Employee temp : Employees.getEmployees()){
             if(temp.getId() == id){
                 temp.setId(employee.getId());
                 temp.setName(employee.getName());

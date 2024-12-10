@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class EmployeeList {
     private ArrayList<Employee> employees = new ArrayList<>();
-    private static final String FILE_PATH = "data/Employee.csv";
+    private static final String FILE_PATH = "data/employee.csv";
 
 
     public EmployeeList(int storeID){

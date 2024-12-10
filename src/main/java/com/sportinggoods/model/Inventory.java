@@ -25,6 +25,7 @@ public class Inventory {
         return items;
     }
 
+
     //Getter
     public Item getItem(String itemName) {
         for (Item item : items) {
@@ -174,6 +175,9 @@ public class Inventory {
             temp.setQuantity(temp.getQuantity() - item.getQuantity());
             if(temp.getQuantity() < 0){
                 temp.setQuantity(0);
+            }
+            if(temp.getQuantity() == 0){
+                items.remove(temp);
             }
             saveItemsToFile();
         }
