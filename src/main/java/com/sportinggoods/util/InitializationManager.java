@@ -6,8 +6,6 @@ import com.sportinggoods.repository.*;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.border.StrokeBorder;
-
 /**
  * Manages initialization of controllers, repositories, and models.
  */
@@ -106,7 +104,7 @@ public class InitializationManager {
     private void initializeModels() {
         cashier = new Cashier("John Doe", 101, null, 1);
         cart = new Cart();
-        employee = new Employee("Mason", 1, new Schedule());
+        employee = new Employee("Mason", 1, new Schedule(), 1);
         regionalManager = new RegionalManger(1, "Regional Manager", true, true, true, new Schedule());
         inventory = new Inventory(1); // Ensure Inventory is initialized
         receipt = new Receipt();
