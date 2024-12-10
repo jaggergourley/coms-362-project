@@ -154,17 +154,17 @@ public class ShippingOrder {
     // Create ShippingOrder from CSV
     public static ShippingOrder fromCSV(String csvLine) {
         try {
-            // Split the line into 10 tokens by "|"
-            String[] tokens = csvLine.split("\\|", -1); // The -1 argument keeps empty tokens if present
+            // Split the line into tokens by "|"
+            String[] tokens = csvLine.split("\\|", -1);
 
-            //Ensure we have exactly 10 tokens
-//            if (tokens.length != 10) {
-//                //System.out.println("Error: Expected 10 tokens, got " + tokens.length);
-//                return null;
-//            }
+            // Ensure we have exactly 11 tokens
+            if (tokens.length != 11) {
+                System.out.println("Error: Expected 11 tokens, got " + tokens.length);
+                return null;
+            }
 
             // Parse items using the updated parseItems method
-            Map<Item, Integer> items = parseItems(tokens[3]);
+            Map<Item, Integer> items = parseItems(tokens[4]);
             if (items == null || items.isEmpty()) {
                 System.out.println("Error: Items could not be parsed.");
                 return null;
@@ -173,7 +173,7 @@ public class ShippingOrder {
             // Parse totalPrice
             double totalPrice;
             try {
-                totalPrice = Double.parseDouble(tokens[4]);
+                totalPrice = Double.parseDouble(tokens[5]);
             } catch (NumberFormatException e) {
                 System.out.println("Error parsing totalPrice: " + e.getMessage());
                 return null;
@@ -182,7 +182,7 @@ public class ShippingOrder {
             // Parse order date
             LocalDate orderDate;
             try {
-                orderDate = LocalDate.parse(tokens[8]);
+                orderDate = LocalDate.parse(tokens[9]);
             } catch (Exception e) {
                 System.out.println("Error parsing orderDate: " + e.getMessage());
                 return null;
@@ -191,7 +191,7 @@ public class ShippingOrder {
             // Construct and return the ShippingOrder object
             return new ShippingOrder(
                     tokens[0],                // orderId
-                    Integer.parseInt(tokens[1]),                // storeId
+                    Integer.parseInt(tokens[1]), // storeId
                     tokens[2],                // customerFirstName
                     tokens[3],                // customerLastName
                     items,                    // items
@@ -200,7 +200,7 @@ public class ShippingOrder {
                     tokens[7],                // customerEmail
                     tokens[8],                // customerPhoneNumber
                     orderDate,                // orderDate
-                    tokens[10]                 // status
+                    tokens[10]                // status
             );
 
         } catch (Exception e) {
@@ -208,6 +208,7 @@ public class ShippingOrder {
             return null;
         }
     }
+
 
 
     // Helper method to parse items from CSV format

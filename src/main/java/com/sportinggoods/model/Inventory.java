@@ -61,13 +61,20 @@ public class Inventory {
     public void updateQuantity(String itemName, int quantityChange) {
         for (Item item : items) {
             if (item.getName().equalsIgnoreCase(itemName)) {
-                item.setQuantity(item.getQuantity() + quantityChange);
-                saveItemsToFile(); // Save the updated inventory
+                int newQuantity = item.getQuantity() + quantityChange;
+                if (newQuantity < 0) {
+                    System.out.println("Error: Insufficient stock for " + itemName);
+                    return; // Prevent negative inventory
+                }
+                item.setQuantity(newQuantity);
+                System.out.println("Updated " + itemName + " quantity to " + newQuantity);
+                saveItemsToFile(); // Save only after updating the specific item
                 return;
             }
         }
         System.out.println("Item not found: " + itemName);
     }
+
 
 
 
@@ -307,42 +314,30 @@ public class Inventory {
     // }
 
     public void saveItemsToFile() {
+        // Load the existing inventory from the file
         Map<String, Item> inventoryMap = new HashMap<>();
-
-        // Read existing data from the file
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
-            String line = reader.readLine(); // Skip header
+            String line = reader.readLine(); // Skip the header
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue; // Skip empty lines
-                String[] parts = line.split(",");
-                if (parts.length < 5) { // Validate structure
-                    System.err.println("Error parsing inventory line: " + line);
-                    continue;
+                Item item = Item.fromCSV(line);
+                if (item != null) {
+                    inventoryMap.put(item.getName() + ":" + item.getStoreID(), item); // Use unique key
                 }
-
-                String name = parts[0];
-                double price = Double.parseDouble(parts[1]);
-                String department = parts[2];
-                int quantity = Integer.parseInt(parts[3]);
-                int storeID = Integer.parseInt(parts[4]);
-
-                inventoryMap.put(name, new Item(name, price, department, quantity, storeID));
             }
         } catch (IOException e) {
             System.err.println("Error reading inventory file: " + e.getMessage());
         }
 
-        // Add current store's items to the map (merge quantities)
+        // Update the inventoryMap with the current items
         for (Item item : items) {
-            inventoryMap.merge(item.getName(), item, (existing, newItem) -> {
-                existing.setQuantity(existing.getQuantity() + newItem.getQuantity());
-                return existing;
-            });
+            String key = item.getName() + ":" + item.getStoreID();
+            inventoryMap.put(key, item); // Replace or add the updated item
         }
 
-        // Write merged inventory back to the file
+        // Write the updated inventory back to the file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            writer.write("name,price,department,quantity,storeID\n"); // Write CSV header
+            writer.write("name,price,department,quantity,storeID\n"); // Write header
             for (Item item : inventoryMap.values()) {
                 writer.write(item.toCSV());
                 writer.newLine();
@@ -351,6 +346,7 @@ public class Inventory {
             System.err.println("Error saving inventory to file: " + e.getMessage());
         }
     }
+
 
     public void printInventory(){
         System.out.println("Inventory:");

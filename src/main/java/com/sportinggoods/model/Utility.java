@@ -1,16 +1,18 @@
 package com.sportinggoods.model;
 
+import java.time.LocalDateTime;
+
 public class Utility {
     private String utilityId;
     private int storeId;
     private String name;
     private String status; // Active, Inactive, Outage
     private double energyConsumption; // kWh
-    private String lastUpdated; // Timestamp
+    private LocalDateTime lastUpdated; // Timestamp
     private String schedule;
 
     // Constructors
-    public Utility(String utilityId, int storeId, String name, String status, double energyConsumption, String lastUpdated, String schedule) {
+    public Utility(String utilityId, int storeId, String name, String status, double energyConsumption, LocalDateTime lastUpdated, String schedule) {
         this.utilityId = utilityId;
         this.storeId = storeId;
         this.name = name;
@@ -63,11 +65,11 @@ public class Utility {
         this.energyConsumption = energyConsumption;
     }
 
-    public String getLastUpdated() {
+    public LocalDateTime getLastUpdated() {
         return lastUpdated;
     }
 
-    public void setLastUpdated(String lastUpdated) {
+    public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
 
@@ -104,7 +106,7 @@ public class Utility {
             return null;
         }
         try {
-            return new Utility(tokens[0], Integer.parseInt(tokens[1]), tokens[2], tokens[3], Double.parseDouble(tokens[4]), tokens[5], tokens[6]);
+            return new Utility(tokens[0], Integer.parseInt(tokens[1]), tokens[2], tokens[3], Double.parseDouble(tokens[4]), LocalDateTime.parse(tokens[5]), tokens[6]);
         } catch (NumberFormatException e) {
             System.err.println("Error parsing CSV line: " + csvLine);
             return null;

@@ -52,8 +52,8 @@ public class Shipper extends Employee {
     // Method specific to Shipper role
     public void shipOrder(ShippingOrder shippingOrder, Inventory inventory) {
         if (canShipOrders) {
-            System.out.println("Shipper " + getName() + " is shipping order with ID: " + shippingOrder.getOrderId());
-            if(shippingController.processShippingOrder(shippingOrder, inventory)){
+            System.out.println("A Shipper " + "is shipping order with ID: " + shippingOrder.getOrderId());
+            if(shippingController.processShippingOrder(shippingOrder, inventory, getStoreId())){
                 System.out.println(shippingOrder.getStatus());
             }
         } else {

@@ -14,11 +14,13 @@ import java.util.stream.Collectors;
  * Allows maintenance staff to view and address maintenance issues.
  */
 public class MaintenanceStaffMenu extends BaseMenu {
+    private int storeId;
 
     private final MaintenanceRequestController maintenanceRequestController;
 
     public MaintenanceStaffMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
+        this.storeId = storeId;
         this.maintenanceRequestController = initManager.getMaintenanceRequestController();
     }
 
@@ -55,7 +57,7 @@ public class MaintenanceStaffMenu extends BaseMenu {
      * Displays all maintenance issues.
      */
     private void viewAllIssues() {
-        List<MaintenanceRequest> requests = maintenanceRequestController.getAllRequests();
+        List<MaintenanceRequest> requests = maintenanceRequestController.getAllRequests(storeId);
 
         if (requests.isEmpty()) {
             System.out.println("No maintenance issues logged.");
@@ -71,7 +73,7 @@ public class MaintenanceStaffMenu extends BaseMenu {
      * If resolved, marks it as resolved. Otherwise, updates the status based on alternate flows.
      */
     private void fixMostUrgentIssue() {
-        List<MaintenanceRequest> requests = maintenanceRequestController.getAllRequests();
+        List<MaintenanceRequest> requests = maintenanceRequestController.getAllRequests(storeId);
 
         if (requests.isEmpty()) {
             System.out.println("No maintenance issues logged.");
@@ -112,7 +114,7 @@ public class MaintenanceStaffMenu extends BaseMenu {
                 else{
                     utilityId = "U003";
                 }
-                boolean success = initManager.getUtilityController().updateUtilityStatus(utilityId, "Active");
+                boolean success = initManager.getUtilityController().updateUtilityStatus(utilityId, storeId, "Active");
 
                 if (success) {
                     System.out.println("Utility updated.");

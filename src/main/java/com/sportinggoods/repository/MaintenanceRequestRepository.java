@@ -7,13 +7,15 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MaintenanceRequestRepository {
     private final String filePath = "data/maintenanceRequests.csv";
 
     public MaintenanceRequestRepository() {
-        FileUtils.initializeFile(filePath, "requestId,location,issueType,urgency,timeRemaining,status,lastUpdated");
+        FileUtils.initializeFile(filePath, "requestId,storeId,location,issueType,urgency,timeRemaining,status,lastUpdated");
     }
 
     public boolean addRequest(MaintenanceRequest request) {
@@ -37,10 +39,21 @@ public class MaintenanceRequestRepository {
         return requests;
     }
 
+    public List<MaintenanceRequest> getAllRequestsByStoreId(int storeId) {
+        return getAllRequests().stream()
+                .filter(request -> request.getStoreId() == storeId)
+                .collect(Collectors.toList());
+    }
+
+    public List<MaintenanceRequest> getAllRequestsSortedByStoreId() {
+        return getAllRequests().stream()
+                .sorted(Comparator.comparingInt(MaintenanceRequest::getStoreId))
+                .collect(Collectors.toList());
+    }
 
     public boolean saveRequestsToFile(List<MaintenanceRequest> requests) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            writer.write("requestId,location,issueType,urgency,timeRemaining,status,lastUpdated");
+            writer.write("requestId,storeId,location,issueType,urgency,timeRemaining,status,lastUpdated");
             writer.newLine();
             for (MaintenanceRequest request : requests) {
                 request.updateTimeRemaining();

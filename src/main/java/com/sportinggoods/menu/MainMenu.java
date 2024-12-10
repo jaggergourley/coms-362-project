@@ -31,7 +31,8 @@ public class MainMenu {
             System.out.println("3. Employee");
             System.out.println("4. Customer");
             System.out.println("5. Maintenance Staff");
-            System.out.println("6. Back to Regional Manager Menu");
+            System.out.println("6. Department Specialist");
+            System.out.println("7. Back to Regional Manager Menu");
             System.out.print("Enter your choice: ");
 
             String choice = initManager.getScanner().nextLine().trim();
@@ -53,6 +54,9 @@ public class MainMenu {
                     new MaintenanceStaffMenu(initManager, initManager.getScanner(), storeId).display();
                     break;
                 case "6":
+                    new DepartmentSpecialistMenu(initManager, initManager.getScanner(), storeId).display();
+                    break;
+                case "7":
                     return; // Exit to Regional Manager Menu
                 default:
                     System.out.println("Invalid choice. Please try again.");

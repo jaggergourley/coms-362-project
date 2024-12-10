@@ -192,7 +192,7 @@ public class EmployeeMenu extends BaseMenu {
     private void processAndSendShipment() {
         System.out.println("\nProcess and Send Shipment:");
 
-        List<ShippingOrder> orders = shippingRepo.getAllShippingOrders();
+        List<ShippingOrder> orders = shippingRepo.getAllShippingOrdersByStoreId(storeId);
         List<ShippingOrder> confirmedOrders = orders.stream()
                 .filter(order -> "Confirmed".equalsIgnoreCase(order.getStatus()))
                 .collect(Collectors.toList());

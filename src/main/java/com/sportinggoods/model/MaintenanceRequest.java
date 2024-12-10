@@ -120,7 +120,7 @@ public class MaintenanceRequest {
 
     public static MaintenanceRequest fromCSV(String csvLine) {
         String[] tokens = csvLine.split(",");
-        if (tokens.length != 7) {
+        if (tokens.length != 8) {
             throw new IllegalArgumentException("Invalid CSV format: " + csvLine);
         }
         return new MaintenanceRequest(
