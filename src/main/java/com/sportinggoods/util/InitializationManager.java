@@ -216,9 +216,8 @@ public class InitializationManager {
     public ShippingController getShippingController() { return shippingController; }
     public SupplierController getSupplierController() { return supplierController; }
     public UtilityController getUtilityController() { return utilityController; }
-    public FeedbackController getFeedbackController() { return feedbackController; } // Added
-    public AppointmentController getAppointmentController() { return appointmentController; } // Added
     public FeedbackController getFeedbackController() { return feedbackController; }
+    public AppointmentController getAppointmentController() { return appointmentController; }
     public EmployeeController getEmployeeController() { return employeeController; }
     public TrainingProgramController getTrainingProgramController() { return trainingProgramController; }
     public EmployeeTrainingController getEmployeeTrainingController() { return employeeTrainingController; }
@@ -258,7 +257,7 @@ public class InitializationManager {
     public UtilityRepository getUtilityRepo() { return utilityRepo; }
     public FeedbackRepository getFeedbackRepo() { return feedbackRepo; }
     public PickupOrderRepository getPickupOrderRepository() { return pickupOrderRepo; }
-    public AppointmentRepository getAppointmentRepo() { return appointmentRepo; } // Added
+    public AppointmentRepository getAppointmentRepo() { return appointmentRepo; }
     public EmployeeRepository getEmployeeRepo() { return employeeRepo; }
     public TrainingProgramRepository getTrainingProgramRepo() { return trainingProgramRepo; }
     public EmployeeTrainingRepository getEmployeeTrainingRepo() { return employeeTrainingRepo; }
