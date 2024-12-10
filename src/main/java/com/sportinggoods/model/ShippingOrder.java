@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class ShippingOrder {
     private String orderId;
+    private int storeId;
     private String customerFirstName;
     private String customerLastName;
     private Map<Item, Integer> items;
@@ -19,10 +20,11 @@ public class ShippingOrder {
     private String status; // Confirmed, Shipped, Partially Shipped
 
     // Constructors
-    public ShippingOrder(String orderId, String customerFirstName, String customerLastName, Map<Item, Integer> items,
+    public ShippingOrder(String orderId, int storeId, String customerFirstName, String customerLastName, Map<Item, Integer> items,
                          double totalPrice, String shippingAddress, String customerEmail, String customerPhoneNumber,
                          LocalDate orderDate, String status) {
         this.orderId = orderId;
+        this.storeId = storeId;
         this.customerFirstName = customerFirstName;
         this.customerLastName = customerLastName;
         this.items = items;
@@ -45,6 +47,13 @@ public class ShippingOrder {
         this.orderId = orderId;
     }
 
+    public int getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(int storeId) {
+        this.storeId = storeId;
+    }
     public String getCustomerFirstName() {
         return customerFirstName;
     }
@@ -119,7 +128,7 @@ public class ShippingOrder {
 
     // toCSV method for CSV representation
     public String toCSV() {
-        return orderId + "|" + customerFirstName + "|" + customerLastName + "|" + itemsToCSV() + "|" + totalPrice +
+        return orderId + "|" + storeId + "|" + customerFirstName + "|" + customerLastName + "|" + itemsToCSV() + "|" + totalPrice +
                 "|" + shippingAddress + "|" + customerEmail + "|" + customerPhoneNumber + "|" + orderDate + "|" + status;
     }
 
@@ -130,7 +139,6 @@ public class ShippingOrder {
             Item item = entry.getKey();
             int quantity = entry.getValue();
 
-            // Append item details in the format "name,price,department,quantity"
             itemsCSV.append(item.getName())
                     .append(",")
                     .append(item.getPrice())
@@ -183,15 +191,16 @@ public class ShippingOrder {
             // Construct and return the ShippingOrder object
             return new ShippingOrder(
                     tokens[0],                // orderId
-                    tokens[1],                // customerFirstName
-                    tokens[2],                // customerLastName
+                    Integer.parseInt(tokens[1]),                // storeId
+                    tokens[2],                // customerFirstName
+                    tokens[3],                // customerLastName
                     items,                    // items
                     totalPrice,               // totalPrice
-                    tokens[5],                // shippingAddress
-                    tokens[6],                // customerEmail
-                    tokens[7],                // customerPhoneNumber
+                    tokens[6],                // shippingAddress
+                    tokens[7],                // customerEmail
+                    tokens[8],                // customerPhoneNumber
                     orderDate,                // orderDate
-                    tokens[9]                 // status
+                    tokens[10]                 // status
             );
 
         } catch (Exception e) {
