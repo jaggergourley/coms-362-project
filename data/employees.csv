@@ -1,0 +1,7 @@
+id,name,storeID,position,department
+1,Alice,1,Warehouse Associate,Equipment
+2,Bob,1,Sales Associate,Fitness
+3,Charlie,2,Technician,Outdoor
+4,Daisy,2,Stocker,Equipment
+5,Eve,3,Cashier,Customer Service
+6,Frank,3,Maintenance,Maintenance

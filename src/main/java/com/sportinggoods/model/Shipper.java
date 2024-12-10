@@ -33,21 +33,21 @@ public class Shipper extends Employee {
         this.canShipOrders = canShipOrders;
     }
 
-    // Override methods from Employee to specify permissions for Shipper
-    @Override
-    public Boolean canPlaceOrder() {
-        return false; // Shippers typically don't place orders
-    }
-
-    @Override
-    public Boolean canAddItems() {
-        return false; // Shippers typically don't add items
-    }
-
-    @Override
-    public Boolean canMakeSchedule() {
-        return false; // Shippers typically don't make schedules
-    }
+//    // Override methods from Employee to specify permissions for Shipper
+//    @Override
+//    public Boolean canPlaceOrder() {
+//        return false; // Shippers typically don't place orders
+//    }
+//
+//    @Override
+//    public Boolean canAddItems() {
+//        return false; // Shippers typically don't add items
+//    }
+//
+//    @Override
+//    public Boolean canMakeSchedule() {
+//        return false; // Shippers typically don't make schedules
+//    }
 
     // Method specific to Shipper role
     public void shipOrder(ShippingOrder shippingOrder, Inventory inventory) {

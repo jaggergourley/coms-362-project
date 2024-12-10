@@ -4,7 +4,6 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,9 @@ public class ManagerMenu extends BaseMenu {
     private SupplierController supplierController;
     private UtilityController utilityController;
     private FeedbackController feedbackController;
-
+    private EmployeeController employeeController;
+    private TrainingProgramController trainingProgramController;
+    private EmployeeTrainingController employeeTrainingController;
 
     // Repositories and Models
     private Employee employee;
@@ -35,7 +36,6 @@ public class ManagerMenu extends BaseMenu {
     private EmployeeList employeeList;
 
     private int storeId;
-
 
     /**
      * Constructs a ManagerMenu with the provided InitializationManager and Scanner.
@@ -46,7 +46,6 @@ public class ManagerMenu extends BaseMenu {
     public ManagerMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
         this.storeId = storeId;
-        // Initialize controllers and models
         this.cashierController = initManager.getCashierController();
         this.discountController = initManager.getDiscountController();
         this.giftCardController = initManager.getGiftCardController();
@@ -60,6 +59,9 @@ public class ManagerMenu extends BaseMenu {
         this.employeeList = initManager.getEmployeeList();
         this.storeId = storeId;
         this.feedbackController = initManager.getFeedbackController();
+        this.employeeController = initManager.getEmployeeController();
+        this.trainingProgramController = initManager.getTrainingProgramController();
+        this.employeeTrainingController = initManager.getEmployeeTrainingController();
     }
 
     @Override
@@ -80,7 +82,8 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("14", this::generateLowStockRequest);
         invoker.register("15", this::manageFeedback);
         invoker.register("16", this::manageEmployees);
-
+        invoker.register("17", this::manageTrainingPrograms);
+        invoker.register("18", this::manageEmployeeTraining);
     }
 
     @Override
@@ -103,18 +106,161 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("14. Generate Low Stock Request");
         System.out.println("15. Manage Feedback");
         System.out.println("16. Manage Employees");
-        System.out.println("17. Back to Main Menu");
+        System.out.println("17. Manage Training Programs");
+        System.out.println("18. Manage Employee Training");
+        System.out.println("19. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("17");
+        return choice.equals("19");
     }
 
     @Override
     protected void handleExit() {
         System.out.println("Returning to Main Menu...");
     }
+
+    // ==========================
+    // Employee Management
+    // ==========================
+
+    private void manageEmployees() {
+        while (true) {
+            System.out.println("\nEmployee Management:");
+            System.out.println("1. Add employee");
+            System.out.println("2. Remove employee");
+            System.out.println("3. Update employee position");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    System.out.print("Enter name of employee to add: ");
+                    String name = scanner.nextLine();
+                    System.out.print("Enter ID of employee to add: ");
+                    int id = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Enter position: ");
+                    String position = scanner.nextLine();
+                    System.out.print("Enter department: ");
+                    String department = scanner.nextLine();
+
+                    Employee newEmployee = new Employee(name, id, new Schedule(), storeId);
+                    newEmployee.setPosition(position);
+                    newEmployee.setDepartment(department);
+
+                    boolean added = employeeController.addEmployee(name, id, storeId, position, department);
+                    if (added) {
+                        System.out.println("Employee added successfully!");
+                    } else {
+                        System.out.println("Failed to add employee. ID may already exist.");
+                    }
+                    break;
+
+                case "2":
+                    System.out.print("Enter the ID of employee to remove: ");
+                    int removeId = Integer.parseInt(scanner.nextLine());
+
+                    boolean removed = employeeController.removeEmployee(removeId);
+                    if (removed) {
+                        System.out.println("Employee removed successfully!");
+                    } else {
+                        System.out.println("Failed to remove employee. ID may not exist.");
+                    }
+                    break;
+
+                case "3":
+                    boolean updated = employeeController.updateEmployeePosition(this.storeId);
+                    if (!updated) {
+                        System.out.println("Failed to update employee position.");
+                    }
+                    break;
+
+                case "4":
+                    return;
+
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+    // ==========================
+    // Training Program Management
+    // ==========================
+
+    private void manageTrainingPrograms() {
+        while (true) {
+            System.out.println("\nTraining Program Management:");
+            System.out.println("1. Add a new training program");
+            System.out.println("2. View all training programs");
+            System.out.println("3. Update an existing training program");
+            System.out.println("4. Remove a training program");
+            System.out.println("5. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    trainingProgramController.addTrainingProgram();
+                    break;
+                case "2":
+                    trainingProgramController.viewAllTrainingPrograms();
+                    break;
+                case "3":
+                    trainingProgramController.updateTrainingProgram();
+                    break;
+                case "4":
+                    trainingProgramController.removeTrainingProgram();
+                    break;
+                case "5":
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+    // ==========================
+    // Employee Training Management
+    // ==========================
+
+    private void manageEmployeeTraining() {
+        while (true) {
+            System.out.println("\nEmployee Training Management:");
+            System.out.println("1. Assign Training to Employee");
+            System.out.println("2. View Training Assignments");
+            System.out.println("3. Update Training Status");
+            System.out.println("4. Remove Training Assignment");
+            System.out.println("5. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    employeeTrainingController.assignTrainingToEmployee(storeId);
+                    break;
+                case "2":
+                    employeeTrainingController.viewTrainingAssignmentsByStore(storeId);
+                    break;
+                case "3":
+                    employeeTrainingController.updateTrainingStatus();
+                    break;
+                case "4":
+                    employeeTrainingController.removeTrainingAssignment();
+                    break;
+                case "5":
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
 
     // ==========================
     // Maintenance Requests
@@ -171,7 +317,7 @@ public class ManagerMenu extends BaseMenu {
         System.out.print("Enter Urgency (Emergency, High Priority, Medium Priority, Low Priority): ");
         String urgency = scanner.nextLine().trim();
 
-        boolean success = initManager.getMaintenanceRequestController().createRequest(location, issueType, urgency);
+        boolean success = initManager.getMaintenanceRequestController().createRequest(storeId, location, issueType, urgency);
 
         if (success) {
             System.out.println("Maintenance request created successfully.");
@@ -307,7 +453,7 @@ public class ManagerMenu extends BaseMenu {
         String issue = scanner.nextLine();
 
         utilityController.updateUtilityStatus(utilityId, "Maintenance Requested On: " + LocalDateTime.now());
-        boolean success = initManager.getMaintenanceRequestController().createRequest(utility.getName(), issue, "High Priority");
+        boolean success = initManager.getMaintenanceRequestController().createRequest(storeId, utility.getName(), issue, "High Priority");
 
         if (success) {
             System.out.println("Maintenance request created successfully.");
@@ -428,9 +574,9 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("2. Apply Discount to Department");
         System.out.println("3. Apply Store-Wide Discount");
         System.out.print("Enter your choice: ");
-
+    
         String discountTypeChoice = scanner.nextLine().trim();
-
+    
         clearConsole();
         System.out.print("Enter discount value (numeric): ");
         double value;
@@ -441,28 +587,36 @@ public class ManagerMenu extends BaseMenu {
             promptReturn();
             return;
         }
-
+    
         System.out.print("Enter discount type (PERCENTAGE/FIXED): ");
-        String type = scanner.nextLine().trim();
-
+        String type = scanner.nextLine().trim().toUpperCase(); // Ensure consistent casing
+    
         switch (discountTypeChoice) {
-            case "1":
+            case "1": // Item Discount
                 System.out.print("Enter item name: ");
                 String itemName = scanner.nextLine().trim();
                 System.out.println(discountController.addDiscountToItem(itemName, value, type));
                 break;
-            case "2":
+    
+            case "2": // Department Discount
                 System.out.print("Enter department name: ");
                 String department = scanner.nextLine().trim();
                 System.out.println(discountController.addDiscountToDepartment(department, value, type));
                 break;
-            case "3":
-                System.out.println(discountController.addDiscountStoreWide(value, type));
+    
+            case "3": // Store-Wide Discount
+                // Check for existing store-wide discount
+                if (discountController.hasStoreWideDiscount(value, type)) {
+                    System.out.println("A store-wide discount of this type and value already exists.");
+                } else {
+                    System.out.println(discountController.addDiscountStoreWide(value, type));
+                }
                 break;
+    
             default:
                 System.out.println("Invalid choice. Returning to Manage Discounts menu.");
         }
-
+    
         promptReturn();
     }
 
@@ -820,94 +974,94 @@ public class ManagerMenu extends BaseMenu {
     // Pricing Management
     // ==========================
 
-/**
- * Manager Functionality: Adjust Item Price
- */
-private void adjustPriceMenu() {
-    clearConsole();
-    while (true) {
-        System.out.println("\nAdjust Item Price Menu:");
-        System.out.println("1. Search by Name");
-        System.out.println("2. Search by Department");
-        System.out.println("3. Search by Store ID");
-        System.out.println("4. Back to Manager Menu");
-        System.out.print("Enter your choice: ");
+    /**
+     * Manager Functionality: Adjust Item Price
+     */
+    private void adjustPriceMenu() {
+        clearConsole();
+        while (true) {
+            System.out.println("\nAdjust Item Price Menu:");
+            System.out.println("1. Search by Name");
+            System.out.println("2. Search by Department");
+            System.out.println("3. Search by Store ID");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
 
-        String searchChoice = scanner.nextLine().trim();
-        String criteria = null;
+            String searchChoice = scanner.nextLine().trim();
+            String criteria = null;
 
-        switch (searchChoice) {
-            case "1":
-                criteria = "name";
-                break;
-            case "2":
-                criteria = "department";
-                break;
-            case "3":
-                criteria = "storeid";
-                break;
-            case "4":
-                System.out.println("Returning to Manager Menu.");
+            switch (searchChoice) {
+                case "1":
+                    criteria = "name";
+                    break;
+                case "2":
+                    criteria = "department";
+                    break;
+                case "3":
+                    criteria = "storeid";
+                    break;
+                case "4":
+                    System.out.println("Returning to Manager Menu.");
+                    clearConsole();
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    clearConsole();
+                    continue;
+            }
+
+            System.out.print("Enter the search value: ");
+            String value = scanner.nextLine().trim();
+
+            List<Item> foundItems = pricingController.searchItems(criteria, value);
+
+            if (foundItems.isEmpty()) {
                 clearConsole();
-                return;
-            default:
-                System.out.println("Invalid choice. Please try again.");
-                clearConsole();
-                continue;
-        }
-
-        System.out.print("Enter the search value: ");
-        String value = scanner.nextLine().trim();
-
-        List<Item> foundItems = pricingController.searchItems(criteria, value);
-
-        if (foundItems.isEmpty()) {
-            clearConsole();
-            System.out.println("No items found with the specified criteria. Please try another search.");
-            continue;
-        }
-
-        System.out.println("\nFound Items:");
-        for (int i = 0; i < foundItems.size(); i++) {
-            System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
-        }
-
-        System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
-        int itemIndex;
-        try {
-            itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
-            if (itemIndex == -1) continue; // Return to search menu
-            if (itemIndex < 0 || itemIndex >= foundItems.size()) {
-                clearConsole();
-                System.out.println("Invalid selection. Returning to search menu.");
+                System.out.println("No items found with the specified criteria. Please try another search.");
                 continue;
             }
-        } catch (NumberFormatException e) {
-            clearConsole();
-            System.out.println("Error: Please enter a valid number.");
-            continue;
-        }
 
-        Item selectedItem = foundItems.get(itemIndex);
-        double newPrice = -1;
-        while (newPrice <= 0) {
-            System.out.print("Enter the new price: ");
+            System.out.println("\nFound Items:");
+            for (int i = 0; i < foundItems.size(); i++) {
+                System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
+            }
+
+            System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
+            int itemIndex;
             try {
-                newPrice = Double.parseDouble(scanner.nextLine().trim());
-                if (newPrice <= 0) {
-                    System.out.println("Error: Price must be greater than 0. Please try again.");
+                itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (itemIndex == -1) continue; // Return to search menu
+                if (itemIndex < 0 || itemIndex >= foundItems.size()) {
+                    clearConsole();
+                    System.out.println("Invalid selection. Returning to search menu.");
+                    continue;
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Error: Invalid price format. Please enter a valid number.");
+                clearConsole();
+                System.out.println("Error: Please enter a valid number.");
+                continue;
             }
-        }
 
-        String result = pricingController.adjustPrice(selectedItem, newPrice);
-        clearConsole();
-        System.out.println(result);
-        break; // Break the loop after adjusting the price
+            Item selectedItem = foundItems.get(itemIndex);
+            double newPrice = -1;
+            while (newPrice <= 0) {
+                System.out.print("Enter the new price: ");
+                try {
+                    newPrice = Double.parseDouble(scanner.nextLine().trim());
+                    if (newPrice <= 0) {
+                        System.out.println("Error: Price must be greater than 0. Please try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: Invalid price format. Please enter a valid number.");
+                }
+            }
+
+            String result = pricingController.adjustPrice(selectedItem, newPrice);
+            clearConsole();
+            System.out.println(result);
+            break; // Break the loop after adjusting the price
+        }
     }
-}
 
     // ==========================
     // Shipping Order Management
@@ -1239,46 +1393,6 @@ private void adjustPriceMenu() {
         }
         System.out.println("\nSupplier Orders:");
         orders.forEach(System.out::println);
-    }
-
-    private void manageEmployees(){
-        employeeList = new EmployeeList(storeId);
-
-        System.out.println("\nCurrent Employee List:");
-        employeeList.printEmployeeList();
-        System.out.println("------------------");
-        System.out.println("Select Employee list Operation");
-        System.out.println("------------------");
-        System.out.println("1. Add employee");
-        System.out.println("2. Delete employee");
-        System.out.print("Enter choice: ");
-
-        String choice = scanner.nextLine();
-
-        switch (choice) {
-            case "1":
-                clearConsole();
-                employeeList.printEmployeeList();
-                System.out.print("Enter name of employee to add:");
-                String name = scanner.nextLine();
-                System.out.print("Enter ID of employee to add:");
-                int id = scanner.nextInt();
-                Employee temp = new Employee(name, id, new Schedule(), storeId);
-                employeeList.addEmployee(temp);
-                break;
-            case "2":
-                clearConsole();
-                employeeList.printEmployeeList();
-                System.out.print("Enter name of employee to remove:");
-                name = scanner.nextLine();
-                System.out.print("Enter ID of employee to remove:");
-                id = scanner.nextInt();
-                employeeList.removeEmployee(name, id);
-                break;
-            default:
-                System.out.println("Not an option");
-                break;
-        }
     }
 
     // ==========================
