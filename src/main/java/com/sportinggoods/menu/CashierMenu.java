@@ -4,7 +4,6 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -203,22 +202,40 @@ public class CashierMenu extends BaseMenu {
         System.out.println("\nAvailable Items:");
         for (int i = 0; i < availableItems.size(); i++) {
             Item item = availableItems.get(i);
-            double originalPrice = item.getPrice();
-            double discountedPrice = inventory.getEffectivePrice(item.getName(), discountRepository);
     
-            if (discountedPrice < originalPrice) {
-                double discountValue = originalPrice - discountedPrice;
-                String discountType = discountValue == originalPrice * (discountValue / 100) ? "percentage" : "fixed";
-                String discountDisplay = discountType.equals("percentage")
-                        ? String.format("(-%.2f%%)", (discountValue / originalPrice) * 100)
-                        : String.format("(-$%.2f)", discountValue);
+            // Get the original price and effective price
+            double originalPrice = discountRepository.getOriginalPrices()
+                    .getOrDefault(item.getName().toLowerCase(), item.getPrice()); // Default to current price if no original
+            double effectivePrice = inventory.getEffectivePrice(item.getName(), discountRepository);
     
-                System.out.printf("%d. %s (Price: $%.2f %s, Quantity: %d)\n",
-                        i + 1, item.getName(), discountedPrice, discountDisplay, item.getQuantity());
-            } else {
-                System.out.printf("%d. %s (Price: $%.2f, Quantity: %d)\n",
-                        i + 1, item.getName(), originalPrice, item.getQuantity());
+            // Calculate the discount value and type
+            double totalDiscount = originalPrice - effectivePrice;
+            String discountType = "";
+    
+            // Determine the type of discount applied (Store-Wide, Department, or Item-Specific)
+            if (totalDiscount > 0) {
+                for (Discount discount : discountRepository.getDiscounts()) {
+                    if (discount.getTarget().equalsIgnoreCase(item.getName())) {
+                        discountType = discount.getType().equalsIgnoreCase("PERCENTAGE")
+                                ? String.format("%.0f%%", discount.getValue())
+                                : String.format("$%.2f", discount.getValue());
+                        break;
+                    } else if (discount.getTarget().equalsIgnoreCase(item.getDepartment())) {
+                        discountType = discount.getType().equalsIgnoreCase("PERCENTAGE")
+                                ? String.format("%.0f%% (Dept)", discount.getValue())
+                                : String.format("$%.2f (Dept)", discount.getValue());
+                    } else if (discount.getTarget().equalsIgnoreCase("Store-Wide")) {
+                        discountType = discount.getType().equalsIgnoreCase("PERCENTAGE")
+                                ? String.format("%.0f%% (Store)", discount.getValue())
+                                : String.format("$%.2f (Store)", discount.getValue());
+                    }
+                }
             }
+    
+            // Display the item
+            System.out.printf("%d. %s (Original: $%.2f, Discount: %s, Final: $%.2f, Quantity: %d)%n",
+                    i + 1, item.getName(), originalPrice, discountType.isEmpty() ? "None" : discountType,
+                    effectivePrice, item.getQuantity());
         }
     }
     

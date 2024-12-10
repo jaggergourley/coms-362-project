@@ -4,7 +4,6 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -426,9 +425,9 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("2. Apply Discount to Department");
         System.out.println("3. Apply Store-Wide Discount");
         System.out.print("Enter your choice: ");
-
+    
         String discountTypeChoice = scanner.nextLine().trim();
-
+    
         clearConsole();
         System.out.print("Enter discount value (numeric): ");
         double value;
@@ -439,28 +438,36 @@ public class ManagerMenu extends BaseMenu {
             promptReturn();
             return;
         }
-
+    
         System.out.print("Enter discount type (PERCENTAGE/FIXED): ");
-        String type = scanner.nextLine().trim();
-
+        String type = scanner.nextLine().trim().toUpperCase(); // Ensure consistent casing
+    
         switch (discountTypeChoice) {
-            case "1":
+            case "1": // Item Discount
                 System.out.print("Enter item name: ");
                 String itemName = scanner.nextLine().trim();
                 System.out.println(discountController.addDiscountToItem(itemName, value, type));
                 break;
-            case "2":
+    
+            case "2": // Department Discount
                 System.out.print("Enter department name: ");
                 String department = scanner.nextLine().trim();
                 System.out.println(discountController.addDiscountToDepartment(department, value, type));
                 break;
-            case "3":
-                System.out.println(discountController.addDiscountStoreWide(value, type));
+    
+            case "3": // Store-Wide Discount
+                // Check for existing store-wide discount
+                if (discountController.hasStoreWideDiscount(value, type)) {
+                    System.out.println("A store-wide discount of this type and value already exists.");
+                } else {
+                    System.out.println(discountController.addDiscountStoreWide(value, type));
+                }
                 break;
+    
             default:
                 System.out.println("Invalid choice. Returning to Manage Discounts menu.");
         }
-
+    
         promptReturn();
     }
 

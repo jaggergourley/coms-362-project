@@ -3,7 +3,6 @@ package com.sportinggoods.util;
 import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
-
 import java.util.List;
 import java.util.Scanner;
 
@@ -107,8 +106,9 @@ public class InitializationManager {
     private void initializeModels() {
         cashier = new Cashier("John Doe", 101, null, 1);
         cart = new Cart();
-        employee = new Employee("Mason", 1, new Schedule(), 1);
-        regionalManager = new RegionalManger(1, "Regional Manager", true, true, true, new Schedule()); // Initialize RegionalManager        inventory = new Inventory(1);
+        employee = new Employee("Mason", 1, new Schedule());
+        regionalManager = new RegionalManger(1, "Regional Manager", true, true, true, new Schedule());
+        inventory = new Inventory(1); // Ensure Inventory is initialized
         receipt = new Receipt();
         register = new Register();
         schedule = new Schedule();
