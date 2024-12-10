@@ -23,6 +23,7 @@ public class InitializationManager {
     private UtilityController utilityController;
     private MaintenanceRequestController maintenanceRequestController;
     private FeedbackController feedbackController;// Added
+    private CampaignController campaignController;
 
     // Models
     private Cashier cashier;
@@ -46,6 +47,7 @@ public class InitializationManager {
     private SupplierOrder supplierOrder;
     private EmployeeList employeeList;
     private Utility utility;
+    private Campaign campaign;
 
     // Maintenance-related models
     private MaintenanceRequest maintenanceRequest; // Added
@@ -65,6 +67,7 @@ public class InitializationManager {
     private MaintenanceRequestRepository maintenanceRequestRepo;
     private FeedbackRepository feedbackRepo;// Added
     private PickupOrderRepository pickupOrderRepo;
+    private CampaignRepository campaignRepo;
 
     // Scanner for user input
     private Scanner scanner;
@@ -96,6 +99,7 @@ public class InitializationManager {
         utilityController = new UtilityController(utilityRepo);
         maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo);
         feedbackController = new FeedbackController(feedbackRepo);// Added
+        campaignController = new CampaignController(campaignRepo);
     }
 
     /**
@@ -180,6 +184,7 @@ public class InitializationManager {
     public SupplierController getSupplierController() { return supplierController; }
     public UtilityController getUtilityController() { return utilityController; }
     public FeedbackController getFeedbackController() { return feedbackController; }
+    public CampaignController getCampaignController() { return campaignController; }
 
     // Getters for models
     public Cashier getCashier() { return cashier; }
@@ -202,6 +207,7 @@ public class InitializationManager {
     public Supplier getSupplier() { return supplier; }
     public SupplierOrder getSupplierOrder() { return supplierOrder; }
     public EmployeeList getEmployeeList() { return employeeList; }
+    public Campaign getCampaign() { return campaign; }
 
 
     // Getters for repositories
@@ -218,6 +224,7 @@ public class InitializationManager {
     public UtilityRepository getUtilityRepo() { return utilityRepo; }
     public FeedbackRepository getFeedbackRepo() { return feedbackRepo; }
     public PickupOrderRepository getPickupOrderRepository() { return pickupOrderRepo; }
+    public CampaignRepository getCampaignRepo() { return campaignRepo; }
 
     public Scanner getScanner() { return scanner; }
 

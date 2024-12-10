@@ -4,6 +4,7 @@ import com.sportinggoods.controller.*;
 import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class ManagerMenu extends BaseMenu {
     private SupplierController supplierController;
     private UtilityController utilityController;
     private FeedbackController feedbackController;
+    private CampaignController campaignController;
 
 
     // Repositories and Models
@@ -57,6 +59,7 @@ public class ManagerMenu extends BaseMenu {
         this.employeeList = initManager.getEmployeeList();
         this.storeId = storeId;
         this.feedbackController = initManager.getFeedbackController();
+        this.campaignController = initManager.getCampaignController();
     }
 
     @Override
@@ -1283,6 +1286,90 @@ public class ManagerMenu extends BaseMenu {
             default:
                 System.out.println("Not an option");
                 break;
+        }
+    }
+
+    // ==========================
+    // Advertising Campaigns
+    // ==========================
+
+    private void manageAdvertising() {
+        while (true) {
+            clearConsole();
+            System.out.println("\nManage Advertising Campaigns:");
+            System.out.println("1. Create Campaign");
+            System.out.println("2. View Campaigns");
+            System.out.println("3. End Campaign");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+    
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1":
+                    createCampaign();
+                    break;
+                case "2":
+                    viewCampaigns();
+                    break;
+                case "3":
+                    endCampaign();
+                    break;
+                case "4":
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private void createCampaign() {
+        System.out.print("Enter campaign title: ");
+        String title = scanner.nextLine();
+
+        LocalDate startDate = promptForDate("Enter start date (YYYY-MM-DD): ");
+        LocalDate endDate = promptForDate("Enter end date (YYYY-MM-DD): ");
+
+        System.out.print("Enter type (Coupon/Discount): ");
+        String type = scanner.nextLine();
+
+        double value = promptForDouble("Enter value: ", 0.01, Double.MAX_VALUE);
+
+        System.out.print("Enter custom message for subscribers: ");
+        String message = scanner.nextLine();
+
+        String result = campaignController.createCampaign(title, startDate, endDate, type, value, message);
+        System.out.println(result);
+        promptReturn();
+    }
+
+    private void viewCampaigns() {
+        List<Campaign> campaigns = campaignController.viewAllCampaigns();
+        if (campaigns.isEmpty()) {
+            System.out.println("No active campaigns.");
+        } else {
+            campaigns.forEach(System.out::println);
+        }
+        promptReturn();
+    }
+    
+    private void endCampaign() {
+        System.out.print("Enter campaign title to end: ");
+        String title = scanner.nextLine();
+    
+        String result = campaignController.endCampaign(title);
+        System.out.println(result);
+        promptReturn();
+    }
+
+    private LocalDate promptForDate(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            try {
+                return LocalDate.parse(input); // Parses input in YYYY-MM-DD format
+            } catch (Exception e) {
+                System.out.println("Invalid date format. Please enter the date in YYYY-MM-DD format.");
+            }
         }
     }
 
