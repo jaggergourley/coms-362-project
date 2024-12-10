@@ -24,6 +24,7 @@ public class InitializationManager {
     private MaintenanceRequestController maintenanceRequestController;
     private FeedbackController feedbackController;// Added
     private CampaignController campaignController;
+    private SecurityController securityController;
 
     // Models
     private Cashier cashier;
@@ -48,6 +49,7 @@ public class InitializationManager {
     private EmployeeList employeeList;
     private Utility utility;
     private Campaign campaign;
+    private SecurityIncident securityIncident;
 
     // Maintenance-related models
     private MaintenanceRequest maintenanceRequest; // Added
@@ -68,6 +70,7 @@ public class InitializationManager {
     private FeedbackRepository feedbackRepo;// Added
     private PickupOrderRepository pickupOrderRepo;
     private CampaignRepository campaignRepo;
+    private SecurityRepository securityRepo;
 
     // Scanner for user input
     private Scanner scanner;
@@ -100,6 +103,7 @@ public class InitializationManager {
         maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo);
         feedbackController = new FeedbackController(feedbackRepo);// Added
         campaignController = new CampaignController(campaignRepo);
+        securityController = new SecurityController(securityRepo);
     }
 
     /**
@@ -150,6 +154,8 @@ public class InitializationManager {
         maintenanceRequestRepo = new MaintenanceRequestRepository();
         feedbackRepo = new FeedbackRepository();// Added
         pickupOrderRepo = new PickupOrderRepository(getInventory(1));
+        campaignRepo = new CampaignRepository();
+        securityRepo = new SecurityRepository();
     }
 
     /**
@@ -185,6 +191,7 @@ public class InitializationManager {
     public UtilityController getUtilityController() { return utilityController; }
     public FeedbackController getFeedbackController() { return feedbackController; }
     public CampaignController getCampaignController() { return campaignController; }
+    public SecurityController getSecurityController() { return securityController; }
 
     // Getters for models
     public Cashier getCashier() { return cashier; }
@@ -208,6 +215,7 @@ public class InitializationManager {
     public SupplierOrder getSupplierOrder() { return supplierOrder; }
     public EmployeeList getEmployeeList() { return employeeList; }
     public Campaign getCampaign() { return campaign; }
+    public SecurityIncident getSecurityIncident() { return securityIncident; }
 
 
     // Getters for repositories
@@ -225,6 +233,7 @@ public class InitializationManager {
     public FeedbackRepository getFeedbackRepo() { return feedbackRepo; }
     public PickupOrderRepository getPickupOrderRepository() { return pickupOrderRepo; }
     public CampaignRepository getCampaignRepo() { return campaignRepo; }
+    public SecurityRepository getSecurityRepo() { return securityRepo; }
 
     public Scanner getScanner() { return scanner; }
 
