@@ -15,7 +15,7 @@ public class Store {
 
     private Inventory storeInventory;
 
-    private String employeeFile = "data/employee.csv";
+    private String employeeFile = "data/employees.csv";
 
 
     public Store(int ID, String address){

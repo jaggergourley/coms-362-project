@@ -26,7 +26,8 @@ public class ManagerMenu extends BaseMenu {
     private SupplierController supplierController;
     private UtilityController utilityController;
     private FeedbackController feedbackController;
-
+    private EmployeeController employeeController;
+    private TrainingProgramController trainingProgramController;
 
     // Repositories and Models
     private Employee employee;
@@ -59,6 +60,8 @@ public class ManagerMenu extends BaseMenu {
         this.employeeList = initManager.getEmployeeList();
         this.storeId = storeId;
         this.feedbackController = initManager.getFeedbackController();
+        this.employeeController = initManager.getEmployeeController();
+        this.trainingProgramController = initManager.getTrainingProgramController();
     }
 
     @Override
@@ -79,6 +82,7 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("14", this::generateLowStockRequest);
         invoker.register("15", this::manageFeedback);
         invoker.register("16", this::manageEmployees);
+        invoker.register("17", this::manageTrainingPrograms);
 
     }
 
@@ -102,12 +106,13 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("14. Generate Low Stock Request");
         System.out.println("15. Manage Feedback");
         System.out.println("16. Manage Employees");
-        System.out.println("17. Back to Main Menu");
+        System.out.println("17. Manage Training Programs");
+        System.out.println("18. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("17");
+        return choice.equals("18");
     }
 
     @Override
@@ -120,16 +125,12 @@ public class ManagerMenu extends BaseMenu {
     // ==========================
 
     private void manageEmployees() {
-        employeeList = new EmployeeList(storeId);
-
         while (true) {
-            System.out.println("\nCurrent Employee List:");
-            employeeList.printEmployeeList();
-            System.out.println("------------------");
-            System.out.println("Select Employee List Operation:");
+            System.out.println("\nEmployee Management:");
             System.out.println("1. Add employee");
             System.out.println("2. Remove employee");
-            System.out.println("3. Back to Manager Menu");
+            System.out.println("3. Update employee position");
+            System.out.println("4. Back to Manager Menu");
             System.out.print("Enter choice: ");
 
             String choice = scanner.nextLine().trim();
@@ -142,31 +143,80 @@ public class ManagerMenu extends BaseMenu {
                     int id = Integer.parseInt(scanner.nextLine());
                     System.out.print("Enter position: ");
                     String position = scanner.nextLine();
-                    System.out.print("Enter start date (yyyy-mm-dd): ");
-                    LocalDate startDate = LocalDate.parse(scanner.nextLine());
                     System.out.print("Enter department: ");
                     String department = scanner.nextLine();
 
                     Employee newEmployee = new Employee(name, id, new Schedule(), storeId);
                     newEmployee.setPosition(position);
-                    newEmployee.setStartDate(startDate);
                     newEmployee.setDepartment(department);
 
-                    employeeList.addEmployee(newEmployee);
+                    boolean added = employeeController.addEmployee(name, id, storeId, position, department);
+                    if (added) {
+                        System.out.println("Employee added successfully!");
+                    } else {
+                        System.out.println("Failed to add employee. ID may already exist.");
+                    }
                     break;
 
                 case "2":
-                    System.out.print("Enter name of employee to remove: ");
-                    String removeName = scanner.nextLine();
-                    System.out.print("Enter ID of employee to remove: ");
+                    System.out.print("Enter the ID of employee to remove: ");
                     int removeId = Integer.parseInt(scanner.nextLine());
 
-                    employeeList.removeEmployee(removeName, removeId);
+                    boolean removed = employeeController.removeEmployee(removeId);
+                    if (removed) {
+                        System.out.println("Employee removed successfully!");
+                    } else {
+                        System.out.println("Failed to remove employee. ID may not exist.");
+                    }
                     break;
 
                 case "3":
+                    boolean updated = employeeController.updateEmployeePosition(this.storeId);
+                    if (!updated) {
+                        System.out.println("Failed to update employee position.");
+                    }
+                    break;
+
+                case "4":
                     return;
 
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+    // ==========================
+    // Training Program Management
+    // ==========================
+
+    private void manageTrainingPrograms() {
+        while (true) {
+            System.out.println("\nTraining Program Management:");
+            System.out.println("1. Add a new training program");
+            System.out.println("2. View all training programs");
+            System.out.println("3. Update an existing training program");
+            System.out.println("4. Remove a training program");
+            System.out.println("5. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    trainingProgramController.addTrainingProgram();
+                    break;
+                case "2":
+                    trainingProgramController.viewAllTrainingPrograms();
+                    break;
+                case "3":
+                    trainingProgramController.updateTrainingProgram();
+                    break;
+                case "4":
+                    trainingProgramController.removeTrainingProgram();
+                    break;
+                case "5":
+                    return;
                 default:
                     System.out.println("Invalid option. Please try again.");
             }

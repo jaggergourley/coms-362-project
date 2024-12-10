@@ -25,7 +25,9 @@ public class InitializationManager {
     private SupplierController supplierController;
     private UtilityController utilityController;
     private MaintenanceRequestController maintenanceRequestController;
-    private FeedbackController feedbackController;// Added
+    private FeedbackController feedbackController;
+    private EmployeeController employeeController;
+    private TrainingProgramController trainingProgramController;
 
     // Models
     private Cashier cashier;
@@ -68,6 +70,8 @@ public class InitializationManager {
     private MaintenanceRequestRepository maintenanceRequestRepo;
     private FeedbackRepository feedbackRepo;// Added
     private PickupOrderRepository pickupOrderRepo;
+    private EmployeeRepository employeeRepo;
+    private TrainingProgramRepository trainingProgramRepo;
 
     // Scanner for user input
     private Scanner scanner;
@@ -81,6 +85,8 @@ public class InitializationManager {
         initializeModels();
         initializeControllers();
         fillUtilities();
+        defaultEmployees();
+        defaultTrainingPrograms();
     }
 
     /**
@@ -98,7 +104,9 @@ public class InitializationManager {
         supplierController = new SupplierController(supplierRepo, supplierOrderRepo);
         utilityController = new UtilityController(utilityRepo);
         maintenanceRequestController = new MaintenanceRequestController(maintenanceRequestRepo);
-        feedbackController = new FeedbackController(feedbackRepo);// Added
+        feedbackController = new FeedbackController(feedbackRepo);
+        employeeController = new EmployeeController(employeeRepo);
+        trainingProgramController = new TrainingProgramController(trainingProgramRepo, scanner);
     }
 
     /**
@@ -147,6 +155,8 @@ public class InitializationManager {
         maintenanceRequestRepo = new MaintenanceRequestRepository();
         feedbackRepo = new FeedbackRepository();// Added
         pickupOrderRepo = new PickupOrderRepository(getInventory(1));
+        employeeRepo = new EmployeeRepository();
+        trainingProgramRepo = new TrainingProgramRepository();
     }
 
     /**
@@ -160,6 +170,40 @@ public class InitializationManager {
         utilityRepo.addUtility(new Utility("U001", 1, "HVAC", "Active", 750.5, "2024-11-18", "09:00-21:00"));
         utilityRepo.addUtility(new Utility("U002", 1, "Lighting", "Active", 450.2, "2024-11-18", "09:00-21:00"));
         utilityRepo.addUtility(new Utility("U003", 1, "Water", "Active", 150.0, "2024-11-18", "24/7"));
+    }
+
+    private void defaultEmployees() {
+        List<Employee> existingEmployees = employeeRepo.getAllEmployees();
+        if (!existingEmployees.isEmpty()) {
+            return; // Employees already populated
+        }
+        employeeRepo.addEmployee(new Employee("Alice", 1, null, 1, "Manager", "Sports"));
+        employeeRepo.addEmployee(new Employee("Bob", 2, null, 1, "Sales Associate", "Fitness"));
+        employeeRepo.addEmployee(new Employee("Charlie", 3, null, 2, "Technician", "Outdoor"));
+        employeeRepo.addEmployee(new Employee("Daisy", 4, null, 2, "Stocker", "Equipment"));
+        employeeRepo.addEmployee(new Employee("Eve", 5, null, 3, "Cashier", "Customer Service"));
+        employeeRepo.addEmployee(new Employee("Frank", 6, null, 3, "Maintenance", "Maintenance"));
+    }
+
+    private void defaultTrainingPrograms() {
+        List<TrainingProgram> existingPrograms = trainingProgramRepo.getAllTrainingPrograms();
+        if (!existingPrograms.isEmpty()) {
+            return; // Training programs already populated
+        }
+
+        // Add default training programs
+        trainingProgramRepo.addTrainingProgram(new TrainingProgram(101, "Customer Service Essentials",
+                "Learn the basics of excellent customer service.", 20));
+        trainingProgramRepo.addTrainingProgram(new TrainingProgram(102, "Advanced Sales Techniques",
+                "Enhance your sales skills and close more deals.", 15));
+        trainingProgramRepo.addTrainingProgram(new TrainingProgram(103, "Inventory Management 101",
+                "Understand the fundamentals of managing inventory.", 25));
+        trainingProgramRepo.addTrainingProgram(new TrainingProgram(104, "Leadership and Management",
+                "Develop leadership skills for managing teams effectively.", 10));
+        trainingProgramRepo.addTrainingProgram(new TrainingProgram(105, "Workplace Safety Training",
+                "Ensure a safe and healthy workplace environment.", 30));
+
+        System.out.println("Default training programs have been added.");
     }
 
     /**
@@ -181,6 +225,8 @@ public class InitializationManager {
     public SupplierController getSupplierController() { return supplierController; }
     public UtilityController getUtilityController() { return utilityController; }
     public FeedbackController getFeedbackController() { return feedbackController; }
+    public EmployeeController getEmployeeController() { return employeeController; }
+    public TrainingProgramController getTrainingProgramController() { return trainingProgramController; }
 
     // Getters for models
     public Cashier getCashier() { return cashier; }
@@ -219,6 +265,8 @@ public class InitializationManager {
     public UtilityRepository getUtilityRepo() { return utilityRepo; }
     public FeedbackRepository getFeedbackRepo() { return feedbackRepo; }
     public PickupOrderRepository getPickupOrderRepository() { return pickupOrderRepo; }
+    public EmployeeRepository getEmployeeRepo() { return employeeRepo; }
+    public TrainingProgramRepository getTrainingProgramRepo() { return trainingProgramRepo; }
 
     public Scanner getScanner() { return scanner; }
 

@@ -18,6 +18,16 @@ public class Employee {
         this.storeID = storeID;
     }
 
+    // Constructor with position and department
+    public Employee(String name, int id, Schedule workSchedule, int storeID, String position, String department) {
+        this.name = name;
+        this.id = id;
+        this.workSchedule = workSchedule;
+        this.storeID = storeID;
+        this.position = position;
+        this.department = department;
+    }
+
     // Getters and setters
     public int getId() {
         return id;
