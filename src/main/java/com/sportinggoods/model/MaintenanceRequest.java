@@ -5,6 +5,7 @@ import java.time.Duration;
 
 public class MaintenanceRequest {
     private String requestId;
+    private int storeId;
     private String location;
     private String issueType;
     private String urgency; // Emergency, High Priority, Medium Priority, Low Priority
@@ -12,8 +13,9 @@ public class MaintenanceRequest {
     private String status; // Open, In Progress, Resolved
     private LocalDateTime lastUpdated;
 
-    public MaintenanceRequest(String requestId, String location, String issueType, String urgency, long timeRemaining, String status, LocalDateTime lastUpdated) {
+    public MaintenanceRequest(String requestId, int storeId, String location, String issueType, String urgency, long timeRemaining, String status, LocalDateTime lastUpdated) {
         this.requestId = requestId;
+        this.storeId = storeId;
         this.location = location;
         this.issueType = issueType;
         this.urgency = urgency;
@@ -31,6 +33,14 @@ public class MaintenanceRequest {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public int getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(int storeId) {
+        this.storeId = storeId;
     }
 
     public String getLocation() {
@@ -93,6 +103,7 @@ public class MaintenanceRequest {
     public String toString() {
         return "MaintenanceRequest{" +
                 "Request ID='" + requestId + '\'' +
+                ", Store ID='" + storeId + '\'' +
                 ", Location='" + location + '\'' +
                 ", Issue Type='" + issueType + '\'' +
                 ", Urgency='" + urgency + '\'' +
@@ -104,7 +115,7 @@ public class MaintenanceRequest {
 
 
     public String toCSV() {
-        return requestId + "," + location + "," + issueType + "," + urgency + "," + timeRemaining + "," + status + "," + lastUpdated;
+        return requestId + "," + storeId + "," + location + "," + issueType + "," + urgency + "," + timeRemaining + "," + status + "," + lastUpdated;
     }
 
     public static MaintenanceRequest fromCSV(String csvLine) {
@@ -114,12 +125,13 @@ public class MaintenanceRequest {
         }
         return new MaintenanceRequest(
                 tokens[0],
-                tokens[1],
+                Integer.parseInt(tokens[1]),
                 tokens[2],
                 tokens[3],
-                Long.parseLong(tokens[4]),
-                tokens[5],
-                LocalDateTime.parse(tokens[6])
+                tokens[4],
+                Long.parseLong(tokens[5]),
+                tokens[6],
+                LocalDateTime.parse(tokens[7])
         );
     }
 }
