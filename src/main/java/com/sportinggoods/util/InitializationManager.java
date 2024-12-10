@@ -23,8 +23,7 @@ public class InitializationManager {
     private SupplierController supplierController;
     private UtilityController utilityController;
     private MaintenanceRequestController maintenanceRequestController;
-    private FeedbackController feedbackController; // Added
-    private AppointmentController appointmentController; // Added
+    private AppointmentController appointmentController;
     private FeedbackController feedbackController;
     private EmployeeController employeeController;
     private TrainingProgramController trainingProgramController;
@@ -52,12 +51,8 @@ public class InitializationManager {
     private SupplierOrder supplierOrder;
     private EmployeeList employeeList;
     private Utility utility;
-    private Appointment appointment; // Added
-
-    // Maintenance-related models
-    private MaintenanceRequest maintenanceRequest; // Added
-
-    // Repositories
+    private Appointment appointment;
+    private MaintenanceRequest maintenanceRequest;
     private CashierRepository cashierRepo;
     private CouponRepository couponRepo;
     private CustomerRepository customerRepo;
@@ -163,13 +158,9 @@ public class InitializationManager {
         supplierRepo = new SupplierRepository();
         utilityRepo = new UtilityRepository();
         maintenanceRequestRepo = new MaintenanceRequestRepository();
-        feedbackRepo = new FeedbackRepository(); // Added
+        feedbackRepo = new FeedbackRepository();
         pickupOrderRepo = new PickupOrderRepository(getInventory(1));
-        appointmentRepo = new AppointmentRepository(); // Added
-    }
-
-    // Getters for Controllers
-
+        appointmentRepo = new AppointmentRepository();
         employeeRepo = new EmployeeRepository();
         trainingProgramRepo = new TrainingProgramRepository();
         employeeTrainingRepo = new EmployeeTrainingRepository();
@@ -213,10 +204,6 @@ public class InitializationManager {
     /**
      * Fills maintenance requests with initial data.
      */
-
-    public MaintenanceRequestController getMaintenanceRequestController() {
-        return maintenanceRequestController;
-    }
 
     public MaintenanceRequestController getMaintenanceRequestController() {return maintenanceRequestController;}
     public CashierController getCashierController() { return cashierController; }
