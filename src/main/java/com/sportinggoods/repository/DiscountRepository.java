@@ -2,10 +2,7 @@ package com.sportinggoods.repository;
 
 import com.sportinggoods.model.Discount;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DiscountRepository {
     private List<Discount> discounts = new ArrayList<>();
@@ -23,8 +20,29 @@ public class DiscountRepository {
     }
 
     public void addDiscount(Discount discount, double originalPrice) {
+        // Avoid duplicate store-wide discounts
+        if (discount.getTarget().equalsIgnoreCase("Store-Wide") &&
+            discounts.stream().anyMatch(d -> d.getTarget().equalsIgnoreCase("Store-Wide") &&
+                                             d.getType().equalsIgnoreCase(discount.getType()) &&
+                                             d.getValue() == discount.getValue())) {
+            return; // Skip adding duplicate store-wide discount
+        }
+    
+        // Avoid duplicate department-wide discounts
+        if (!discount.getTarget().equalsIgnoreCase("Store-Wide") &&
+            discounts.stream().anyMatch(d -> d.getTarget().equalsIgnoreCase(discount.getTarget()) &&
+                                             d.getType().equalsIgnoreCase(discount.getType()) &&
+                                             d.getValue() == discount.getValue())) {
+            return; // Skip adding duplicate department-wide discount
+        }
+    
+        // For item-specific discounts, store original prices
+        if (!discount.getTarget().equalsIgnoreCase("Store-Wide") &&
+            !discount.getTarget().equalsIgnoreCase("Department")) {
+            originalPrices.putIfAbsent(discount.getTarget().toLowerCase(), originalPrice); // Normalize key to lowercase
+        }
+    
         discounts.add(discount);
-        originalPrices.putIfAbsent(discount.getTarget(), originalPrice); // Avoid overwriting
         saveDiscountsToFile();
         saveOriginalPricesToFile();
     }
@@ -40,11 +58,28 @@ public class DiscountRepository {
     }
 
     public double restoreOriginalPrice(String target) {
-        if (originalPrices.containsKey(target)) {
-            return originalPrices.get(target);
+        String normalizedTarget = target.toLowerCase(); // Normalize key to lowercase
+        if (originalPrices.containsKey(normalizedTarget)) {
+            return originalPrices.get(normalizedTarget);
         } else {
             throw new IllegalArgumentException("No original price found for target: " + target);
         }
+    }
+
+    public double getStoreWideDiscount() {
+        return discounts.stream()
+                .filter(d -> d.getTarget().equalsIgnoreCase("Store-Wide"))
+                .mapToDouble(Discount::getValue)
+                .findFirst() // Apply only the first store-wide discount
+                .orElse(0);
+    }
+
+    public double getDepartmentDiscount(String department) {
+        return discounts.stream()
+                .filter(d -> d.getTarget().equalsIgnoreCase(department))
+                .mapToDouble(Discount::getValue)
+                .max()
+                .orElse(0);
     }
 
     private void saveDiscountsToFile() {
@@ -62,13 +97,17 @@ public class DiscountRepository {
     private void loadDiscountsFromFile() {
         File file = new File(DISCOUNTS_FILE_PATH);
         if (!file.exists()) return;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(DISCOUNTS_FILE_PATH))) {
+    
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = reader.readLine(); // Skip header
             while ((line = reader.readLine()) != null) {
                 Discount discount = Discount.fromCSV(line);
                 if (discount != null) {
-                    discounts.add(discount);
+                    if (discounts.stream().noneMatch(d -> d.getTarget().equalsIgnoreCase(discount.getTarget()) &&
+                                                          d.getType().equalsIgnoreCase(discount.getType()) &&
+                                                          d.getValue() == discount.getValue())) {
+                        discounts.add(discount);
+                    }
                 }
             }
         } catch (IOException e) {

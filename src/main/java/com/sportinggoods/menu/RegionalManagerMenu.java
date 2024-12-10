@@ -1,7 +1,13 @@
 package com.sportinggoods.menu;
 
+
 import com.sportinggoods.model.Inventory;
 import com.sportinggoods.model.Item;
+import com.sportinggoods.model.Employee;
+import com.sportinggoods.model.EmployeeList;
+import com.sportinggoods.model.Inventory;
+import com.sportinggoods.model.Item;
+import com.sportinggoods.model.Schedule;
 import com.sportinggoods.model.Store;
 import com.sportinggoods.model.Utility;
 import com.sportinggoods.util.InitializationManager;
@@ -78,7 +84,52 @@ public class RegionalManagerMenu extends BaseMenu {
         String address = scanner.nextLine().trim();
         System.out.print("Enter the new store id: ");
         int id = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline left-over from nextInt()
+
+        // Create the store
         Store s = new Store(id, address);
+
+        // Add items to the store
+        while (true) {
+            clearConsole();
+            Inventory i = s.getStoreInventory();
+            System.out.println("Add an item to the store (or type 'exit' to finish): ");
+            System.out.print("Enter item name: ");
+            String itemName = scanner.nextLine().trim();
+            if (itemName.equalsIgnoreCase("exit"))
+                break;
+
+            System.out.print("Enter item quantity: ");
+            int quantity = scanner.nextInt();
+            System.out.print("Enter item price: ");
+            double price = scanner.nextDouble();
+            System.out.print("Enter item department: ");
+            String department = scanner.nextLine();
+
+            Item temp = new Item(itemName, price, department, quantity, id);
+            i.addItem(temp);
+
+            scanner.nextLine(); // Consume the newline
+        }
+
+        // Add employees to the store
+        while (true) {
+            clearConsole();
+            EmployeeList temp = s.getEmployees();
+            System.out.println("Add an employee to the store (or type 'exit' to finish): ");
+            System.out.print("Enter employee Name or exit: ");
+            String employeeName = scanner.nextLine();
+            if (employeeName.equalsIgnoreCase("exit"))
+                break;
+
+            System.out.print("Enter employee ID: ");
+            int employeeId = scanner.nextInt();
+            Employee e = new Employee(employeeName, employeeId, new Schedule(), id);
+            temp.addEmployee(e);
+
+        }
+
+        // Add the store to the store list
         initManager.getRegionalManager().getStoreList().addStore(s);
         initializeBaseInventory(id);
         initManager.getUtilityRepo().addUtility(new Utility("U001", id, "HVAC", "Active", 750.5, LocalDateTime.now(), "09:00-21:00"));
@@ -126,6 +177,17 @@ public class RegionalManagerMenu extends BaseMenu {
         System.out.print("Enter the store id: ");
         int id = scanner.nextInt();
         Store s = new Store(id, address);
+
+        EmployeeList temp = s.getEmployees();
+        for (int i = 0; i < temp.getEmployees().size(); i++) {
+            temp.getEmployees().remove(i);
+        }
+
+        Inventory inventory = s.getStoreInventory();
+        for (int i = 0; i < inventory.getItems().size(); i++) {
+            inventory.getItems().get(i).setQuantity(0);
+        }
+
         list.removeStore(s);
         System.out.println("Store deleted successfully.");
         pause();
