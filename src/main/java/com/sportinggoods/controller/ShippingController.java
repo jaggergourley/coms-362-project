@@ -36,7 +36,7 @@ public class ShippingController {
      * @param customerPhoneNumber
      * @return True when added to the ShippingOrderRespository
      */
-    public boolean handleShippingOrder(String customerFirstName, String customerLastName, Map<Item, Integer> items,
+    public boolean handleShippingOrder(String customerFirstName, int storeId, String customerLastName, Map<Item, Integer> items,
                                        double totalPrice, String shippingAddress, String customerEmail, String customerPhoneNumber){
 
         String orderId = UUID.randomUUID().toString();
@@ -46,6 +46,7 @@ public class ShippingController {
 
         ShippingOrder order = new ShippingOrder(
                 orderId,
+                storeId,
                 customerFirstName,
                 customerLastName,
                 items,
@@ -66,7 +67,7 @@ public class ShippingController {
      * @param i
      * @return True if Shipping Order Repository is updated with the correct status
      */
-    public boolean processShippingOrder(ShippingOrder order, Inventory i){
+    public boolean processShippingOrder(ShippingOrder order, Inventory i, int storeId){
 
         boolean available = false;
         Map<Item, Integer> shippedItems = new HashMap<>();
@@ -114,7 +115,7 @@ public class ShippingController {
 
                         newPrice += Math.round(item.getPrice() * item.getQuantity() * 100.0) / 100.0;  //might need to change
                     }
-                    handleShippingOrder(order.getCustomerFirstName(), order.getCustomerLastName(), unfinishedShippingOrder, newPrice, order.getShippingAddress(), order.getCustomerEmail(), order.getCustomerPhoneNumber());
+                    handleShippingOrder(order.getCustomerFirstName(), storeId, order.getCustomerLastName(), unfinishedShippingOrder, newPrice, order.getShippingAddress(), order.getCustomerEmail(), order.getCustomerPhoneNumber());
                     return orderRepo.updateOrderStatus(order.getOrderId(), "Partially Shipped") && orderRepo.updateOrderQuantity(order.getOrderId(), shippedItems) && orderRepo.updateOrderPrice(order.getOrderId(), shippedItems);
                 }
             }

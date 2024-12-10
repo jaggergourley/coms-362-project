@@ -36,8 +36,6 @@ public class ManagerMenu extends BaseMenu {
 
     private int storeId;
 
-    private int storeId;
-
     /**
      * Constructs a ManagerMenu with the provided InitializationManager and Scanner.
      *
@@ -47,7 +45,6 @@ public class ManagerMenu extends BaseMenu {
     public ManagerMenu(InitializationManager initManager, Scanner scanner, int storeId) {
         super(initManager, scanner);
         this.storeId = storeId;
-        // Initialize controllers and models
         this.cashierController = initManager.getCashierController();
         this.discountController = initManager.getDiscountController();
         this.giftCardController = initManager.getGiftCardController();
@@ -172,7 +169,7 @@ public class ManagerMenu extends BaseMenu {
         System.out.print("Enter Urgency (Emergency, High Priority, Medium Priority, Low Priority): ");
         String urgency = scanner.nextLine().trim();
 
-        boolean success = initManager.getMaintenanceRequestController().createRequest(location, issueType, urgency);
+        boolean success = initManager.getMaintenanceRequestController().createRequest(storeId, location, issueType, urgency);
 
         if (success) {
             System.out.println("Maintenance request created successfully.");
@@ -308,7 +305,7 @@ public class ManagerMenu extends BaseMenu {
         String issue = scanner.nextLine();
 
         utilityController.updateUtilityStatus(utilityId, "Maintenance Requested On: " + LocalDateTime.now());
-        boolean success = initManager.getMaintenanceRequestController().createRequest(utility.getName(), issue, "High Priority");
+        boolean success = initManager.getMaintenanceRequestController().createRequest(storeId, utility.getName(), issue, "High Priority");
 
         if (success) {
             System.out.println("Maintenance request created successfully.");
@@ -821,94 +818,94 @@ public class ManagerMenu extends BaseMenu {
     // Pricing Management
     // ==========================
 
-/**
- * Manager Functionality: Adjust Item Price
- */
-private void adjustPriceMenu() {
-    clearConsole();
-    while (true) {
-        System.out.println("\nAdjust Item Price Menu:");
-        System.out.println("1. Search by Name");
-        System.out.println("2. Search by Department");
-        System.out.println("3. Search by Store ID");
-        System.out.println("4. Back to Manager Menu");
-        System.out.print("Enter your choice: ");
+    /**
+     * Manager Functionality: Adjust Item Price
+     */
+    private void adjustPriceMenu() {
+        clearConsole();
+        while (true) {
+            System.out.println("\nAdjust Item Price Menu:");
+            System.out.println("1. Search by Name");
+            System.out.println("2. Search by Department");
+            System.out.println("3. Search by Store ID");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
 
-        String searchChoice = scanner.nextLine().trim();
-        String criteria = null;
+            String searchChoice = scanner.nextLine().trim();
+            String criteria = null;
 
-        switch (searchChoice) {
-            case "1":
-                criteria = "name";
-                break;
-            case "2":
-                criteria = "department";
-                break;
-            case "3":
-                criteria = "storeid";
-                break;
-            case "4":
-                System.out.println("Returning to Manager Menu.");
+            switch (searchChoice) {
+                case "1":
+                    criteria = "name";
+                    break;
+                case "2":
+                    criteria = "department";
+                    break;
+                case "3":
+                    criteria = "storeid";
+                    break;
+                case "4":
+                    System.out.println("Returning to Manager Menu.");
+                    clearConsole();
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    clearConsole();
+                    continue;
+            }
+
+            System.out.print("Enter the search value: ");
+            String value = scanner.nextLine().trim();
+
+            List<Item> foundItems = pricingController.searchItems(criteria, value);
+
+            if (foundItems.isEmpty()) {
                 clearConsole();
-                return;
-            default:
-                System.out.println("Invalid choice. Please try again.");
-                clearConsole();
-                continue;
-        }
-
-        System.out.print("Enter the search value: ");
-        String value = scanner.nextLine().trim();
-
-        List<Item> foundItems = pricingController.searchItems(criteria, value);
-
-        if (foundItems.isEmpty()) {
-            clearConsole();
-            System.out.println("No items found with the specified criteria. Please try another search.");
-            continue;
-        }
-
-        System.out.println("\nFound Items:");
-        for (int i = 0; i < foundItems.size(); i++) {
-            System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
-        }
-
-        System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
-        int itemIndex;
-        try {
-            itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
-            if (itemIndex == -1) continue; // Return to search menu
-            if (itemIndex < 0 || itemIndex >= foundItems.size()) {
-                clearConsole();
-                System.out.println("Invalid selection. Returning to search menu.");
+                System.out.println("No items found with the specified criteria. Please try another search.");
                 continue;
             }
-        } catch (NumberFormatException e) {
-            clearConsole();
-            System.out.println("Error: Please enter a valid number.");
-            continue;
-        }
 
-        Item selectedItem = foundItems.get(itemIndex);
-        double newPrice = -1;
-        while (newPrice <= 0) {
-            System.out.print("Enter the new price: ");
+            System.out.println("\nFound Items:");
+            for (int i = 0; i < foundItems.size(); i++) {
+                System.out.printf("%d. %s\n", i + 1, foundItems.get(i));
+            }
+
+            System.out.print("Enter the number of the item you want to adjust (or 0 to return to search menu): ");
+            int itemIndex;
             try {
-                newPrice = Double.parseDouble(scanner.nextLine().trim());
-                if (newPrice <= 0) {
-                    System.out.println("Error: Price must be greater than 0. Please try again.");
+                itemIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (itemIndex == -1) continue; // Return to search menu
+                if (itemIndex < 0 || itemIndex >= foundItems.size()) {
+                    clearConsole();
+                    System.out.println("Invalid selection. Returning to search menu.");
+                    continue;
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Error: Invalid price format. Please enter a valid number.");
+                clearConsole();
+                System.out.println("Error: Please enter a valid number.");
+                continue;
             }
-        }
 
-        String result = pricingController.adjustPrice(selectedItem, newPrice);
-        clearConsole();
-        System.out.println(result);
-        break; // Break the loop after adjusting the price
+            Item selectedItem = foundItems.get(itemIndex);
+            double newPrice = -1;
+            while (newPrice <= 0) {
+                System.out.print("Enter the new price: ");
+                try {
+                    newPrice = Double.parseDouble(scanner.nextLine().trim());
+                    if (newPrice <= 0) {
+                        System.out.println("Error: Price must be greater than 0. Please try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: Invalid price format. Please enter a valid number.");
+                }
+            }
+
+            String result = pricingController.adjustPrice(selectedItem, newPrice);
+            clearConsole();
+            System.out.println(result);
+            break; // Break the loop after adjusting the price
+        }
     }
-}
 
     // ==========================
     // Shipping Order Management

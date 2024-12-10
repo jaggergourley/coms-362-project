@@ -14,10 +14,10 @@ public class MaintenanceRequestController {
         this.repository = repository;
     }
 
-    public boolean createRequest(String location, String issueType, String urgency) {
+    public boolean createRequest(int storeId, String location, String issueType, String urgency) {
         long timeRemaining = calculateTimeRemaining(urgency);
         String id = UUID.randomUUID().toString();
-        MaintenanceRequest request = new MaintenanceRequest(id, location, issueType, urgency, timeRemaining, "Open", LocalDateTime.now());
+        MaintenanceRequest request = new MaintenanceRequest(id, storeId, location, issueType, urgency, timeRemaining, "Open", LocalDateTime.now());
         return repository.addRequest(request);
     }
 
