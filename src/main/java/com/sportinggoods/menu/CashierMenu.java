@@ -19,6 +19,7 @@ public class CashierMenu extends BaseMenu {
     private RegisterController registerController;
     private DiscountController discountController;
     private FeedbackController feedbackController;
+    private SecurityController securityController;
 
     // Repositories
     private CouponRepository couponRepository;
@@ -26,6 +27,7 @@ public class CashierMenu extends BaseMenu {
     private DiscountRepository discountRepository;
     private FeedbackRepository feedbackRepository;
     private PickupOrderRepository orderRepository;
+    private SecurityRepository securityRepository;
 
     // Models
     private Inventory inventory;
@@ -56,6 +58,8 @@ public class CashierMenu extends BaseMenu {
         this.feedbackController = initManager.getFeedbackController();
         this.feedbackRepository = initManager.getFeedbackRepo();
         this.orderRepository = initManager.getPickupOrderRepository();
+        this.securityController = initManager.getSecurityController();
+        this.securityRepository = initManager.getSecurityRepo();
     }
 
     @Override
@@ -67,6 +71,7 @@ public class CashierMenu extends BaseMenu {
         invoker.register("5", this::applyCouponMenu);
         invoker.register("6", this::handleOrderPickup);
         invoker.register("7", this::handleFeedback);
+        invoker.register("8", this::reportSecurityIncident);
 
     }
 
@@ -81,12 +86,13 @@ public class CashierMenu extends BaseMenu {
         System.out.println("5. Apply Coupon");
         System.out.println("6. Handle Order Pickup");
         System.out.println("7. Handle Feedback");
-        System.out.println("8. Back to Main Menu");
+        System.out.println("8. Report Security Incident");
+        System.out.println("9. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("8");
+        return choice.equals("9");
     }
 
     @Override
@@ -546,6 +552,26 @@ public class CashierMenu extends BaseMenu {
                     System.out.println("Invalid choice. Please try again.");
             }
         }
+    }
+
+    // ==========================
+    // Security Operations
+    // ==========================
+
+    private void reportSecurityIncident() {
+        clearConsole();
+        System.out.print("Enter incident type (e.g., Theft, Suspicious Behavior): ");
+        String type = scanner.nextLine().trim();
+    
+        System.out.print("Enter location (e.g., Register 1, Aisle 4): ");
+        String location = scanner.nextLine().trim();
+    
+        System.out.print("Enter description: ");
+        String description = scanner.nextLine().trim();
+    
+        securityController.reportIncident(type, description, location);
+        System.out.println("Incident reported successfully.");
+        promptReturn();
     }
 
     // ==========================

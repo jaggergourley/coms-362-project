@@ -27,6 +27,7 @@ public class ManagerMenu extends BaseMenu {
     private UtilityController utilityController;
     private FeedbackController feedbackController;
     private CampaignController campaignController;
+    private SecurityController securityController;
 
 
     // Repositories and Models
@@ -60,6 +61,7 @@ public class ManagerMenu extends BaseMenu {
         this.storeId = storeId;
         this.feedbackController = initManager.getFeedbackController();
         this.campaignController = initManager.getCampaignController();
+        this.securityController = initManager.getSecurityController();
     }
 
     @Override
@@ -80,12 +82,14 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("14", this::generateLowStockRequest);
         invoker.register("15", this::manageFeedback);
         invoker.register("16", this::manageEmployees);
-
+        invoker.register("17", this::manageSecurityIncidents);
     }
 
     @Override
     protected void printMenuOptions() {
         clearConsole();
+        int pendingIncidents = securityController.getPendingIncidents().size(); //Security Notifications
+
         System.out.println("\nManager Menu:");
         System.out.println("1. Coordinate Suppliers");
         System.out.println("2. Place Supplier Order");
@@ -103,12 +107,13 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("14. Generate Low Stock Request");
         System.out.println("15. Manage Feedback");
         System.out.println("16. Manage Employees");
-        System.out.println("17. Back to Main Menu");
+        System.out.println("17. Manage Security Incidents" + (pendingIncidents > 0 ? " [" + pendingIncidents + "]" : ""));
+        System.out.println("18. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("17");
+        return choice.equals("18");
     }
 
     @Override
@@ -1371,6 +1376,103 @@ public class ManagerMenu extends BaseMenu {
                 System.out.println("Invalid date format. Please enter the date in YYYY-MM-DD format.");
             }
         }
+    }
+
+    // ==========================
+    // Security Operations
+    // ==========================
+
+    private void manageSecurityIncidents() {
+        while (true) {
+            clearConsole();
+            System.out.println("\nManage Security Incidents:");
+            System.out.println("1. View Pending Incidents");
+            System.out.println("2. Resolve Incident");
+            System.out.println("3. Escalate Incident");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter your choice: ");
+    
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1":
+                    viewPendingIncidents();
+                    break;
+                case "2":
+                    resolveIncident();
+                    break;
+                case "3":
+                    escalateIncident();
+                    break;
+                case "4":
+                    return; // Exit to Manager Menu
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+    
+    private void viewPendingIncidents() {
+        clearConsole();
+        List<SecurityIncident> pendingIncidents = securityController.getPendingIncidents();
+        if (pendingIncidents.isEmpty()) {
+            System.out.println("No pending incidents.");
+        } else {
+            System.out.println("Pending Security Incidents:");
+            pendingIncidents.forEach(System.out::println);
+        }
+        promptReturn();
+    }
+    
+    private void resolveIncident() {
+        clearConsole();
+        List<SecurityIncident> incidents = securityController.getPendingIncidents();
+        if (incidents.isEmpty()) {
+            System.out.println("No incidents to resolve.");
+            promptReturn();
+            return;
+        }
+    
+        System.out.println("Pending Incidents:");
+        for (int i = 0; i < incidents.size(); i++) {
+            System.out.printf("%d. %s%n", i + 1, incidents.get(i));
+        }
+    
+        System.out.print("\nEnter the number of the incident to resolve: ");
+        int choice = promptForInteger("", 1, incidents.size());
+    
+        SecurityIncident selectedIncident = incidents.get(choice - 1);
+        System.out.print("Enter resolution comments: ");
+        String comments = scanner.nextLine().trim();
+    
+        securityController.updateIncidentStatus(selectedIncident.getIncidentID(), "Resolved", comments);
+        System.out.println("Incident resolved successfully.");
+        promptReturn();
+    }
+    
+    private void escalateIncident() {
+        clearConsole();
+        List<SecurityIncident> incidents = securityController.getPendingIncidents();
+        if (incidents.isEmpty()) {
+            System.out.println("No incidents to escalate.");
+            promptReturn();
+            return;
+        }
+    
+        System.out.println("Pending Incidents:");
+        for (int i = 0; i < incidents.size(); i++) {
+            System.out.printf("%d. %s%n", i + 1, incidents.get(i));
+        }
+    
+        System.out.print("\nEnter the number of the incident to escalate: ");
+        int choice = promptForInteger("", 1, incidents.size());
+    
+        SecurityIncident selectedIncident = incidents.get(choice - 1);
+        System.out.print("Enter escalation comments: ");
+        String comments = scanner.nextLine().trim();
+    
+        securityController.updateIncidentStatus(selectedIncident.getIncidentID(), "Escalated", comments);
+        System.out.println("Incident escalated successfully.");
+        promptReturn();
     }
 
     // ==========================
