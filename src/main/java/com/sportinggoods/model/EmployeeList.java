@@ -7,8 +7,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeeList {
-    private List<Employee> employees;
-    private EmployeeController employeeController;
+    private ArrayList<Employee> employees = new ArrayList<>();
+    private static final String FILE_PATH = "data/employee.csv";
+
+
+    public EmployeeList(int storeID){
+        employees = loadStoreEmployeesFromFile(storeID);
+    }
+
+    public ArrayList<Employee> getEmployees(){
+        return employees;
+    }
 
     public EmployeeList(int storeID) {
         this.employeeController = new EmployeeController(new EmployeeRepository());

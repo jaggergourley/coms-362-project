@@ -59,6 +59,7 @@ public class StoreList {
             Store s = stores.get(i);
             if(s.getAddress().matches(store.getAddress()) && s.getID() == store.getID()){
                 stores.remove(i);
+                storeCount--;
             }
         }
         try {

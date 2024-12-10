@@ -131,12 +131,10 @@ public class InitializationManager {
         
 
         // Add some initial stores
-//         regionalManager.addStore(1, "123 Main Street");
-//         regionalManager.addStore(2, "456 Elm Street");
-//         regionalManager.addStore(3, "789 Maple Avenue");
-//         regionalManager.getStoreList().addStore(new Store(1, "123 Main Street"));
-//         regionalManager.getStoreList().addStore(new Store(2, "456 Elm Street"));
-//         regionalManager.getStoreList().addStore(new Store(3, "789 Maple Avenue"));
+        // regionalManager.getStoreList().addStore(new Store(1, "123 Main Street"));
+        // regionalManager.getStoreList().addStore(new Store(2, "456 Elm Street"));
+        // regionalManager.getStoreList().addStore(new Store(3, "789 Maple Avenue"));
+
     }
 
     /**
