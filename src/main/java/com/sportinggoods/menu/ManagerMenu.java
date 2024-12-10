@@ -28,6 +28,7 @@ public class ManagerMenu extends BaseMenu {
     private FeedbackController feedbackController;
     private EmployeeController employeeController;
     private TrainingProgramController trainingProgramController;
+    private EmployeeTrainingController employeeTrainingController;
 
     // Repositories and Models
     private Employee employee;
@@ -62,6 +63,7 @@ public class ManagerMenu extends BaseMenu {
         this.feedbackController = initManager.getFeedbackController();
         this.employeeController = initManager.getEmployeeController();
         this.trainingProgramController = initManager.getTrainingProgramController();
+        this.employeeTrainingController = initManager.getEmployeeTrainingController();
     }
 
     @Override
@@ -83,7 +85,7 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("15", this::manageFeedback);
         invoker.register("16", this::manageEmployees);
         invoker.register("17", this::manageTrainingPrograms);
-
+        invoker.register("18", this::manageEmployeeTraining);
     }
 
     @Override
@@ -107,12 +109,13 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("15. Manage Feedback");
         System.out.println("16. Manage Employees");
         System.out.println("17. Manage Training Programs");
-        System.out.println("18. Back to Main Menu");
+        System.out.println("18. Manage Employee Training");
+        System.out.println("19. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("18");
+        return choice.equals("19");
     }
 
     @Override
@@ -222,6 +225,44 @@ public class ManagerMenu extends BaseMenu {
             }
         }
     }
+
+    // ==========================
+    // Employee Training Management
+    // ==========================
+
+    private void manageEmployeeTraining() {
+        while (true) {
+            System.out.println("\nEmployee Training Management:");
+            System.out.println("1. Assign Training to Employee");
+            System.out.println("2. View Training Assignments");
+            System.out.println("3. Update Training Status");
+            System.out.println("4. Remove Training Assignment");
+            System.out.println("5. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    employeeTrainingController.assignTrainingToEmployee(storeId);
+                    break;
+                case "2":
+                    employeeTrainingController.viewTrainingAssignmentsByStore(storeId);
+                    break;
+                case "3":
+                    employeeTrainingController.updateTrainingStatus();
+                    break;
+                case "4":
+                    employeeTrainingController.removeTrainingAssignment();
+                    break;
+                case "5":
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
 
     // ==========================
     // Maintenance Requests

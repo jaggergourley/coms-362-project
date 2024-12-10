@@ -90,4 +90,14 @@ public class TrainingProgramController {
             System.out.println("Failed to remove training program. Program ID may not exist.");
         }
     }
+
+    // Get all training programs
+    public List<TrainingProgram> getAllTrainingPrograms() {
+        return trainingProgramRepo.getAllTrainingPrograms();
+    }
+
+    // Get a specific training program by ID
+    public TrainingProgram getTrainingProgramById(int programId) {
+        return trainingProgramRepo.getTrainingProgramById(programId);
+    }
 }

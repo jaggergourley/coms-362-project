@@ -1,102 +1,238 @@
 package com.sportinggoods.controller;
 
+import com.sportinggoods.model.Employee;
 import com.sportinggoods.model.EmployeeTraining;
+import com.sportinggoods.model.TrainingProgram;
 import com.sportinggoods.repository.EmployeeTrainingRepository;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class EmployeeTrainingController {
     private EmployeeTrainingRepository employeeTrainingRepo;
+    private TrainingProgramController trainingProgramController;
+    private EmployeeController employeeController;
+    private Scanner scanner;
 
-    public EmployeeTrainingController(EmployeeTrainingRepository employeeTrainingRepo) {
+    public EmployeeTrainingController(EmployeeTrainingRepository employeeTrainingRepo,
+                                      TrainingProgramController trainingProgramController,
+                                      EmployeeController employeeController,
+                                      Scanner scanner) {
         this.employeeTrainingRepo = employeeTrainingRepo;
+        this.trainingProgramController = trainingProgramController;
+        this.employeeController = employeeController;
+        this.scanner = scanner;
     }
 
-    /**
-     * Assigns a training program to an employee.
-     *
-     * @param assignmentId Unique ID for the training assignment.
-     * @param employeeId   ID of the employee.
-     * @param programId    ID of the training program.
-     * @param status       Status of the assignment (e.g., "Assigned").
-     * @param deadline     Deadline for the training program.
-     * @param storeId      ID of the store the employee belongs to.
-     * @return True if the training is assigned successfully, false otherwise.
-     */
-    public boolean assignTrainingToEmployee(int assignmentId, int employeeId, int programId, String status, String deadline, int storeId) {
-        EmployeeTraining training = new EmployeeTraining(assignmentId, employeeId, programId, status, deadline, storeId);
+    // Assign a training program to an employee
+    public void assignTrainingToEmployee(int storeId) {
+        System.out.println("\nAssign Training to Employee");
 
-        // Check if the training program is already full
-        long assignedCount = getAllEmployeeTrainings().stream()
-                .filter(t -> t.getProgramId() == programId)
-                .count();
-
-        // Optional logic to check training program capacity
-        // Assume we have access to a method getTrainingProgramCapacity(programId)
-        int capacity = getTrainingProgramCapacity(programId); // Mock this logic for now
-        if (assignedCount >= capacity) {
-            System.out.println("Training program is full. Cannot assign more employees.");
-            return false;
+        // List employees in the current store
+        List<Employee> employees = employeeController.getEmployeesByStoreId(storeId);
+        if (employees.isEmpty()) {
+            System.out.println("No employees found for this store.");
+            return;
         }
 
-        return employeeTrainingRepo.addEmployeeTraining(training);
+        System.out.println("\nEmployees in Store " + storeId + ":");
+        employees.forEach(employee -> System.out.println("ID: " + employee.getId() + ", Name: " + employee.getName()));
+
+        // Get employee selection
+        System.out.print("\nEnter the Employee ID to assign: ");
+        int employeeId = Integer.parseInt(scanner.nextLine());
+
+        // Verify employee exists in this store
+        Employee selectedEmployee = employees.stream()
+                .filter(employee -> employee.getId() == employeeId)
+                .findFirst()
+                .orElse(null);
+
+        if (selectedEmployee == null) {
+            System.out.println("Invalid Employee ID. Please select a valid employee.");
+            return;
+        }
+
+        // List available training programs
+        List<TrainingProgram> programs = trainingProgramController.getAllTrainingPrograms();
+        if (programs.isEmpty()) {
+            System.out.println("No training programs available.");
+            return;
+        }
+
+        System.out.println("\nAvailable Training Programs:");
+        programs.forEach(program -> System.out.println("ID: " + program.getProgramId() +
+                ", Title: " + program.getTitle() +
+                ", Capacity: " + program.getCapacity()));
+
+        // Get program selection
+        System.out.print("\nEnter the ID of the training program: ");
+        int programId = Integer.parseInt(scanner.nextLine());
+
+        TrainingProgram selectedProgram = trainingProgramController.getTrainingProgramById(programId);
+        if (selectedProgram == null) {
+            System.out.println("Invalid program ID.");
+            return;
+        }
+
+        // Check program capacity
+        long assignedCount = getAllEmployeeTrainingsByProgramId(programId).size();
+        if (assignedCount >= selectedProgram.getCapacity()) {
+            System.out.println("The selected training program is full.");
+            return;
+        }
+
+        System.out.print("Enter the assignment deadline (YYYY-MM-DD): ");
+        String deadline = scanner.nextLine();
+
+        // Create assignment
+        int assignmentId = employeeTrainingRepo.getAllEmployeeTrainings().size() + 1;
+        EmployeeTraining training = new EmployeeTraining(assignmentId, employeeId, programId,
+                "Assigned", deadline, storeId);
+
+        boolean success = employeeTrainingRepo.addEmployeeTraining(training);
+        if (success) {
+            System.out.println("Training program assigned successfully.");
+        } else {
+            System.out.println("Failed to assign training program.");
+        }
     }
 
-    /**
-     * Updates the status of an employee's training assignment.
-     *
-     * @param assignmentId Unique ID for the training assignment.
-     * @param status       New status of the training (e.g., "In Progress").
-     * @return True if the status is updated successfully, false otherwise.
-     */
-    public boolean updateTrainingStatus(int assignmentId, String status) {
+    // View training assignments by store
+    public void viewTrainingAssignmentsByStore(int storeId) {
+        System.out.println("\nTraining Assignments for Store " + storeId);
+        List<EmployeeTraining> assignments = getAllEmployeeTrainingsByStore(storeId);
+        if (assignments.isEmpty()) {
+            System.out.println("No training assignments found for this store.");
+            return;
+        }
+
+        assignments.forEach(training -> System.out.println("Assignment ID: " + training.getAssignmentId() +
+                ", Employee ID: " + training.getEmployeeId() +
+                ", Program ID: " + training.getProgramId() +
+                ", Status: " + training.getStatus() +
+                ", Deadline: " + training.getDeadline()));
+    }
+
+    // Update training assignment status
+    public void updateTrainingStatus() {
+        System.out.print("\nEnter the Assignment ID to update: ");
+        int assignmentId = Integer.parseInt(scanner.nextLine());
+
         EmployeeTraining training = employeeTrainingRepo.getEmployeeTrainingById(assignmentId);
-        if (training != null) {
-            training.setStatus(status);
-            return employeeTrainingRepo.updateEmployeeTraining(training);
+        if (training == null) {
+            System.out.println("Assignment not found.");
+            return;
         }
-        return false;
+
+        System.out.println("Current Status: " + training.getStatus());
+        System.out.print("Enter new status (Assigned/In Progress/Completed): ");
+        String status = scanner.nextLine();
+
+        training.setStatus(status);
+        boolean success = employeeTrainingRepo.updateEmployeeTraining(training);
+        if (success) {
+            System.out.println("Training assignment updated successfully.");
+        } else {
+            System.out.println("Failed to update training assignment.");
+        }
     }
 
-    /**
-     * Retrieves an employee's training assignment by its ID.
-     *
-     * @param assignmentId The ID of the assignment.
-     * @return The EmployeeTraining object if found, null otherwise.
-     */
-    public EmployeeTraining getEmployeeTrainingById(int assignmentId) {
-        return employeeTrainingRepo.getEmployeeTrainingById(assignmentId);
+    // Remove a training assignment
+    public void removeTrainingAssignment() {
+        System.out.print("\nEnter the Assignment ID to remove: ");
+        int assignmentId = Integer.parseInt(scanner.nextLine());
+
+        boolean success = employeeTrainingRepo.removeEmployeeTraining(assignmentId);
+        if (success) {
+            System.out.println("Training assignment removed successfully.");
+        } else {
+            System.out.println("Failed to remove training assignment.");
+        }
     }
 
-    /**
-     * Retrieves all training assignments.
-     *
-     * @return A list of all training assignments.
-     */
-    public List<EmployeeTraining> getAllEmployeeTrainings() {
-        return employeeTrainingRepo.getAllEmployeeTrainings();
+    // Get all training assignments for a store
+    public List<EmployeeTraining> getAllEmployeeTrainingsByStore(int storeId) {
+        return employeeTrainingRepo.getAllEmployeeTrainings()
+                .stream()
+                .filter(training -> training.getStoreId() == storeId)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Removes a training assignment.
-     *
-     * @param assignmentId The ID of the assignment to remove.
-     * @return True if the assignment is removed successfully, false otherwise.
-     */
-    public boolean removeTrainingAssignment(int assignmentId) {
-        return employeeTrainingRepo.removeEmployeeTraining(assignmentId);
+    // Get all training assignments for a program
+    public List<EmployeeTraining> getAllEmployeeTrainingsByProgramId(int programId) {
+        return employeeTrainingRepo.getAllEmployeeTrainings()
+                .stream()
+                .filter(training -> training.getProgramId() == programId)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Mock function to get the capacity of a training program.
-     *
-     * @param programId The ID of the training program.
-     * @return The capacity of the training program.
-     */
-    private int getTrainingProgramCapacity(int programId) {
-        // This should be replaced with actual logic to get program capacity
-        // Example: TrainingProgramController.getTrainingProgramById(programId).getCapacity();
-        return 10; // Default capacity for demonstration
+    // Allow employees to self-assign to a training program
+    public void assignTrainingToEmployeeForEmployee(int storeId, int employeeId) {
+        System.out.println("\nJoin Training Program");
+
+        // List available training programs
+        List<TrainingProgram> programs = trainingProgramController.getAllTrainingPrograms();
+        if (programs.isEmpty()) {
+            System.out.println("No training programs available.");
+            return;
+        }
+
+        System.out.println("\nAvailable Training Programs:");
+        programs.forEach(program -> System.out.println("ID: " + program.getProgramId() +
+                ", Title: " + program.getTitle() +
+                ", Capacity: " + program.getCapacity()));
+
+        // Get program selection
+        System.out.print("\nEnter the ID of the training program: ");
+        int programId = Integer.parseInt(scanner.nextLine());
+
+        TrainingProgram selectedProgram = trainingProgramController.getTrainingProgramById(programId);
+        if (selectedProgram == null) {
+            System.out.println("Invalid program ID.");
+            return;
+        }
+
+        // Check program capacity
+        long assignedCount = getAllEmployeeTrainingsByProgramId(programId).size();
+        if (assignedCount >= selectedProgram.getCapacity()) {
+            System.out.println("The selected training program is full.");
+            return;
+        }
+
+        System.out.print("Enter the assignment deadline (YYYY-MM-DD): ");
+        String deadline = scanner.nextLine();
+
+        // Create assignment
+        int assignmentId = employeeTrainingRepo.getAllEmployeeTrainings().size() + 1;
+        EmployeeTraining training = new EmployeeTraining(assignmentId, employeeId, programId,
+                "Assigned", deadline, storeId);
+
+        boolean success = employeeTrainingRepo.addEmployeeTraining(training);
+        if (success) {
+            System.out.println("You have successfully joined the training program.");
+        } else {
+            System.out.println("Failed to join the training program.");
+        }
+    }
+
+    // View training assignments for a specific employee
+    public void viewTrainingAssignmentsByEmployee(int employeeId) {
+        System.out.println("\nYour Training Assignments:");
+        List<EmployeeTraining> assignments = employeeTrainingRepo.getAllEmployeeTrainings()
+                .stream()
+                .filter(training -> training.getEmployeeId() == employeeId)
+                .collect(Collectors.toList());
+
+        if (assignments.isEmpty()) {
+            System.out.println("You have no training assignments.");
+            return;
+        }
+
+        assignments.forEach(training -> System.out.println("Assignment ID: " + training.getAssignmentId() +
+                ", Program ID: " + training.getProgramId() +
+                ", Status: " + training.getStatus() +
+                ", Deadline: " + training.getDeadline()));
     }
 }

@@ -22,7 +22,7 @@ public class EmployeeController {
     }
 
     public boolean updateEmployeePosition(int storeId) {
-        // Expanded predefined lists for positions and departments
+        // Predefined lists for positions and departments
         List<String> validPositions = List.of(
                 "Cashier", "Manager", "Stocker", "HR", "Maintenance", "Sales Associate",
                 "Department Specialist", "Inventory Coordinator", "Visual Merchandiser",
@@ -34,7 +34,7 @@ public class EmployeeController {
                 "Equipment", "Footwear", "Accessories", "Maintenance"
         );
 
-        // Step 1: Get employees for the specified store
+        // Get employees for the specified store
         List<Employee> employees = getEmployeesByStoreId(storeId);
         if (employees.isEmpty()) {
             System.out.println("No employees found for this store.");
@@ -47,7 +47,7 @@ public class EmployeeController {
                     ", Position: " + employee.getPosition() + ", Department: " + employee.getDepartment());
         }
 
-        // Step 2: Allow user to select an employee or exit
+        // Allow user to select an employee or exit
         System.out.print("\nEnter the Employee ID to update (or type 'exit' to go back): ");
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine().trim();
@@ -75,7 +75,7 @@ public class EmployeeController {
             return false;
         }
 
-        // Step 3: Show valid positions and departments
+        // Show valid positions and departments
         System.out.println("\nValid Positions:");
         for (String position : validPositions) {
             System.out.println("- " + position);
@@ -86,7 +86,7 @@ public class EmployeeController {
             System.out.println("- " + department);
         }
 
-        // Step 4: Input new position details
+        // Input new position details
         System.out.print("\nEnter the new position: ");
         String newPosition = scanner.nextLine().trim();
         if (!validPositions.contains(newPosition)) {
@@ -101,7 +101,7 @@ public class EmployeeController {
             return false;
         }
 
-        // Step 5: Update employee position and department
+        // Update employee position and department
         employee.setPosition(newPosition);
         employee.setDepartment(newDepartment);
         boolean success = employeeRepo.updateEmployee(employee);

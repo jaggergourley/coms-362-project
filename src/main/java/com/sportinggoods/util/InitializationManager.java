@@ -28,6 +28,7 @@ public class InitializationManager {
     private FeedbackController feedbackController;
     private EmployeeController employeeController;
     private TrainingProgramController trainingProgramController;
+    private EmployeeTrainingController employeeTrainingController;
 
     // Models
     private Cashier cashier;
@@ -72,6 +73,7 @@ public class InitializationManager {
     private PickupOrderRepository pickupOrderRepo;
     private EmployeeRepository employeeRepo;
     private TrainingProgramRepository trainingProgramRepo;
+    private EmployeeTrainingRepository employeeTrainingRepo;
 
     // Scanner for user input
     private Scanner scanner;
@@ -107,6 +109,7 @@ public class InitializationManager {
         feedbackController = new FeedbackController(feedbackRepo);
         employeeController = new EmployeeController(employeeRepo);
         trainingProgramController = new TrainingProgramController(trainingProgramRepo, scanner);
+        employeeTrainingController = new EmployeeTrainingController(employeeTrainingRepo, trainingProgramController, employeeController, scanner);
     }
 
     /**
@@ -132,9 +135,9 @@ public class InitializationManager {
 //         regionalManager.addStore(1, "123 Main Street");
 //         regionalManager.addStore(2, "456 Elm Street");
 //         regionalManager.addStore(3, "789 Maple Avenue");
-         regionalManager.getStoreList().addStore(new Store(1, "123 Main Street"));
-         regionalManager.getStoreList().addStore(new Store(2, "456 Elm Street"));
-         regionalManager.getStoreList().addStore(new Store(3, "789 Maple Avenue"));
+//         regionalManager.getStoreList().addStore(new Store(1, "123 Main Street"));
+//         regionalManager.getStoreList().addStore(new Store(2, "456 Elm Street"));
+//         regionalManager.getStoreList().addStore(new Store(3, "789 Maple Avenue"));
     }
 
     /**
@@ -157,6 +160,7 @@ public class InitializationManager {
         pickupOrderRepo = new PickupOrderRepository(getInventory(1));
         employeeRepo = new EmployeeRepository();
         trainingProgramRepo = new TrainingProgramRepository();
+        employeeTrainingRepo = new EmployeeTrainingRepository();
     }
 
     /**
@@ -227,6 +231,7 @@ public class InitializationManager {
     public FeedbackController getFeedbackController() { return feedbackController; }
     public EmployeeController getEmployeeController() { return employeeController; }
     public TrainingProgramController getTrainingProgramController() { return trainingProgramController; }
+    public EmployeeTrainingController getEmployeeTrainingController() { return employeeTrainingController; }
 
     // Getters for models
     public Cashier getCashier() { return cashier; }
@@ -267,6 +272,7 @@ public class InitializationManager {
     public PickupOrderRepository getPickupOrderRepository() { return pickupOrderRepo; }
     public EmployeeRepository getEmployeeRepo() { return employeeRepo; }
     public TrainingProgramRepository getTrainingProgramRepo() { return trainingProgramRepo; }
+    public EmployeeTrainingRepository getEmployeeTrainingRepo() { return employeeTrainingRepo; }
 
     public Scanner getScanner() { return scanner; }
 
