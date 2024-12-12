@@ -100,18 +100,85 @@ public class CustomerMenu extends BaseMenu {
         String itemName = scanner.nextLine();
         System.out.print("Enter issue: ");
         String issue = scanner.nextLine();
-        System.out.print("Enter preferred appointment time (yyyy-MM-ddTHH:mm): ");
-        LocalDateTime appointmentTime = LocalDateTime.parse(scanner.nextLine());
 
-        boolean success = initManager.getAppointmentController().createAppointment(storeId, customerName, phoneNumber, itemName, issue, appointmentTime);
-        if (success) {
-            System.out.println("Appointment scheduled successfully!");
+        System.out.print("Enter preferred appointment date (yyyy-MM-dd): ");
+        String appointmentDate = scanner.nextLine();
+
+        // Generate all time slots and fetch unavailable slots for the chosen date
+        List<String> timeSlots = generateTimeSlots();
+        List<String> unavailableSlots = initManager.getAppointmentController().getAllAppointments().stream()
+                .filter(a -> a.getAppointmentDate().equals(appointmentDate) && a.getStoreId() == storeId)
+                .map(Appointment::getAppointmentTime)
+                .toList();
+
+        // Display available time slots
+        System.out.println("Available time slots:");
+        for (int i = 0; i < timeSlots.size(); i++) {
+            if (unavailableSlots.contains(timeSlots.get(i))) {
+                System.out.printf("%d. %s (Unavailable)%n", i + 1, timeSlots.get(i));
+            } else {
+                System.out.printf("%d. %s%n", i + 1, timeSlots.get(i));
+            }
+        }
+
+        System.out.print("Select a time slot (enter the number): ");
+        int timeSlotChoice;
+        try {
+            timeSlotChoice = Integer.parseInt(scanner.nextLine()) - 1;
+            if (timeSlotChoice < 0 || timeSlotChoice >= timeSlots.size()) {
+                throw new IndexOutOfBoundsException();
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid time slot selection. Returning to menu.");
+            return;
+        }
+
+        String chosenTime = timeSlots.get(timeSlotChoice);
+
+        if (unavailableSlots.contains(chosenTime)) {
+            // Handle conflict: Offer waitlist or new time slot selection
+            System.out.print("The selected time is unavailable. Would you like to join the waitlist? (yes/no): ");
+            String waitlistChoice = scanner.nextLine().trim();
+
+            if (waitlistChoice.equalsIgnoreCase("yes")) {
+                boolean addedToWaitlist = initManager.getAppointmentController().addToWaitlist(
+                        storeId, customerName, phoneNumber, itemName, issue);
+                if (addedToWaitlist) {
+                    System.out.println("You have been added to the waitlist.");
+                } else {
+                    System.out.println("Failed to add to the waitlist. Please try again later.");
+                }
+            } else {
+                System.out.println("Returning to menu. Please try scheduling a different time.");
+            }
         } else {
-            System.out.println("Failed to schedule appointment. Joining the waitlist...");
-            initManager.getAppointmentController().addToWaitlist(storeId, customerName, phoneNumber, itemName, issue);
-            System.out.println("Added to waitlist.");
+            // Attempt to schedule the appointment
+            boolean success = initManager.getAppointmentController().createAppointment(
+                    storeId, customerName, phoneNumber, itemName, issue, appointmentDate, chosenTime);
+
+            if (success) {
+                System.out.println("Appointment scheduled successfully!");
+            } else {
+                System.out.println("Failed to schedule appointment. Please try again.");
+            }
         }
     }
+
+
+    private List<String> generateTimeSlots() {
+        List<String> timeSlots = new ArrayList<>();
+        int startHour = 9; // 9 AM
+        int endHour = 17; // 5 PM
+
+        for (int hour = startHour; hour < endHour; hour++) {
+            timeSlots.add(String.format("%02d:00", hour));
+            timeSlots.add(String.format("%02d:30", hour));
+        }
+
+        return timeSlots;
+    }
+
+
 
     /**
      * Initiates the purchase process for a customer.
