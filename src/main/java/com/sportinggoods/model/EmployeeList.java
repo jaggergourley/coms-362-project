@@ -1,81 +1,63 @@
 package com.sportinggoods.model;
 
-import com.sportinggoods.controller.EmployeeController;
 import com.sportinggoods.repository.EmployeeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeeList {
-    private ArrayList<Employee> employees = new ArrayList<>();
-    private static final String FILE_PATH = "data/employee.csv";
+    private int storeId;
+    private List<Employee> employees;
 
-
-    public EmployeeList(int storeID){
-        employees = loadStoreEmployeesFromFile(storeID);
+    public EmployeeList(int storeId) {
+        this.storeId = storeId;
+        this.employees = loadEmployeesByStore(storeId);
     }
 
-    public ArrayList<Employee> getEmployees(){
-        return employees;
-    }
-
-    public EmployeeList(int storeID) {
-        this.employeeController = new EmployeeController(new EmployeeRepository());
-        this.employees = filterEmployeesByStore(storeID);
-    }
-
-    private List<Employee> filterEmployeesByStore(int storeID) {
-        List<Employee> allEmployees = employeeController.getAllEmployees();
-        List<Employee> filteredEmployees = new ArrayList<>();
-        for (Employee e : allEmployees) {
-            if (e.getStoreId() == storeID) {
-                filteredEmployees.add(e);
+    private List<Employee> loadEmployeesByStore(int storeId) {
+        EmployeeRepository repository = new EmployeeRepository(); // Singleton or DI could improve this.
+        List<Employee> allEmployees = repository.getAllEmployees();
+        List<Employee> storeEmployees = new ArrayList<>();
+        for (Employee employee : allEmployees) {
+            if (employee.getStoreId() == storeId) {
+                storeEmployees.add(employee);
             }
         }
-        return filteredEmployees;
+        return storeEmployees;
     }
 
     public List<Employee> getEmployees() {
-        return employees;
+        return new ArrayList<>(employees);
     }
 
-    public Employee getEmployee(String name, int storeID) {
-        for (Employee e : employees) {
-            if (e.getName().equalsIgnoreCase(name) && e.getStoreId() == storeID) {
-                return e;
-            }
+    public boolean addEmployee(Employee employee) {
+        if (employee.getStoreId() != storeId) {
+            System.out.println("Employee store ID mismatch. Cannot add to this store.");
+            return false;
         }
-        return null;
-    }
 
-    public void addEmployee(Employee employee) {
-        if (!employees.contains(employee)) {
-            if (employeeController.addEmployee(
-                    employee.getName(),
-                    employee.getId(),
-                    employee.getStoreId(),
-                    employee.getPosition(),
-                    employee.getDepartment())) {
-                employees.add(employee);
-                System.out.println("Employee added successfully.");
-            } else {
-                System.out.println("Failed to add employee. Duplicate ID or other issue.");
-            }
+        EmployeeRepository repository = new EmployeeRepository();
+        if (repository.addEmployee(employee)) {
+            employees.add(employee);
+            return true;
         }
+        return false;
     }
 
-    public void removeEmployee(String name, int id) {
-        Employee toRemove = getEmployee(name, id);
+    public boolean removeEmployee(int employeeId) {
+        Employee toRemove = employees.stream()
+                .filter(emp -> emp.getId() == employeeId)
+                .findFirst()
+                .orElse(null);
+
         if (toRemove != null) {
-            if (employeeController.removeEmployee(id)) {
+            EmployeeRepository repository = new EmployeeRepository();
+            if (repository.removeEmployee(employeeId)) {
                 employees.remove(toRemove);
-                System.out.println("Employee removed successfully.");
-            } else {
-                System.out.println("Failed to remove employee. Employee may not exist.");
+                return true;
             }
-        } else {
-            System.out.println("Employee not found in the list.");
         }
+        return false;
     }
 
     public void printEmployeeList() {
@@ -83,7 +65,8 @@ public class EmployeeList {
             System.out.println("No employees found for this store.");
         } else {
             for (Employee e : employees) {
-                System.out.println(e.getName() + " - ID: " + e.getId() + " - Position: " + e.getPosition());
+                System.out.println("ID: " + e.getId() + ", Name: " + e.getName()
+                        + ", Position: " + e.getPosition() + ", Department: " + e.getDepartment());
             }
         }
     }
