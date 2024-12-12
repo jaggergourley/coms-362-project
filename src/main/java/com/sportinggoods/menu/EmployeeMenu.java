@@ -21,6 +21,8 @@ public class EmployeeMenu extends BaseMenu {
     // Controllers
     private CashierController cashierController;
     private ShippingController shippingController;
+    private EmployeeTrainingController employeeTrainingController;
+    private EmployeeController employeeController;
 
     // Repositories and Models
     private Employee employee;
@@ -45,6 +47,8 @@ public class EmployeeMenu extends BaseMenu {
         this.shippingRepo = initManager.getShippingOrderRepo();
         this.inventory = initManager.getInventory(storeId);
         this.employee = initManager.getEmployee();
+        this.employeeTrainingController = initManager.getEmployeeTrainingController();
+        this.employeeController = initManager.getEmployeeController();
     }
 
     @Override
@@ -53,6 +57,8 @@ public class EmployeeMenu extends BaseMenu {
         invoker.register("2", this::processAndSendShipment);
         invoker.register("3", this::restockDepartmentItems);
         invoker.register("4", this::viewLowStockRequests);
+        invoker.register("5", this::joinTrainingProgram);
+        invoker.register("6", this::viewMyTrainingAssignments);
 
     }
 
@@ -64,17 +70,67 @@ public class EmployeeMenu extends BaseMenu {
         System.out.println("2. Process Shipping Orders");
         System.out.println("3. Restock Department Items");
         System.out.println("4. View Low Stock Requests");
-        System.out.println("5. Back to Main Menu");
+        System.out.println("5. Join Training Program");
+        System.out.println("6. View My Training Assignments");
+        System.out.println("7. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("5");
+        return choice.equals("7");
     }
 
     @Override
     protected void handleExit() {
         System.out.println("Returning to Main Menu...");
+    }
+
+    // ==========================
+    // Employee Training Management
+    // ==========================
+
+    private void joinTrainingProgram() {
+        System.out.println("\nJoin Training Program");
+
+        System.out.print("Enter your Employee ID: ");
+        int employeeId = Integer.parseInt(scanner.nextLine());
+
+        // Validate employee belongs to the current store
+        List<Employee> employees = employeeController.getEmployeesByStoreId(storeId);
+        Employee employee = employees.stream()
+                .filter(e -> e.getId() == employeeId)
+                .findFirst()
+                .orElse(null);
+
+        if (employee == null) {
+            System.out.println("You are not associated with this store. Please contact your manager.");
+            return;
+        }
+
+        // Call the existing assignTrainingToEmployee method but for the current employee
+        employeeTrainingController.assignTrainingToEmployeeForEmployee(storeId, employeeId);
+    }
+
+    private void viewMyTrainingAssignments() {
+        System.out.println("\nView My Training Assignments");
+
+        System.out.print("Enter your Employee ID: ");
+        int employeeId = Integer.parseInt(scanner.nextLine());
+
+        // Validate employee belongs to the current store
+        List<Employee> employees = employeeController.getEmployeesByStoreId(storeId);
+        Employee employee = employees.stream()
+                .filter(e -> e.getId() == employeeId)
+                .findFirst()
+                .orElse(null);
+
+        if (employee == null) {
+            System.out.println("You are not associated with this store. Please contact your manager.");
+            return;
+        }
+
+        // View the employee's training assignments
+        employeeTrainingController.viewTrainingAssignmentsByEmployee(employeeId);
     }
 
     // ==========================
@@ -136,7 +192,7 @@ public class EmployeeMenu extends BaseMenu {
     private void processAndSendShipment() {
         System.out.println("\nProcess and Send Shipment:");
 
-        List<ShippingOrder> orders = shippingRepo.getAllShippingOrders();
+        List<ShippingOrder> orders = shippingRepo.getAllShippingOrdersByStoreId(storeId);
         List<ShippingOrder> confirmedOrders = orders.stream()
                 .filter(order -> "Confirmed".equalsIgnoreCase(order.getStatus()))
                 .collect(Collectors.toList());

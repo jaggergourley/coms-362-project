@@ -5,4 +5,3 @@ receiptId,customerId,itemsDetails,totalCost,date
 10,1,"Tennis Racket: 2 x $100.0 each",-200.0,2024-12-02
 11,-1,"Basketball: 2 x $25.0",50.0,2024-12-02
 12,-1,"Tennis Racket: 1 x $100.0",100.0,2024-12-03
-13,-1,"Baseball Glove: 1 x $45.0 each",45.0,2024-12-03

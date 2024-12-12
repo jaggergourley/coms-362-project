@@ -6,6 +6,7 @@ import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ public class CustomerMenu extends BaseMenu {
 
     // Repositories and Models
     private Inventory inventory;
+    private int storeId;
     private ReceiptRepository receiptRepo;
     private static String appliedCouponCode = null;
     private Employee employee;
@@ -41,6 +43,7 @@ public class CustomerMenu extends BaseMenu {
                 initManager.getCashier(), initManager.getInventory(storeId), initManager.getRegisterController(),
                 initManager.getReceiptRepo(), initManager.getCouponRepo()
         );
+        this.storeId = storeId;
         this.shippingController = initManager.getShippingController();
         this.inventory = initManager.getInventory(storeId);
         this.receiptRepo = initManager.getReceiptRepo();
@@ -56,6 +59,7 @@ public class CustomerMenu extends BaseMenu {
         invoker.register("4", this::placePickupOrder); // Placing a pickup order
         invoker.register("5", this::orderPickup);
         invoker.register("6", this::provideFeedback);
+        invoker.register("7", this::scheduleAppointment);
     }
 
     @Override
@@ -68,12 +72,13 @@ public class CustomerMenu extends BaseMenu {
         System.out.println("4. Place Order for Pickup");
         System.out.println("5. Pickup Order");
         System.out.println("6. Provide Feedback");
-        System.out.println("7. Back to Main Menu");
+        System.out.println("7. Schedule Appointment");
+        System.out.println("8. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("7");
+        return choice.equals("8");
     }
 
     @Override
@@ -84,6 +89,29 @@ public class CustomerMenu extends BaseMenu {
     // ==========================
     // Shopping Operations
     // ==========================
+
+
+    private void scheduleAppointment() {
+        System.out.print("Enter your name: ");
+        String customerName = scanner.nextLine();
+        System.out.print("Enter your phone number: ");
+        String phoneNumber = scanner.nextLine();
+        System.out.print("Enter item name: ");
+        String itemName = scanner.nextLine();
+        System.out.print("Enter issue: ");
+        String issue = scanner.nextLine();
+        System.out.print("Enter preferred appointment time (yyyy-MM-ddTHH:mm): ");
+        LocalDateTime appointmentTime = LocalDateTime.parse(scanner.nextLine());
+
+        boolean success = initManager.getAppointmentController().createAppointment(storeId, customerName, phoneNumber, itemName, issue, appointmentTime);
+        if (success) {
+            System.out.println("Appointment scheduled successfully!");
+        } else {
+            System.out.println("Failed to schedule appointment. Joining the waitlist...");
+            initManager.getAppointmentController().addToWaitlist(storeId, customerName, phoneNumber, itemName, issue);
+            System.out.println("Added to waitlist.");
+        }
+    }
 
     /**
      * Initiates the purchase process for a customer.
@@ -166,20 +194,20 @@ public class CustomerMenu extends BaseMenu {
                 continue;
             }
 
-            if (!inventory.checkAvailability(selectedItem.getName(), orderQuantity)) {
-                System.out.println("Insufficient quantity in inventory. Please enter a valid quantity.");
-                continue;
-            }
+//            if (!inventory.checkAvailability(selectedItem.getName(), orderQuantity)) {
+//                System.out.println("Insufficient quantity in inventory. Please enter a valid quantity.");
+//                continue;
+//            }
 
             Item newItem = new Item(selectedItem.getName(), selectedItem.getPrice(), selectedItem.getDepartment(), orderQuantity, selectedItem.getStoreID());
             items.put(newItem, orderQuantity);
             totalPrice += Math.round(selectedItem.getPrice() * orderQuantity * 100.0) / 100.0;
             System.out.println("Added " + orderQuantity + " of " + selectedItem.getName() + " to the order.");
         }
-
+        System.out.println(storeId);
         // Create and handle the shipping order
         boolean orderCreated = shippingController.handleShippingOrder(
-                customerFirstName, customerLastName, items, totalPrice, shippingAddress, customerEmail, customerPhoneNumber
+                customerFirstName, storeId, customerLastName, items, totalPrice, shippingAddress, customerEmail, customerPhoneNumber
         );
 
         if (orderCreated) {

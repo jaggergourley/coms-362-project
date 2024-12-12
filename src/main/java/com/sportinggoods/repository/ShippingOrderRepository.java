@@ -15,8 +15,7 @@ public class ShippingOrderRepository {
     private final String filePath = "data/shippingOrder.csv";
 
     public ShippingOrderRepository() {
-        // Initialize the shippingOrder.csv file with headers if it doesn't exist
-        FileUtils.initializeFile(filePath, "orderId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status");
+        FileUtils.initializeFile(filePath, "orderId,storeId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status");
     }
 
     /**
@@ -40,26 +39,26 @@ public class ShippingOrderRepository {
      */
     public boolean updateOrderStatus(String orderId, String status) {
         List<ShippingOrder> orders = getAllShippingOrders();
+        boolean found = false;
 
-        ShippingOrder order = getOrderById(orderId);
-        order.setStatus(status);
+        for (ShippingOrder order : orders) {
+            if (order.getOrderId().equals(orderId)) {
+                order.setStatus(status);
+                found = true;
+                break;
+            }
+        }
 
-//        for (ShippingOrder order : orders) {
-//            if (order.getOrderId().equals(orderId)) {
-//                order.setStatus(status);
-//                found = true;
-//                break;
-//            }
-//        }
-
-        return saveOrdersToFile(orders);
+        if (found) {
+            return saveOrdersToFile(orders);
+        }
+        return false;
     }
 
     /**
      * Updates the quantity of an existing shipping order.
      *
      * @param orderId The ID of the order to update.
-     * @param status  The new status.
      * @return True if updated successfully, false if order not found.
      */
     public boolean updateOrderQuantity(String orderId, Map<Item, Integer> items) {
@@ -76,7 +75,6 @@ public class ShippingOrderRepository {
      * Updates the price of an existing shipping order.
      *
      * @param orderId The ID of the order to update.
-     * @param status  The new status.
      * @return True if updated successfully, false if order not found.
      */
     public boolean updateOrderPrice(String orderId, Map<Item, Integer> items) {
@@ -130,6 +128,19 @@ public class ShippingOrderRepository {
         return orders;
     }
 
+    public List<ShippingOrder> getAllShippingOrdersByStoreId(int storeId) {
+        List<ShippingOrder> orders = new ArrayList<>();
+        List<String> lines = FileUtils.readAllLines(filePath);
+        for (String line : lines) {
+            ShippingOrder order = ShippingOrder.fromCSV(line);
+            if (order != null && order.getStoreId() == storeId) {
+                orders.add(order);
+            }
+        }
+        return orders;
+    }
+
+
     /**
      * Deletes a shipping order by its ID.
      *
@@ -151,7 +162,7 @@ public class ShippingOrderRepository {
     public boolean saveOrdersToFile(List<ShippingOrder> orders) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             // Write the CSV header
-            writer.write("orderId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status");
+            writer.write("orderId,storeId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status");
             writer.newLine();
 
             // Write each order to the file

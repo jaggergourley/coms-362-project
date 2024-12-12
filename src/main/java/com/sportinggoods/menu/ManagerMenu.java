@@ -5,7 +5,6 @@ import com.sportinggoods.model.*;
 import com.sportinggoods.repository.*;
 import com.sportinggoods.util.InitializationManager;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -26,7 +25,9 @@ public class ManagerMenu extends BaseMenu {
     private SupplierController supplierController;
     private UtilityController utilityController;
     private FeedbackController feedbackController;
-    private CampaignController campaignController;
+    private EmployeeController employeeController;
+    private TrainingProgramController trainingProgramController;
+    private EmployeeTrainingController employeeTrainingController;    private CampaignController campaignController;
     private SecurityController securityController;
 
 
@@ -60,6 +61,9 @@ public class ManagerMenu extends BaseMenu {
         this.employeeList = initManager.getEmployeeList();
         this.storeId = storeId;
         this.feedbackController = initManager.getFeedbackController();
+        this.employeeController = initManager.getEmployeeController();
+        this.trainingProgramController = initManager.getTrainingProgramController();
+        this.employeeTrainingController = initManager.getEmployeeTrainingController();
         this.campaignController = initManager.getCampaignController();
         this.securityController = initManager.getSecurityController();
     }
@@ -82,7 +86,9 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("14", this::generateLowStockRequest);
         invoker.register("15", this::manageFeedback);
         invoker.register("16", this::manageEmployees);
-        invoker.register("17", this::manageSecurityIncidents);
+        invoker.register("17", this::manageTrainingPrograms);
+        invoker.register("18", this::manageEmployeeTraining);        
+        invoker.register("19", this::manageSecurityIncidents);
     }
 
     @Override
@@ -107,19 +113,162 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("14. Generate Low Stock Request");
         System.out.println("15. Manage Feedback");
         System.out.println("16. Manage Employees");
-        System.out.println("17. Manage Security Incidents" + (pendingIncidents > 0 ? " [" + pendingIncidents + "]" : ""));
-        System.out.println("18. Back to Main Menu");
+        System.out.println("17. Manage Training Programs");
+        System.out.println("18. Manage Employee Training");
+        System.out.println("19. Manage Security Incidents" + (pendingIncidents > 0 ? " [" + pendingIncidents + "]" : ""));
+        System.out.println("20. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("18");
+        return choice.equals("20");
     }
 
     @Override
     protected void handleExit() {
         System.out.println("Returning to Main Menu...");
     }
+
+    // ==========================
+    // Employee Management
+    // ==========================
+
+    private void manageEmployees() {
+        while (true) {
+            System.out.println("\nEmployee Management:");
+            System.out.println("1. Add employee");
+            System.out.println("2. Remove employee");
+            System.out.println("3. Update employee position");
+            System.out.println("4. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    System.out.print("Enter name of employee to add: ");
+                    String name = scanner.nextLine();
+                    System.out.print("Enter ID of employee to add: ");
+                    int id = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Enter position: ");
+                    String position = scanner.nextLine();
+                    System.out.print("Enter department: ");
+                    String department = scanner.nextLine();
+
+                    Employee newEmployee = new Employee(name, id, new Schedule(), storeId);
+                    newEmployee.setPosition(position);
+                    newEmployee.setDepartment(department);
+
+                    boolean added = employeeController.addEmployee(name, id, storeId, position, department);
+                    if (added) {
+                        System.out.println("Employee added successfully!");
+                    } else {
+                        System.out.println("Failed to add employee. ID may already exist.");
+                    }
+                    break;
+
+                case "2":
+                    System.out.print("Enter the ID of employee to remove: ");
+                    int removeId = Integer.parseInt(scanner.nextLine());
+
+                    boolean removed = employeeController.removeEmployee(removeId);
+                    if (removed) {
+                        System.out.println("Employee removed successfully!");
+                    } else {
+                        System.out.println("Failed to remove employee. ID may not exist.");
+                    }
+                    break;
+
+                case "3":
+                    boolean updated = employeeController.updateEmployeePosition(this.storeId);
+                    if (!updated) {
+                        System.out.println("Failed to update employee position.");
+                    }
+                    break;
+
+                case "4":
+                    return;
+
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+    // ==========================
+    // Training Program Management
+    // ==========================
+
+    private void manageTrainingPrograms() {
+        while (true) {
+            System.out.println("\nTraining Program Management:");
+            System.out.println("1. Add a new training program");
+            System.out.println("2. View all training programs");
+            System.out.println("3. Update an existing training program");
+            System.out.println("4. Remove a training program");
+            System.out.println("5. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    trainingProgramController.addTrainingProgram();
+                    break;
+                case "2":
+                    trainingProgramController.viewAllTrainingPrograms();
+                    break;
+                case "3":
+                    trainingProgramController.updateTrainingProgram();
+                    break;
+                case "4":
+                    trainingProgramController.removeTrainingProgram();
+                    break;
+                case "5":
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+    // ==========================
+    // Employee Training Management
+    // ==========================
+
+    private void manageEmployeeTraining() {
+        while (true) {
+            System.out.println("\nEmployee Training Management:");
+            System.out.println("1. Assign Training to Employee");
+            System.out.println("2. View Training Assignments");
+            System.out.println("3. Update Training Status");
+            System.out.println("4. Remove Training Assignment");
+            System.out.println("5. Back to Manager Menu");
+            System.out.print("Enter choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    employeeTrainingController.assignTrainingToEmployee(storeId);
+                    break;
+                case "2":
+                    employeeTrainingController.viewTrainingAssignmentsByStore(storeId);
+                    break;
+                case "3":
+                    employeeTrainingController.updateTrainingStatus();
+                    break;
+                case "4":
+                    employeeTrainingController.removeTrainingAssignment();
+                    break;
+                case "5":
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
 
     // ==========================
     // Maintenance Requests
@@ -153,7 +302,7 @@ public class ManagerMenu extends BaseMenu {
 
     private void viewMaintenanceRequests() {
         clearConsole();
-        List<MaintenanceRequest> requests = initManager.getMaintenanceRequestController().getAllRequests();
+        List<MaintenanceRequest> requests = initManager.getMaintenanceRequestController().getAllRequests(storeId);
 
         if (requests.isEmpty()) {
             System.out.println("\nNo maintenance requests found.");
@@ -187,40 +336,43 @@ public class ManagerMenu extends BaseMenu {
     }
 
     // ==========================
-    // Utility Management
-    // ==========================
-
-    private void manageBuildingUtilities() { //adam added
+// Utility Management
+// ==========================
+    private void manageBuildingUtilities() {
         while (true) {
             clearConsole();
             System.out.println("\nManage Building Utilities:");
-            System.out.println("1. Run Status Check");
-            System.out.println("2. Adjust Utility Settings");
-            System.out.println("3. Set Automated Schedules");
-            System.out.println("4. Schedule Maintenance");
-            System.out.println("5. Apply Seasonal Preset");
-            System.out.println("6. Back to Manager Menu");
+            System.out.println("1. View All Utilities");
+            System.out.println("2. Run Status Check");
+            System.out.println("3. Adjust Utility Settings");
+            System.out.println("4. Set Automated Schedules");
+            System.out.println("5. Schedule Maintenance");
+            System.out.println("6. Apply Seasonal Preset");
+            System.out.println("7. Back to Manager Menu");
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine().trim();
 
             switch (choice) {
                 case "1":
-                    runStatusCheck();
+                    viewAllUtilities();
                     break;
                 case "2":
-                    adjustUtilitySettings();
+                    runStatusCheck();
                     break;
                 case "3":
-                    setAutomatedSchedules();
+                    adjustUtilitySettings();
                     break;
                 case "4":
-                    scheduleMaintenance();
+                    setAutomatedSchedules();
                     break;
                 case "5":
-                    applySeasonalPreset();
+                    scheduleUtilityMaintenance();
                     break;
                 case "6":
+                    applySeasonalPreset();
+                    break;
+                case "7":
                     return; // Exit to Manager Menu
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -228,46 +380,59 @@ public class ManagerMenu extends BaseMenu {
         }
     }
 
-    private void runStatusCheck() {
-        List<Utility> utilities = utilityController.getAllUtilities();
+    private void viewAllUtilities() {
+        clearConsole();
+        List<Utility> utilities = utilityController.getUtilitiesByStoreId(storeId);
 
         if (utilities.isEmpty()) {
-            System.out.println("\nNo utilities found.");
+            System.out.println("\nNo utilities found for this store.");
         } else {
-            System.out.println("\nBuilding Utilities Status Report:");
-            utilities.forEach(utility -> {
-                System.out.println(utility);
-
-                // Simulate abnormality detection
-                if ("Outage".equalsIgnoreCase(utility.getStatus())) {
-                    System.out.println("Alert: Outage reported for " + utility.getName());
-                }
-                if (utility.getEnergyConsumption() > 1000) { // Example threshold
-                    System.out.println("Alert: High energy consumption for " + utility.getName());
-                }
-            });
+            System.out.println("\nBuilding Utilities:");
+            utilities.forEach(System.out::println);
         }
+        promptReturn();
+    }
+
+    private void runStatusCheck() {
+        List<Utility> utilities = utilityController.getUtilitiesByStoreId(storeId);
+
+        if (utilities.isEmpty()) {
+            System.out.println("\nNo utilities found for this store.");
+            return;
+        }
+
+        System.out.println("\nBuilding Utilities Status Report:");
+        utilities.forEach(utility -> {
+            System.out.println(utility);
+            if ("Outage".equalsIgnoreCase(utility.getStatus())) {
+                System.out.println("Alert: Outage reported for " + utility.getName());
+            }
+            if (utility.getEnergyConsumption() > 1000) { // Example threshold
+                System.out.println("Alert: High energy consumption for " + utility.getName());
+            }
+        });
         promptReturn();
     }
 
     private void adjustUtilitySettings() {
         System.out.print("Enter Utility ID to adjust: ");
-        String utilityId = scanner.nextLine();
+        String utilityId = scanner.nextLine().trim();
 
-        Utility utility = utilityController.getUtilityById(utilityId);
+        Utility utility = utilityController.getUtilityByIdAndStoreId(utilityId, storeId);
 
         if (utility == null) {
-            System.out.println("Utility not found.");
+            System.out.println("Utility not found for this store.");
+            promptReturn();
             return;
         }
 
         System.out.print("Enter new status (Active/Inactive/Outage): ");
-        String status = scanner.nextLine();
+        String status = scanner.nextLine().trim();
 
         double energyConsumption = promptForDouble("Enter new energy consumption (kWh): ", 0.0, Double.MAX_VALUE);
 
-        boolean statusUpdated = utilityController.updateUtilityStatus(utilityId, status);
-        boolean energyUpdated = utilityController.updateEnergyConsumption(utilityId, energyConsumption);
+        boolean statusUpdated = utilityController.updateUtilityStatus(utilityId, storeId, status);
+        boolean energyUpdated = utilityController.updateEnergyConsumption(utilityId, storeId, energyConsumption);
 
         if (statusUpdated && energyUpdated) {
             System.out.println("Utility settings updated successfully.");
@@ -279,42 +444,47 @@ public class ManagerMenu extends BaseMenu {
 
     private void setAutomatedSchedules() {
         System.out.print("Enter Utility ID to set schedule: ");
-        String utilityId = scanner.nextLine();
+        String utilityId = scanner.nextLine().trim();
 
-        Utility utility = utilityController.getUtilityById(utilityId);
+        Utility utility = utilityController.getUtilityByIdAndStoreId(utilityId, storeId);
 
         if (utility == null) {
-            System.out.println("Utility not found.");
+            System.out.println("Utility not found for this store.");
+            promptReturn();
             return;
         }
 
         System.out.print("Enter store hours (e.g., 09:00-21:00): ");
-        String schedule = scanner.nextLine();
-        utilityController.updateSchedule(utilityId, schedule);
+        String schedule = scanner.nextLine().trim();
 
-        // Simulate storing the schedule (extend Utility model for actual storage)
-        System.out.println("Schedule set for " + utility.getName() + ": " + schedule);
+        boolean scheduleUpdated = utilityController.updateSchedule(utilityId, storeId, schedule);
+
+        if (scheduleUpdated) {
+            System.out.println("Schedule set for " + utility.getName() + ": " + schedule);
+        } else {
+            System.out.println("Failed to update the schedule.");
+        }
         promptReturn();
     }
 
-    private void scheduleMaintenance() {
+    private void scheduleUtilityMaintenance() {
         System.out.print("Enter Utility ID to schedule maintenance: ");
-        String utilityId = scanner.nextLine();
+        String utilityId = scanner.nextLine().trim();
 
-        Utility utility = utilityController.getUtilityById(utilityId);
+        Utility utility = utilityController.getUtilityByIdAndStoreId(utilityId, storeId);
 
         if (utility == null) {
-            System.out.println("Utility not found.");
+            System.out.println("Utility not found for this store.");
+            promptReturn();
             return;
         }
 
         System.out.print("Enter Issue: ");
-        String issue = scanner.nextLine();
+        String issue = scanner.nextLine().trim();
 
-        utilityController.updateUtilityStatus(utilityId, "Maintenance Requested On: " + LocalDateTime.now());
-        boolean success = initManager.getMaintenanceRequestController().createRequest(storeId, utility.getName(), issue, "High Priority");
+        boolean maintenanceRequested = utilityController.scheduleMaintenance(utilityId, storeId, issue);
 
-        if (success) {
+        if (maintenanceRequested) {
             System.out.println("Maintenance request created successfully.");
         } else {
             System.out.println("Failed to create maintenance request.");
@@ -326,26 +496,12 @@ public class ManagerMenu extends BaseMenu {
         System.out.print("Enter season (Winter/Summer): ");
         String season = scanner.nextLine().trim();
 
-        List<Utility> utilities = utilityController.getAllUtilities();
-
-        if (utilities.isEmpty()) {
-            System.out.println("No utilities found.");
-            return;
-        }
-
-        utilities.forEach(utility -> {
-            if ("Winter".equalsIgnoreCase(season)) {
-                utilityController.updateUtilityStatus(utility.getUtilityId(), "Active");
-                utilityController.updateEnergyConsumption(utility.getUtilityId(), 750); // Example preset
-            } else if ("Summer".equalsIgnoreCase(season)) {
-                utilityController.updateUtilityStatus(utility.getUtilityId(), "Active");
-                utilityController.updateEnergyConsumption(utility.getUtilityId(), 650); // Example preset
-            }
-        });
+        utilityController.applySeasonalPreset(season);
 
         System.out.println("Seasonal preset applied for " + season + ".");
         promptReturn();
     }
+
 
 
     // ==========================
@@ -1252,46 +1408,6 @@ public class ManagerMenu extends BaseMenu {
         }
         System.out.println("\nSupplier Orders:");
         orders.forEach(System.out::println);
-    }
-
-    private void manageEmployees(){
-        employeeList = new EmployeeList(storeId);
-
-        System.out.println("\nCurrent Employee List:");
-        employeeList.printEmployeeList();
-        System.out.println("------------------");
-        System.out.println("Select Employee list Operation");
-        System.out.println("------------------");
-        System.out.println("1. Add employee");
-        System.out.println("2. Delete employee");
-        System.out.print("Enter choice: ");
-
-        String choice = scanner.nextLine();
-
-        switch (choice) {
-            case "1":
-                clearConsole();
-                employeeList.printEmployeeList();
-                System.out.print("Enter name of employee to add:");
-                String name = scanner.nextLine();
-                System.out.print("Enter ID of employee to add:");
-                int id = scanner.nextInt();
-                Employee temp = new Employee(name, id, new Schedule(), storeId);
-                employeeList.addEmployee(temp);
-                break;
-            case "2":
-                clearConsole();
-                employeeList.printEmployeeList();
-                System.out.print("Enter name of employee to remove:");
-                name = scanner.nextLine();
-                System.out.print("Enter ID of employee to remove:");
-                id = scanner.nextInt();
-                employeeList.removeEmployee(name, id);
-                break;
-            default:
-                System.out.println("Not an option");
-                break;
-        }
     }
 
     // ==========================

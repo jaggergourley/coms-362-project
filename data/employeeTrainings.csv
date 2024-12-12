@@ -1,0 +1,5 @@
+assignmentId,employeeId,programId,status,deadline,storeId
+1,1,101,Completed,2025-01-01,1
+2,2,101,Assigned,2025-01-01,1
+3,3,105,Assigned,2025-01-01,2
+4,1,103,In Progress,2025-01-01,1

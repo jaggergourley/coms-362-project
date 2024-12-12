@@ -1,3 +1,9 @@
-orderId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status
-45dc735d-87d8-4bbc-acec-cd075c978c31|adam|hisel|Tennis Racket,89.99,Sports,2;|179.98|shisis|ass|3|2024-11-18|Confirmed
-
+orderId,storeId,customerFirstName,customerLastName,items,totalPrice,shippingAddress,customerEmail,customerPhoneNumber,orderDate,status
+bdc6cb2b-7147-4a74-88ee-768f28a31df2|2|Adam|Hisel|Jump Rope,10.0,Fitness,2;Yoga Mat,30.0,Fitness,11;|350.0|2336 Knapp Street|ahisel@iastate.edu|5153308212|2024-12-10|Partially Shipped
+35807f9b-3c93-4c13-b5bd-3c0162d05cce|1|Adam|Hisel|Yoga Mat,30.0,Fitness,1;|30.0|2336 Knapp Street|ahisel@iastate.edu|5153308212|2024-12-10|Shipped
+f3874610-0fae-43e4-bb23-12a01c2df632|2|Ben Jackson|Jackson|Tennis Racket,100.0,Sports,2;|200.0|217 Ash Avenuie|his@.com|61637384|2024-12-10|Confirmed
+b0374372-3554-4340-a12c-740217faa173|1|Andy |Kuster|Baseball Glove,45.0,Sports,15;|675.0|2336 Knapp Street|ad@ia.com|4|2024-12-10|Partially Shipped
+eaa653d1-8a94-49bb-a38c-6c975217d386|1|Andy |Kuster|Baseball Glove,45.0,Sports,5;|225.0|2336 Knapp Street|ad@ia.com|4|2024-12-10|Confirmed
+075cc16e-0f81-4dc5-b87a-915f4009748d|2|Joe|Thompson|Golf Club,150.0,Sports,14;|2100.0|2445 Stanton Ave|hi#@.com|61732874984|2024-12-10|Partially Shipped
+f6345ef6-c766-4e09-9d72-95f033891dce|1|Joe|Thompson|Golf Club,150.0,Sports,4;|600.0|2445 Stanton Ave|hi#@.com|61732874984|2024-12-10|Confirmed
+2660ecd8-460b-466c-a177-f35a80ddfc9f|2|Joe|Jones|Yoga Mat,30.0,Fitness,22;|660.0|217 Peace|hi@.com|748505050|2024-12-10|Confirmed

@@ -33,27 +33,27 @@ public class Shipper extends Employee {
         this.canShipOrders = canShipOrders;
     }
 
-    // Override methods from Employee to specify permissions for Shipper
-    @Override
-    public Boolean canPlaceOrder() {
-        return false; // Shippers typically don't place orders
-    }
-
-    @Override
-    public Boolean canAddItems() {
-        return false; // Shippers typically don't add items
-    }
-
-    @Override
-    public Boolean canMakeSchedule() {
-        return false; // Shippers typically don't make schedules
-    }
+//    // Override methods from Employee to specify permissions for Shipper
+//    @Override
+//    public Boolean canPlaceOrder() {
+//        return false; // Shippers typically don't place orders
+//    }
+//
+//    @Override
+//    public Boolean canAddItems() {
+//        return false; // Shippers typically don't add items
+//    }
+//
+//    @Override
+//    public Boolean canMakeSchedule() {
+//        return false; // Shippers typically don't make schedules
+//    }
 
     // Method specific to Shipper role
     public void shipOrder(ShippingOrder shippingOrder, Inventory inventory) {
         if (canShipOrders) {
-            System.out.println("Shipper " + getName() + " is shipping order with ID: " + shippingOrder.getOrderId());
-            if(shippingController.processShippingOrder(shippingOrder, inventory)){
+            System.out.println("A Shipper " + "is shipping order with ID: " + shippingOrder.getOrderId());
+            if(shippingController.processShippingOrder(shippingOrder, inventory, getStoreId())){
                 System.out.println(shippingOrder.getStatus());
             }
         } else {
