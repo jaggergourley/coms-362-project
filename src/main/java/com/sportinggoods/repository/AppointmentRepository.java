@@ -19,25 +19,22 @@ public class AppointmentRepository {
     /**
      * Initializes the CSV files if they do not exist.
      */
+    private static final String FILE_HEADER = "appointmentId,storeId,customerName,phoneNumber,itemName,issue,appointmentDate,appointmentTime,status";
+
     private void initializeFiles() {
         try {
             File file = new File(FILE_PATH);
             if (!file.exists()) {
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                    writer.write("appointmentId,storeId,customerName,customerPhone,itemName,issue,appointmentTime,status\n");
-                }
-            }
-
-            File waitlistFile = new File(WAITLIST_FILE_PATH);
-            if (!waitlistFile.exists()) {
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(waitlistFile))) {
-                    writer.write("appointmentId,storeId,customerName,customerPhone,itemName,issue,status\n");
+                    writer.write(FILE_HEADER);
+                    writer.newLine();
                 }
             }
         } catch (IOException e) {
             System.err.println("Error initializing files: " + e.getMessage());
         }
     }
+
 
     /**
      * Adds a new appointment.
@@ -55,6 +52,42 @@ public class AppointmentRepository {
             return false;
         }
     }
+
+    /**
+     * Removes a customer from the waitlist.
+     *
+     * @param appointment The appointment to remove from the waitlist.
+     * @return True if the appointment was successfully removed, false otherwise.
+     */
+    public boolean removeFromWaitlist(Appointment appointment) {
+        List<Appointment> waitlist = getWaitlist();
+        boolean removed = waitlist.removeIf(a ->
+                a.getStoreId() == appointment.getStoreId() &&
+                        a.getCustomerName().equals(appointment.getCustomerName()) &&
+                        a.getPhoneNumber().equals(appointment.getPhoneNumber()) &&
+                        a.getItemName().equals(appointment.getItemName()) &&
+                        a.getIssue().equals(appointment.getIssue())
+        );
+
+        if (removed) {
+            // Save updated waitlist to file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(WAITLIST_FILE_PATH))) {
+                writer.write("appointmentId,storeId,customerName,phoneNumber,itemName,issue,status");
+                writer.newLine();
+                for (Appointment a : waitlist) {
+                    writer.write(a.toCSV());
+                    writer.newLine();
+                }
+                return true;
+            } catch (IOException e) {
+                System.err.println("Error saving updated waitlist: " + e.getMessage());
+                return false;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * Retrieves all appointments.
@@ -116,6 +149,26 @@ public class AppointmentRepository {
         return updated;
     }
 
+    public boolean updateAppointments(List<Appointment> updatedAppointments) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
+            // Write the header line
+            writer.write("appointmentId,storeId,customerName,phoneNumber,itemName,issue,appointmentDate,appointmentTime,status");
+            writer.newLine();
+
+            // Write each appointment to the file
+            for (Appointment appointment : updatedAppointments) {
+                writer.write(appointment.toCSV());
+                writer.newLine();
+            }
+
+            return true;
+        } catch (IOException e) {
+            System.err.println("Error updating appointments: " + e.getMessage());
+            return false;
+        }
+    }
+
+
     /**
      * Saves all appointments back to the file.
      *
@@ -123,7 +176,7 @@ public class AppointmentRepository {
      */
     private void saveAppointmentsToFile(List<Appointment> appointments) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            writer.write("appointmentId,storeId,customerName,customerPhone,itemName,issue,appointmentTime,status\n");
+            writer.write("appointmentId,storeId,customerName,customerPhone,itemName,issue,appointmentDate,appointmentTime,status\n");
             for (Appointment appointment : appointments) {
                 writer.write(appointment.toCSV());
                 writer.newLine();
@@ -188,39 +241,5 @@ public class AppointmentRepository {
         return waitlist;
     }
 
-    public boolean removeFromWaitlist(Appointment appointment) {
-        List<Appointment> waitlist = new ArrayList<>();
-        boolean removed = false;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(WAITLIST_FILE_PATH))) {
-            String line;
-            reader.readLine(); // Skip header
-            while ((line = reader.readLine()) != null) {
-                Appointment current = Appointment.fromCSV(line);
-                if (current != null && !current.equals(appointment)) {
-                    waitlist.add(current);
-                } else if (current != null && current.equals(appointment)) {
-                    removed = true;
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error reading waitlist for removal: " + e.getMessage());
-            return false;
-        }
-
-        if (removed) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(WAITLIST_FILE_PATH))) {
-                writer.write("storeId,customerName,itemName,issue,timeSlot\n"); // Write header
-                for (Appointment a : waitlist) {
-                    writer.write(a.toCSV() + "\n");
-                }
-                return true;
-            } catch (IOException e) {
-                System.err.println("Error writing updated waitlist: " + e.getMessage());
-                return false;
-            }
-        }
-
-        return false;
-    }
 }
