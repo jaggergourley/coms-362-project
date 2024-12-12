@@ -2,18 +2,18 @@ package com.sportinggoods.model;
 
 import com.sportinggoods.controller.EmployeeController;
 import com.sportinggoods.repository.EmployeeRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeeList {
     private ArrayList<Employee> employees = new ArrayList<>();
     private static final String FILE_PATH = "data/employee.csv";
+    private EmployeeController employeeController;
 
 
-    public EmployeeList(int storeID){
-        employees = loadStoreEmployeesFromFile(storeID);
-    }
+    // public EmployeeList(int storeID){
+    //     employees = loadStoreEmployeesFromFile(storeID);
+    // }
 
     public ArrayList<Employee> getEmployees(){
         return employees;
@@ -21,7 +21,7 @@ public class EmployeeList {
 
     public EmployeeList(int storeID) {
         this.employeeController = new EmployeeController(new EmployeeRepository());
-        this.employees = filterEmployeesByStore(storeID);
+        //this.employees = filterEmployeesByStore(storeID);
     }
 
     private List<Employee> filterEmployeesByStore(int storeID) {
@@ -35,9 +35,9 @@ public class EmployeeList {
         return filteredEmployees;
     }
 
-    public List<Employee> getEmployees() {
-        return employees;
-    }
+    // public List<Employee> getEmployees() {
+    //     return employees;
+    // }
 
     public Employee getEmployee(String name, int storeID) {
         for (Employee e : employees) {

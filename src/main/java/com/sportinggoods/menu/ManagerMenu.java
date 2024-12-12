@@ -27,7 +27,8 @@ public class ManagerMenu extends BaseMenu {
     private FeedbackController feedbackController;
     private EmployeeController employeeController;
     private TrainingProgramController trainingProgramController;
-    private EmployeeTrainingController employeeTrainingController;    private CampaignController campaignController;
+    private EmployeeTrainingController employeeTrainingController;    
+    private CampaignController campaignController;
     private SecurityController securityController;
 
 
@@ -89,6 +90,7 @@ public class ManagerMenu extends BaseMenu {
         invoker.register("17", this::manageTrainingPrograms);
         invoker.register("18", this::manageEmployeeTraining);        
         invoker.register("19", this::manageSecurityIncidents);
+        invoker.register("20", this::manageAdvertising);
     }
 
     @Override
@@ -116,12 +118,13 @@ public class ManagerMenu extends BaseMenu {
         System.out.println("17. Manage Training Programs");
         System.out.println("18. Manage Employee Training");
         System.out.println("19. Manage Security Incidents" + (pendingIncidents > 0 ? " [" + pendingIncidents + "]" : ""));
-        System.out.println("20. Back to Main Menu");
+        System.out.println("20. Manage Advertising");
+        System.out.println("21. Back to Main Menu");
     }
 
     @Override
     protected boolean isExitChoice(String choice) {
-        return choice.equals("20");
+        return choice.equals("21");
     }
 
     @Override
@@ -1446,19 +1449,30 @@ public class ManagerMenu extends BaseMenu {
     private void createCampaign() {
         System.out.print("Enter campaign title: ");
         String title = scanner.nextLine();
-
+    
         LocalDate startDate = promptForDate("Enter start date (YYYY-MM-DD): ");
         LocalDate endDate = promptForDate("Enter end date (YYYY-MM-DD): ");
-
+    
         System.out.print("Enter type (Coupon/Discount): ");
         String type = scanner.nextLine();
-
+    
+        System.out.print("Enter discount type (Percentage/Fixed): ");
+        String discountType = scanner.nextLine().trim().toLowerCase();
+    
+        while (!discountType.equals("percentage") && !discountType.equals("fixed")) {
+            System.out.print("Invalid type. Enter discount type (Percentage/Fixed): ");
+            discountType = scanner.nextLine().trim().toLowerCase();
+        }
+    
         double value = promptForDouble("Enter value: ", 0.01, Double.MAX_VALUE);
-
+    
         System.out.print("Enter custom message for subscribers: ");
         String message = scanner.nextLine();
-
-        String result = campaignController.createCampaign(title, startDate, endDate, type, value, message);
+    
+        String result = campaignController.createCampaign(
+            title, startDate, endDate, type, value, discountType, message
+        );
+    
         System.out.println(result);
         promptReturn();
     }

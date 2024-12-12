@@ -8,16 +8,18 @@ public class Campaign {
     private LocalDate endDate;
     private String type; // "Coupon" or "Discount"
     private double value; // Percentage or fixed amount
+    private String discountType; // "Percentage" or "Fixed"
     private String customerMessage;
     private String status; // "Active" or "Ended"
 
     // Constructor
-    public Campaign(String title, LocalDate startDate, LocalDate endDate, String type, double value, String customerMessage, String status) {
+    public Campaign(String title, LocalDate startDate, LocalDate endDate, String type, double value, String discountType, String customerMessage, String status) {
         this.title = title;
         this.startDate = startDate;
         this.endDate = endDate;
         this.type = type;
         this.value = value;
+        this.discountType = discountType;
         this.customerMessage = customerMessage;
         this.status = status;
     }
@@ -33,6 +35,7 @@ public class Campaign {
     public void setType(String type) { this.type = type; }
     public double getValue() { return value; }
     public void setValue(double value) { this.value = value; }
+    public String getDiscountType() { return discountType; }
     public String getCustomerMessage() { return customerMessage; }
     public void setCustomerMessage(String customerMessage) { this.customerMessage = customerMessage; }
     public String getStatus() { return status; }
